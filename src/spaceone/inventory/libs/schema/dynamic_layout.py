@@ -61,7 +61,6 @@ class ItemDynamicLayout(BaseLayoutField):
     def set_fields(cls, name='', root_path=None, fields=[]):
         _options = cls._set_fields(fields, root_path=root_path)
         return cls({'name': name, 'options': ItemLayoutOption(_options)})
-        # return cls(name=name, options=ItemLayoutOption(_options))
 
 
 class TableDynamicLayout(BaseLayoutField):
@@ -75,7 +74,6 @@ class TableDynamicLayout(BaseLayoutField):
     @classmethod
     def set_fields(cls, name='', root_path=None, fields=[]):
         _options = cls._set_fields(fields, root_path=root_path)
-        # return cls(name=name, options=TableLayoutOption(_options))
         return cls({'name': name, 'options': TableLayoutOption(_options)})
 
 
@@ -90,7 +88,6 @@ class QuerySearchTableDynamicLayout(BaseLayoutField):
     @classmethod
     def set_fields(cls, name='', fields=[]):
         _options = cls._set_fields(fields)
-        # return cls(name=name, options=QuerySearchTableLayoutOption(_options))
         return cls({'name': name, 'options': QuerySearchTableLayoutOption(_options)})
 
 
@@ -100,13 +97,11 @@ class SimpleTableDynamicLayout(BaseLayoutField):
 
     @classmethod
     def set(cls, name='', root_path=''):
-        # return cls(name=name, options=SimpleTableLayoutOption())
         return cls({'name': name, 'options': SimpleTableLayoutOption({'root_path': root_path})})
 
     @classmethod
     def set_fields(cls, name='', root_path=None, fields=[]):
         _options = cls._set_fields(fields, root_path=root_path)
-        # return cls(name=name, options=SimpleTableLayoutOption(_options))
         return cls({'name': name, 'options': SimpleTableLayoutOption(_options)})
 
     @classmethod
@@ -129,7 +124,6 @@ class ListDynamicLayout(BaseLayoutField):
 
     @classmethod
     def set_layouts(cls, name='', layouts=[]):
-        # return cls(name=name, options=ListLayoutOption({'layouts': layouts}))
         return cls({'name': name, 'options': ListLayoutOption({'layouts': layouts})})
 
 
@@ -144,5 +138,4 @@ class RawDynamicLayout(BaseLayoutField):
         else:
             _options = RawLayoutOption({'root_path': root_path})
 
-        # return cls(name=name, options=_options)
         return cls({'name': name, 'options': _options})
