@@ -1,0 +1,1 @@
+from spaceone.inventory.connector.cloud_sql import CloudSQL
