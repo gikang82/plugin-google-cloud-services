@@ -3,7 +3,6 @@ import logging
 import concurrent.futures
 
 from spaceone.core.service import *
-from spaceone.inventory.libs.schema.resource import RegionResource, RegionResponse
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -19,7 +18,8 @@ class CollectorService(BaseService):
 
         self.execute_managers = [
             # set google cloud service manager
-            'CloudSQLManager'
+            'CloudSQLManager',
+            'InstanceGroupManager'
         ]
 
     @check_required(['options'])
