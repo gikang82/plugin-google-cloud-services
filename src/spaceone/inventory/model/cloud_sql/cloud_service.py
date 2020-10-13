@@ -1,11 +1,9 @@
-from schematics.types import ModelType, StringType, PolyModelType, DictType, ListType
+from schematics.types import ModelType, StringType, PolyModelType
 
 from spaceone.inventory.model.cloud_sql.data import Instance
-from spaceone.inventory.libs.schema.dynamic_field import TextDyField, ListDyField, BadgeDyField, DateTimeDyField, \
-    EnumDyField
-from spaceone.inventory.libs.schema.dynamic_layout import ItemDynamicLayout, TableDynamicLayout, ListDynamicLayout, \
-    SimpleTableDynamicLayout
-from spaceone.inventory.libs.schema.resource import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout
+from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
 
 '''
 INSTANCE

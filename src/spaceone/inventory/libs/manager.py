@@ -1,6 +1,5 @@
 from spaceone.core.manager import BaseManager
-from spaceone.inventory.libs.schema.resource import CloudServiceTypeResponse, CloudServiceResponse, \
-    RegionResource, RegionResponse
+from spaceone.inventory.libs.schema.region import RegionResource, RegionResponse
 
 
 class GoogleCloudManager(BaseManager):

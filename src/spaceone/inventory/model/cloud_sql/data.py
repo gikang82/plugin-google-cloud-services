@@ -71,7 +71,8 @@ class IPAddress(Model):
 class Instance(Model):
     name = StringType()
     kind = StringType()
-    state = StringType()
+    state = StringType(choices=('SQL_INSTANCE_STATE_UNSPECIFIED', 'RUNNABLE', 'SUSPENDED', 'PENDING_DELETE',
+                                'PENDING_CREATE', 'MAINTENANCE', 'FAILED'))
     region = StringType()
     gce_zone = StringType(deserialize_from="gceZone")
     database_version = StringType(deserialize_from="databaseVersion")

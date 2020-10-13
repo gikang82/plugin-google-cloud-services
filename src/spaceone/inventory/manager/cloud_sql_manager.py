@@ -1,8 +1,8 @@
 from spaceone.inventory.libs.manager import GoogleCloudManager
-from spaceone.inventory.libs.schema.resource import ReferenceModel
+from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.cloud_sql.data import *
-from spaceone.inventory.model.cloud_sql.resource import *
-from spaceone.inventory.model.cloud_sql.service_type import CLOUD_SERVICE_TYPES
+from spaceone.inventory.model.cloud_sql.cloud_service import *
+from spaceone.inventory.model.cloud_sql.cloud_service_type import CLOUD_SERVICE_TYPES
 
 
 class CloudSQLManager(GoogleCloudManager):
