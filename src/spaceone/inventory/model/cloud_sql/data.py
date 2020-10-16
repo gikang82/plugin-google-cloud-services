@@ -2,6 +2,42 @@ from schematics import Model
 from schematics.types import ModelType, ListType, StringType, BooleanType, IntType, DateTimeType
 
 
+class SQLServerUserDetail(Model):
+    disabled = BooleanType()
+    serverRoles = ListType(StringType, deserialize_from='serverRoles')
+
+
+class User(Model):
+    kind = StringType()
+    etag = StringType()
+    name = StringType()
+    host = StringType()
+    instance = StringType()
+    project = StringType()
+    sql_server_user_details = ModelType(SQLServerUserDetail,
+                                        deserialize_from='sqlserverUserDetails',
+                                        serialize_when_none=False)
+
+
+class SQLServerDatabaseDetail(Model):
+    compatibility_level = IntType(deserialize_from='compatibilityLevel')
+    recovery_model = StringType(deserialize_from='recoveryModel')
+
+
+class Database(Model):
+    self_link = StringType(deserialize_from='selfLink')
+    kind = StringType()
+    charset = StringType()
+    collation = StringType()
+    etag = StringType()
+    name = StringType()
+    instance = StringType()
+    project = StringType()
+    sql_server_database_details = ModelType(SQLServerDatabaseDetail,
+                                            deserialize_from='sqlserverDatabaseDetails',
+                                            serialize_when_none=False)
+
+
 class ServerCACert(Model):
     kind = StringType()
     cert_serial_number = StringType(deserialize_from="certSerialNumber")
@@ -19,11 +55,16 @@ class BackupRetentionSettings(Model):
 
 
 class BackupConfiguration(Model):
-    start_time = StringType()
+    start_time = StringType(deserialize_from="startTime")
     kind = StringType()
     location = StringType()
+    binary_log_enabled = BooleanType(deserialize_from="binaryLogEnabled", serialize_when_none=False)
+    replication_log_archiving_enabled = BooleanType(deserialize_from="replicationLogArchivingEnabled",
+                                                    serialize_when_none=False)
     backup_retention_settings = ModelType(BackupRetentionSettings, deserialize_from="backupRetentionSettings")
     enabled = BooleanType()
+    point_in_time_recovery_enabled = BooleanType(deserialize_from="pointInTimeRecoveryEnabled",
+                                                 serialize_when_none=False)
     transaction_log_retention_days = IntType(deserialize_from="transactionLogRetentionDays")
 
 
@@ -85,7 +126,9 @@ class Instance(Model):
     service_account_email_address = StringType(deserialize_from="serviceAccountEmailAddress")
     backend_type = StringType(deserialize_from="backendType")
     self_link = StringType(deserialize_from="selfLink")
-    connection_name = StringType(deserialize_from="connectionName")
+    databases = ListType(ModelType(Database))
+    users = ListType(ModelType(User))
+    connection_name = StringType(deserialize_from="connectionName", serialize_when_none=False)
 
     def reference(self):
         return {
