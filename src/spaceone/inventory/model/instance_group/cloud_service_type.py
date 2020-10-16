@@ -15,13 +15,6 @@ cst_instance_group.tags = {
 cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
-        TextDyField.data_source('Instances', 'data.instance_counts'),
-        TextDyField.data_source('Template', 'data.template'),
-        TextDyField.data_source('Group Type', 'data.template'),
-        TextDyField.data_source('Recommendation', 'data.template'),
-        TextDyField.data_source('Auto Scaling', 'data.template'),
-        TextDyField.data_source('Zone', 'data.zone'),
-        DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
     search=[
         SearchField.set(name='Name', key='data.name'),

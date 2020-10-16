@@ -1,1 +1,3 @@
-from spaceone.inventory.connector.cloud_sql import CloudSQL
+from spaceone.inventory.libs.connector import GoogleCloudConnector
+from spaceone.inventory.connector.cloud_sql import CloudSQLConnector
+from spaceone.inventory.connector.instance_group import InstanceGroupConnector
