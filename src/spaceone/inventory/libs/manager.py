@@ -1,4 +1,5 @@
 from spaceone.core.manager import BaseManager
+from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.schema.region import RegionResource, RegionResponse
 
 
@@ -25,6 +26,11 @@ class GoogleCloudManager(BaseManager):
         for cloud_service_type in self.collect_cloud_service_type():
             yield cloud_service_type
 
+        # Add zone lists in params
+        params.update({
+            'zones': self.list_zones(params['secret_data'])
+        })
+
         for cloud_service_response_schema in self.collect_cloud_service(params):
             yield cloud_service_response_schema
 
@@ -32,9 +38,29 @@ class GoogleCloudManager(BaseManager):
             if region := self.match_region_info(region_code):
                 yield RegionResponse({'resource': region})
 
+    def list_zones(self, secret_data):
+        query = {}
+
+        if secret_data.get('region_name'):
+            region_self_link = f'https://www.googleapis.com/compute/v1/projects/{secret_data["project_id"]}/regions/{secret_data.get("region_name")}'
+            query.update({'filter': f'region="{region_self_link}"'})
+
+        connector: GoogleCloudConnector = self.locator.get_connector('GoogleCloudConnector', secret_data=secret_data)
+        zones = connector.list_zones(**query)
+        return [zone.get('name') for zone in zones if zone.get('name')]
+
     def set_region_code(self, region):
         if region not in self.collected_region_codes:
             self.collected_region_codes.append(region)
+
+    def generate_region_from_zone_self_link(self, zone_self_link):
+        _split = zone_self_link.split('/')
+        return self.generate_region_from_zone(_split[-1])
+
+    @staticmethod
+    def generate_region_from_zone(zone):
+        return zone[:-2]
+
 
     @staticmethod
     def match_region_info(region_code):

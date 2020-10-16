@@ -9,7 +9,7 @@ DEFAULT_SCHEMA = 'google_oauth_client_id'
 
 
 class GoogleCloudConnector(BaseConnector):
-    google_client_service = None
+    google_client_service = 'compute'
     version = 'v1'
 
     def __init__(self, **kwargs):
@@ -44,3 +44,8 @@ class GoogleCloudConnector(BaseConnector):
             'project': self.project_id,
         })
         return query
+
+    def list_zones(self, **query):
+        query = self.generate_query(**query)
+        result = self.client.zones().list(**query).execute()
+        return result.get('items', [])
