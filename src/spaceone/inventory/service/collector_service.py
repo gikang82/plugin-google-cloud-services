@@ -19,7 +19,9 @@ class CollectorService(BaseService):
         self.execute_managers = [
             # set google cloud service manager
             'CloudSQLManager',
-            'InstanceGroupManager'
+            'InstanceGroupManager',
+            'InstanceTemplateManager',
+            # 'MachineImageManager',
         ]
 
     @check_required(['options'])
@@ -32,22 +34,22 @@ class CollectorService(BaseService):
         }
         return {'metadata': capability}
 
-    @transaction
-    @check_required(['options', 'secret_data'])
-    def verify(self, params):
-        """
-        Args:
-              params:
-                - options
-                - secret_data
-        """
-        options = params['options']
-        secret_data = params.get('secret_data', {})
-
-        if secret_data != {}:
-            self.get_project_id(secret_data)
-
-        return {}
+    # @transaction
+    # @check_required(['options', 'secret_data'])
+    # def verify(self, params):
+    #     """
+    #     Args:
+    #           params:
+    #             - options
+    #             - secret_data
+    #     """
+    #     options = params['options']
+    #     secret_data = params.get('secret_data', {})
+    #
+    #     if secret_data != {}:
+    #         self.get_project_id(secret_data)
+    #
+    #     return {}
 
     @transaction
     @check_required(['options', 'secret_data', 'filter'])
