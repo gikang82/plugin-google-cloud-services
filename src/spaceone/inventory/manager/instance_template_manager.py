@@ -47,19 +47,19 @@ class InstanceTemplateManager(GoogleCloudManager):
                     list_disk_types = instance_template_conn.list_disks(zone)
                     disk_types.extend(list_disk_types)
 
-        for instance_template in instance_templates:
-            properties = instance_template.get('properties', {})
+        for inst_template in instance_templates:
+            properties = inst_template.get('properties', {})
             tags = properties.get('tags', {})
 
-            in_used_by, matched_instance_group = self.match_instance_group(instance_template,
+            in_used_by, matched_instance_group = self.match_instance_group(inst_template,
                                                                            instance_groups_over_zones)
             disks = self.get_disks(properties)
-            instance_template.update({
+            inst_template.update({
                 'project': secret_data['project_id'],
                 'in_used_by': in_used_by,
                 'ip_forward': properties.get('canIpForward', False),
                 'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
-                'affected_rules': tags.get('items', []),
+                'network_tags': tags.get('items', []),
                 'disk_display': self._get_disk_type_display(disks, 'disk_type'),
                 'image': self._get_disk_type_display(disks, 'source_image_display'),
                 'disks': disks,
@@ -71,9 +71,9 @@ class InstanceTemplateManager(GoogleCloudManager):
 
             svc_account = properties.get('serviceAccounts', [])
             if len(svc_account) > 0:
-                instance_template.update({'service_account': self._get_service_account(svc_account)})
+                inst_template.update({'service_account': self._get_service_account(svc_account)})
 
-            instance_template_data = InstanceTemplate(instance_template, strict=False)
+            instance_template_data = InstanceTemplate(inst_template, strict=False)
             instance_template_resource = InstanceTemplateResource({
                 'data': instance_template_data,
                 'reference': ReferenceModel(instance_template_data.reference())
@@ -81,7 +81,7 @@ class InstanceTemplateManager(GoogleCloudManager):
 
             yield InstanceTemplateResponse({'resource': instance_template_resource})
 
-    def match_instance_group(self, instance_template, instance_group_managers):
+    def match_instance_group(self, instance_template, instance_group_managers: list):
         in_used_by = []
         instance_group_infos = []
         for instance_group in instance_group_managers:

@@ -17,12 +17,12 @@ instance_template_meta = ItemDynamicLayout.set_fields('Instance', fields=[
     ListDyField.data_source('In Used By', 'data.in_used_by',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     TextDyField.data_source('Machine Type', 'data.machine.machine_type'),
-    ListDyField.data_source('Affected Rules', 'data.affected_rules',
-                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
     EnumDyField.data_source('IP Forward', 'data.ip_forward', default_badge={
         'indigo.500': ['true'], 'coral.600': ['false']
     }),
     TextDyField.data_source('Self Link', 'data.self_link'),
+    ListDyField.data_source('Network Tags', 'data.network_tags',
+                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
     DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
 ])
 

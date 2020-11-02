@@ -18,7 +18,6 @@ class InstanceGroup(Model):
 class AccessConfig(Model):
     type = StringType()
     name = StringType()
-    config = StringType()
     network_tier = StringType(choices=('STANDARD', 'PREMIUM'), deserialize_from='networkTier')
     kind = StringType()
 
@@ -95,12 +94,12 @@ class InstanceTemplate(Model):
     in_used_by = ListType(StringType(), default=[])
     self_link = StringType(deserialize_from='selfLink')
     ip_forward = BooleanType(default=False)
-    affected_rules = ListType(StringType(), default=[])
-    instance_groups = ListType(ModelType(InstanceGroup, default=[]))
-    disks = ListType(ModelType(Disk, default=[]))
-    network_interfaces = ListType(ModelType(NetworkInterface, default=[]))
+    network_tags = ListType(StringType(), default=[])
+    instance_groups = ListType(ModelType(InstanceGroup), default=[])
+    disks = ListType(ModelType(Disk), default=[])
+    network_interfaces = ListType(ModelType(NetworkInterface), default=[])
     service_account = ModelType(ServiceAccount, serialize_when_none=False)
-    labels = ListType(ModelType(Labels, default=[]))
+    labels = ListType(ModelType(Labels), default=[])
     kind = StringType()
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
