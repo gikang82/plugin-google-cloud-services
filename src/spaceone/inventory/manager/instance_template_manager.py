@@ -135,8 +135,6 @@ class InstanceTemplateManager(GoogleCloudManager):
         network_interface_info = []
         for network_interface in instance.get('networkInterfaces', []):
             configs, tiers = self._get_access_configs_type_and_tier(network_interface.get('accessConfigs', []))
-            print(network_interface)
-            print(network_interface.get('name', ''))
             network_interface_info.append({
                 'idx_name': network_interface.get('name', ''),
                 'network': network_interface.get('network', ''),
