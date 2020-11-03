@@ -62,6 +62,7 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'ip_forward': properties.get('canIpForward', False),
                 'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
                 'network_tags': tags.get('items', []),
+                'scheduling': self._get_scheduling(properties),
                 'disk_display': self._get_disk_type_display(disks, 'disk_type'),
                 'image': self._get_disk_type_display(disks, 'source_image_display'),
                 'disks': disks,
@@ -134,10 +135,12 @@ class InstanceTemplateManager(GoogleCloudManager):
         network_interface_info = []
         for network_interface in instance.get('networkInterfaces', []):
             configs, tiers = self._get_access_configs_type_and_tier(network_interface.get('accessConfigs', []))
+            print(network_interface)
+            print(network_interface.get('name', ''))
             network_interface_info.append({
-                'name': network_interface.get('name', ''),
-                'subnetwork': network_interface.get('subnetwork', ''),
+                'idx_name': network_interface.get('name', ''),
                 'network': network_interface.get('network', ''),
+                'network_display': self._get_display_info(network_interface.get('network', '')),
                 'configs': configs,
                 'network_tier': tiers,
                 'access_configs': network_interface.get('accessConfigs', []),
@@ -238,6 +241,13 @@ class InstanceTemplateManager(GoogleCloudManager):
         return constant
 
     @staticmethod
+    def _get_display_info(network):
+        network_display = ''
+        if network != '':
+            network_display = network[network.rfind('/') + 1:]
+        return network_display
+
+    @staticmethod
     def _get_disk_type_display(disk, key):
         if len(disk) > 0:
             tag = disk[0].get('tags', {})
@@ -251,6 +261,15 @@ class InstanceTemplateManager(GoogleCloudManager):
         item = properties.get(item_key)
         selected_prop_item = item.get(key) if item else ''
         return selected_prop_item
+
+    @staticmethod
+    def _get_scheduling(properties):
+        scheduling = properties.get('scheduling', {})
+        return {
+            'on_host_maintenance': scheduling.get('onHostMaintenance', 'MIGRATE'),
+            'automatic_restart': 'On' if scheduling.get('automaticRestart', False) == True else 'Off',
+            'preemptibility': 'On' if scheduling.get('preemptible', False) == True else 'Off',
+        }
 
     @staticmethod
     def _get_throughput_constant(disk_type):
