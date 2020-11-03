@@ -4,13 +4,15 @@ from spaceone.inventory.model.instance_template.data import *
 from spaceone.inventory.model.instance_template.cloud_service import *
 from spaceone.inventory.connector.instance_template import InstanceTemplateConnector
 from spaceone.inventory.model.instance_template.cloud_service_type import CLOUD_SERVICE_TYPES
-
+import time
 
 class InstanceTemplateManager(GoogleCloudManager):
     connector_name = 'InstanceTemplateConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
+        print("** Instance Template START **")
+        start_time = time.time()
         """
         Args:
             params:
@@ -80,6 +82,8 @@ class InstanceTemplateManager(GoogleCloudManager):
             })
 
             yield InstanceTemplateResponse({'resource': instance_template_resource})
+
+        print(f'** Instance Template Finished {time.time() - start_time} Seconds **')
 
     def match_instance_group(self, instance_template, instance_group_managers: list):
         in_used_by = []

@@ -39,6 +39,10 @@ class GoogleCloudConnector(BaseConnector):
             print()
             raise ERROR_UNKNOWN(message=e)
 
+    def verify(self, **kwargs):
+        if self.client is None:
+            self.set_connect(**kwargs)
+
     def generate_query(self, **query):
         query.update({
             'project': self.project_id,

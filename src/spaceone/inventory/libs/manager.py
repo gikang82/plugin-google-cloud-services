@@ -12,7 +12,7 @@ class GoogleCloudManager(BaseManager):
     def verify(self, options, secret_data, **kwargs):
         """ Check collector's status.
         """
-        connector = self.locator.get_connector(self.connector_name, secret_data=secret_data)
+        connector: GoogleCloudConnector = self.locator.get_connector('GoogleCloudConnector', secret_data=secret_data)
         connector.verify()
 
     def collect_cloud_service_type(self):

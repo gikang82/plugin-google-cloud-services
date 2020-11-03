@@ -1,7 +1,7 @@
 import time
 import logging
 import concurrent.futures
-
+from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.core.service import *
 
 
@@ -21,7 +21,7 @@ class CollectorService(BaseService):
             'CloudSQLManager',
             'InstanceGroupManager',
             'InstanceTemplateManager',
-            # 'MachineImageManager',
+            'MachineImageManager',
         ]
 
     @check_required(['options'])
@@ -34,22 +34,22 @@ class CollectorService(BaseService):
         }
         return {'metadata': capability}
 
-    # @transaction
-    # @check_required(['options', 'secret_data'])
-    # def verify(self, params):
-    #     """
-    #     Args:
-    #           params:
-    #             - options
-    #             - secret_data
-    #     """
-    #     options = params['options']
-    #     secret_data = params.get('secret_data', {})
-    #
-    #     if secret_data != {}:
-    #         self.get_project_id(secret_data)
-    #
-    #     return {}
+    @transaction
+    @check_required(['options', 'secret_data'])
+    def verify(self, params):
+        """
+        Args:
+              params:
+                - options
+                - secret_data
+        """
+        options = params['options']
+        secret_data = params.get('secret_data', {})
+        if secret_data != {}:
+            google_manager = GoogleCloudManager()
+            active = google_manager.verify({}, secret_data)
+
+        return {}
 
     @transaction
     @check_required(['options', 'secret_data', 'filter'])
