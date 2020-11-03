@@ -9,7 +9,7 @@ cst_instance_group.group = 'ComputeEngine'
 cst_instance_group.labels = ['Compute']
 cst_instance_group.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
-    'spaceone:is_major': 'true',
+    'spaceone:is_major': 'false',
 }
 # Basic table for
 cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
