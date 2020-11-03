@@ -4,13 +4,15 @@ from spaceone.inventory.connector.instance_group import InstanceGroupConnector
 from spaceone.inventory.model.instance_group.data import *
 from spaceone.inventory.model.instance_group.cloud_service import *
 from spaceone.inventory.model.instance_group.cloud_service_type import CLOUD_SERVICE_TYPES
-
+import time
 
 class InstanceGroupManager(GoogleCloudManager):
     connector_name = 'InstanceGroupConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
+        print("** Instance Group START **")
+        start_time = time.time()
         """
         Args:
             params:
@@ -82,6 +84,8 @@ class InstanceGroupManager(GoogleCloudManager):
 
                 self.set_region_code(instance_group['region'])
                 yield InstanceGroupResponse({'resource': instance_group_resource})
+
+        print(f'** Instance Group Finished {time.time() - start_time} Seconds **')
 
     @staticmethod
     def match_instance_template(instance_templates, instance_template_self_link):
