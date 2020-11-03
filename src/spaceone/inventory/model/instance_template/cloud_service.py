@@ -35,7 +35,7 @@ it_meta_machine = ItemDynamicLayout.set_fields('Machine Info', root_path='data.m
 ])
 
 # TAB - Service Account
-it_meta_service_account = ItemDynamicLayout.set_fields('Network Interface', root_path='data.service_account', fields=[
+it_meta_service_account = ItemDynamicLayout.set_fields('Service Account', root_path='data.service_account', fields=[
     TextDyField.data_source('E-mail', 'email'),
     ListDyField.data_source('Scopes', 'scopes',
                             default_badge={'type': 'outline', 'delimiter': '<br>'})
@@ -77,8 +77,7 @@ it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels'
     TextDyField.data_source('Value', 'value'),
 ])
 
-instance_template_meta = CloudServiceMeta.set_layouts([instance_template, it_meta_network, it_meta_disk,
-                                                       it_meta_service_account, it_meta_labels])
+instance_template_meta = CloudServiceMeta.set_layouts([instance_template, it_meta_network, it_meta_disk, it_meta_labels])
 
 
 class ComputeEngineResource(CloudServiceResource):

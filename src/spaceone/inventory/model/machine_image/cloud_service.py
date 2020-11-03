@@ -89,8 +89,7 @@ it_meta_network = TableDynamicLayout.set_fields('Network Interface', root_path='
     TextDyField.data_source('Public IP', 'public_ip_address'),
     ListDyField.data_source('Access Configs', 'configs'),
     ListDyField.data_source('Network Tier', 'network_tier_display'),
-    ListDyField.data_source('IP forwarding', 'ip_forward'),
-    TextDyField.data_source('Kind', 'network'),
+    ListDyField.data_source('IP forwarding', 'ip_forward')
 ])
 
 it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels', fields=[
