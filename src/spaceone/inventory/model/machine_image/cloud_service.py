@@ -92,10 +92,12 @@ it_meta_network = TableDynamicLayout.set_fields('Network Interface', root_path='
     ListDyField.data_source('IP forwarding', 'ip_forward')
 ])
 
+
 it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels', fields=[
     TextDyField.data_source('Key', 'key'),
     TextDyField.data_source('Value', 'value'),
 ])
+
 
 instance_template_meta = CloudServiceMeta.set_layouts([meta_machine_template, it_meta_disk,  it_meta_network,
                                                        it_meta_labels])
