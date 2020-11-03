@@ -59,7 +59,6 @@ class MachineImageManager(GoogleCloudManager):
             machine_image.update({
                 'project': secret_data['project_id'],
                 'deletion_protection': properties.get('deletionProtection', False),
-                'machine_type': properties.get('machineType'),
                 'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
                 'network_tags': tags.get('items', []),
                 'disk_display': self._get_disk_type_display(disks, 'disk_type'),

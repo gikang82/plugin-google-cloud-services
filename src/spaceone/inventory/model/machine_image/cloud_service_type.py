@@ -16,15 +16,18 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
         TextDyField.data_source('Source Instance', 'data.machine.machine_display'),
-        TextDyField.data_source('Machine Type', 'data.image'),
-        TextDyField.data_source('Storage location', 'data.disk_display'),
+        TextDyField.data_source('Machine Type', 'data.machine.machine_type'),
+        ListDyField.data_source('Storage location', 'data.storage_locations',
+                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
     search=[
+        SearchField.set(name='ID', key='data.id'),
         SearchField.set(name='Name', key='data.name'),
         SearchField.set(name='Machine Type', key='data.machine.machine_type'),
-        SearchField.set(name='Image', key='data.image'),
-        SearchField.set(name='Disk Type', key='data.disk_display'),
+        SearchField.set(name='Disk Type', key='data.disks.tags.disk_type'),
+        SearchField.set(name='Core', key='data.machine.core'),
+        SearchField.set(name='Memory', key='data.machine.memory'),
         SearchField.set(name='Creation Time', key='data.creation_timestamp', data_type='datetime'),
     ]
 )

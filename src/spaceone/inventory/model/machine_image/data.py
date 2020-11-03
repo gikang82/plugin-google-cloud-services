@@ -110,7 +110,6 @@ class MachineImage(Model):
     description = StringType()
     status = StringType(choices=('INVALID', 'CREATING', 'READY', 'DELETING', 'UPLOADING'))
     fingerprint = StringType()
-    machine_type = StringType()
     self_link = StringType(deserialize_from='selfLink')
     machine = ModelType(MachineType, default={})
     network_tags = ListType(StringType(), default=[])
