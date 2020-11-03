@@ -1,7 +1,7 @@
 import time
 import logging
 import concurrent.futures
-
+from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.core.service import *
 
 
@@ -19,7 +19,9 @@ class CollectorService(BaseService):
         self.execute_managers = [
             # set google cloud service manager
             'CloudSQLManager',
-            'InstanceGroupManager'
+            'InstanceGroupManager',
+            'InstanceTemplateManager',
+            'MachineImageManager',
         ]
 
     @check_required(['options'])
@@ -43,9 +45,9 @@ class CollectorService(BaseService):
         """
         options = params['options']
         secret_data = params.get('secret_data', {})
-
         if secret_data != {}:
-            self.get_project_id(secret_data)
+            google_manager = GoogleCloudManager()
+            active = google_manager.verify({}, secret_data)
 
         return {}
 

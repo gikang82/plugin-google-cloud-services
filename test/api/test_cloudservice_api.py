@@ -36,10 +36,8 @@ class TestCollector(TestCase):
         print_json(v_info)
 
     def test_verify(self):
-        options = {
-        }
+        options = {}
         secret_data = _get_credentials()
-        print(secret_data)
         v_info = self.inventory.Collector.verify({'options': options, 'secret_data': secret_data})
         print_json(v_info)
 
@@ -49,8 +47,6 @@ class TestCollector(TestCase):
         filter = {}
         resource_stream = self.inventory.Collector.collect({'options': options, 'secret_data': secret_data,
                                                             'filter': filter})
-        # print(resource_stream)
-
         for res in resource_stream:
             print_json(res)
 

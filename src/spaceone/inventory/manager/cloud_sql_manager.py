@@ -4,13 +4,15 @@ from spaceone.inventory.connector.cloud_sql import CloudSQLConnector
 from spaceone.inventory.model.cloud_sql.data import *
 from spaceone.inventory.model.cloud_sql.cloud_service import *
 from spaceone.inventory.model.cloud_sql.cloud_service_type import CLOUD_SERVICE_TYPES
-
+import time
 
 class CloudSQLManager(GoogleCloudManager):
     connector_name = 'CloudSQLConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
+        print("** Cloud SQL START **")
+        start_time = time.time()
         """
         Args:
             params:
@@ -47,3 +49,5 @@ class CloudSQLManager(GoogleCloudManager):
 
             self.set_region_code(instance['region'])
             yield InstanceResponse({'resource': instance_resource})
+
+        print(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
