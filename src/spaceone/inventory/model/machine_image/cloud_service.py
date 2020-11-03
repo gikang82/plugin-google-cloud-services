@@ -40,7 +40,7 @@ meta_available_policy = ItemDynamicLayout.set_fields('Available policies', root_
     EnumDyField.data_source('Automatic Restart', 'automatic_restart', default_badge={
         'primary': ['On'], 'coral.600': ['Off']
     }),
-    EnumDyField.data_source('Automatic Restart', 'data.on_host_maintenance', default_badge={
+    EnumDyField.data_source('Host Maintenance', 'data.on_host_maintenance', default_badge={
         'primary': ['MIGRATE'], 'coral.600': ['TERMINATE']
     }),
 
