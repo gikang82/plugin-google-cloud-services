@@ -18,7 +18,8 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
         TextDyField.data_source('Machine Type', 'data.machine.machine_display'),
         TextDyField.data_source('Image', 'data.image'),
         TextDyField.data_source('Disk Type', 'data.disk_display'),
-        ListDyField.data_source('In Use By', 'data.in_used_by'),
+        ListDyField.data_source('In Used By', 'data.in_used_by',
+                                default_badge={'type': 'outline', 'delimiter': '<br>'}),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
     search=[
