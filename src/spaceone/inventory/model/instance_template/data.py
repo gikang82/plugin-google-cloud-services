@@ -24,8 +24,8 @@ class AccessConfig(Model):
 
 class NetworkInterface(Model):
     name = StringType()
-    subnetwork = StringType()
     network = StringType()
+    network_display = StringType()
     configs = ListType(StringType(), default=[])
     network_tier = ListType(StringType(choices=('STANDARD', 'PREMIUM')), default=[])
     access_configs = ListType(ModelType(AccessConfig, default=[]))
@@ -70,6 +70,12 @@ class ServiceAccount(Model):
     scopes = ListType(StringType(), default=[], serialize_when_none=False)
 
 
+class Scheduling(Model):
+    on_host_maintenance = StringType(choices=('MIGRATE', 'TERMINATE'))
+    automatic_restart = StringType(choices=('On', 'Off'))
+    preemptibility = StringType(choices=('On', 'Off'))
+
+
 class InstanceTemplate(Model):
     '''
         ('ID', 'data.id'),
@@ -94,6 +100,7 @@ class InstanceTemplate(Model):
     in_used_by = ListType(StringType(), default=[])
     self_link = StringType(deserialize_from='selfLink')
     ip_forward = BooleanType(default=False)
+    scheduling = ModelType(Scheduling, default={})
     network_tags = ListType(StringType(), default=[])
     instance_groups = ListType(ModelType(InstanceGroup), default=[])
     disks = ListType(ModelType(Disk), default=[])
