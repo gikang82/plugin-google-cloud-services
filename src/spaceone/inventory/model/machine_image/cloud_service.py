@@ -9,7 +9,7 @@ from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, C
 INSTANCE
 '''
 # TAB - Instance Template
-machine_image_meta = ItemDynamicLayout.set_fields('Instance', fields=[
+meta_machine_image = ItemDynamicLayout.set_fields('Instance', fields=[
     TextDyField.data_source('ID', 'data.id'),
     TextDyField.data_source('Name', 'data.name'),
     TextDyField.data_source('Description', 'data.description'),
@@ -33,7 +33,7 @@ machine_image_meta = ItemDynamicLayout.set_fields('Instance', fields=[
 
 # TAB - Network
 # instance_template_meta_network
-available_policy_meta = ItemDynamicLayout.set_fields('Available policies', root_path='data.scheduling', fields=[
+meta_available_policy = ItemDynamicLayout.set_fields('Available policies', root_path='data.scheduling', fields=[
     EnumDyField.data_source('Preemptibility', 'preemptibility', default_badge={
         'primary': ['On'], 'coral.600': ['Off']
     }),
@@ -47,7 +47,7 @@ available_policy_meta = ItemDynamicLayout.set_fields('Available policies', root_
 ])
 
 
-machine_template = ListDynamicLayout.set_layouts('Instance Template', layouts=[machine_image_meta, available_policy_meta])
+meta_machine_template = ListDynamicLayout.set_layouts('Machine Images', layouts=[meta_machine_image, meta_available_policy])
 
 
 # TAB - Disk
@@ -97,7 +97,7 @@ it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels'
     TextDyField.data_source('Value', 'value'),
 ])
 
-instance_template_meta = CloudServiceMeta.set_layouts([machine_template, it_meta_disk,  it_meta_network,
+instance_template_meta = CloudServiceMeta.set_layouts([meta_machine_template, it_meta_disk,  it_meta_network,
                                                        it_meta_labels])
 
 
