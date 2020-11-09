@@ -31,8 +31,8 @@ class Disk(Model):
     self_link = StringType(deserialize_from='selfLink')
     labels = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
-    last_attach_Timestamp = DateTimeType(deserialize_from='lastAttachTimestamp', serialize_when_none=False)
-    last_detach_Timestamp = DateTimeType(deserialize_from='lastDetachTimestamp', serialize_when_none=False)
+    last_attach_timestamp = DateTimeType(deserialize_from='lastAttachTimestamp', serialize_when_none=False)
+    last_detach_timestamp = DateTimeType(deserialize_from='lastDetachTimestamp', serialize_when_none=False)
 
     def reference(self):
         return {
