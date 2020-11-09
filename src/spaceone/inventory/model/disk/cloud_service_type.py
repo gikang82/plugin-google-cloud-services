@@ -1,4 +1,5 @@
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, ListDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, ListDyField, \
+    EnumDyField
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
@@ -18,7 +19,8 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
         TextDyField.data_source('ID', 'data.id'),
         TextDyField.data_source('Zone', 'data.zone'),
         TextDyField.data_source('Source Image', 'data.source_image_display'),
-        TextDyField.data_source('Disk Type', 'data.disk_type'),
+        EnumDyField.data_source('Disk Type', 'data.disk_type',
+                                default_outline_badge=['local-ssd', 'pd-balanced', 'pd-ssd', 'pd-standard']),
         ListDyField.data_source('In Used By', 'data.in_used_by',
                                 default_badge={'type': 'outline', 'delimiter': '<br>'}),
         ListDyField.data_source('Snapshot Schedule', 'data.snapshot_schedule',
