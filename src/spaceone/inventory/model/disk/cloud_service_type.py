@@ -3,7 +3,7 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
     CloudServiceTypeMeta
 
 cst_instance_group = CloudServiceTypeResource()
-cst_instance_group.name = 'Disk'
+cst_instance_group.name = 'StorageDisk'
 cst_instance_group.provider = 'google_cloud'
 cst_instance_group.group = 'ComputeEngine'
 cst_instance_group.labels = ['Compute']

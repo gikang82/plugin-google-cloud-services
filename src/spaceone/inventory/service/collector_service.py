@@ -18,9 +18,9 @@ class CollectorService(BaseService):
 
         self.execute_managers = [
             # set google cloud service manager
-            'CloudSQLManager',
-            'InstanceGroupManager',
-            'InstanceTemplateManager',
+            # 'CloudSQLManager',
+            # 'InstanceGroupManager',
+            # 'InstanceTemplateManager',
             'MachineImageManager',
             'DiskManager',
         ]
