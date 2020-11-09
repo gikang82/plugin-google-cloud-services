@@ -3,7 +3,7 @@ from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.disk.data import *
 from spaceone.inventory.model.disk.cloud_service import *
 from spaceone.inventory.connector.disk import DiskConnector
-from spaceone.inventory.model.machine_image.cloud_service_type import CLOUD_SERVICE_TYPES
+from spaceone.inventory.model.disk.cloud_service_type import CLOUD_SERVICE_TYPES
 import time
 
 
@@ -29,9 +29,9 @@ class DiskManager(GoogleCloudManager):
         disk_conn: DiskConnector = self.locator.get_connector(self.connector_name, **params)
 
         for zone in params.get('zones', []):
-
             print(f"====== ZONE: {zone} ======")
             disks = disk_conn.list_disks(zone)
+
             for disk in disks:
                 disk_type = self._get_disk_type(disk.get('type'))
                 disk_size = float(disk.get('sizeGb'))
