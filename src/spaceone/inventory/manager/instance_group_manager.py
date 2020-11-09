@@ -55,6 +55,13 @@ class InstanceGroupManager(GoogleCloudManager):
                                                                                  instance_group_self_link)
 
                 if match_instance_group_manager:
+
+                    disks = self._get_stateful_policy(match_instance_group_manager)
+
+                    match_instance_group_manager.update({
+                     'statefulPolicy': {'preservedState': {'disks': disks}}
+                    })
+
                     instance_group.update({
                         'instance_group_manager': InstanceGroupManagers(match_instance_group_manager, strict=False)
                     })
@@ -113,5 +120,19 @@ class InstanceGroupManager(GoogleCloudManager):
                     return auto_scaler
 
         return None
+
+    @staticmethod
+    def _get_stateful_policy(match_instance_group_manager):
+        disks_vos = []
+        stateful_policy = match_instance_group_manager.get('statefulPolicy')
+        if stateful_policy:
+            preserved_state = stateful_policy.get('preservedState')
+            if preserved_state:
+                for key, val in preserved_state.get('disks', {}).items():
+                    disks_vos.append({'key': key, 'value': val})
+
+        return disks_vos
+
+
 
 
