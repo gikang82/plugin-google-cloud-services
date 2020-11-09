@@ -37,7 +37,7 @@ disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fi
     TextDyField.data_source('Write Throughput(MB/s)', 'tags.write_throughput'),
 ])
 
-meta_disk_template = ListDynamicLayout.set_layouts('Machine Images', layouts=[disk_properties_meta, disk_performance_meta])
+meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta])
 
 it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels', fields=[
     TextDyField.data_source('Key', 'key'),
