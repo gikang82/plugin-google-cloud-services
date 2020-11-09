@@ -159,8 +159,13 @@ class InstanceGroupManagerUpdatePolicy(Model):
     replacement_method = StringType(deserialize_from='replacementMethod')
 
 
+class DiskModel(Model):
+    key = StringType()
+    value = DictType(StringType())
+
+
 class InstanceGroupManagerStatefulPolicyPreservedState(Model):
-    disks = DictType(StringType)
+    disks = ListType(ModelType(DiskModel), default=[])
 
 
 class InstanceGroupManagerStatefulPolicy(Model):
