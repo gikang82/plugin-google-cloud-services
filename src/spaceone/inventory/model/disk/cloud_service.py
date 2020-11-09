@@ -31,10 +31,10 @@ disk_properties_meta = ItemDynamicLayout.set_fields('Instance', fields=[
 
 # TAB - Instance Group
 disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fields=[
-    TextDyField.data_source('Read IOPS', 'disk.read_iops'),
-    TextDyField.data_source('Write IOPS', 'disk.write_iops'),
-    TextDyField.data_source('Read Throughput(MB/s)', 'disk.read_throughput'),
-    TextDyField.data_source('Write Throughput(MB/s)', 'disk.write_throughput'),
+    TextDyField.data_source('Read IOPS', 'data.read_iops'),
+    TextDyField.data_source('Write IOPS', 'data.write_iops'),
+    TextDyField.data_source('Read Throughput(MB/s)', 'data.read_throughput'),
+    TextDyField.data_source('Write Throughput(MB/s)', 'data.write_throughput'),
 ])
 
 meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta])
