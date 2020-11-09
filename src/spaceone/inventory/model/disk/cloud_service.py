@@ -52,7 +52,7 @@ class ComputeEngineResource(CloudServiceResource):
 
 
 class DiskResource(ComputeEngineResource):
-    cloud_service_type = StringType(default='StorageDisk')
+    cloud_service_type = StringType(default='Disk')
     data = ModelType(Disk)
     _metadata = ModelType(CloudServiceMeta, default=disk_meta, serialized_name='metadata')
 
