@@ -12,7 +12,7 @@ INSTANCE
 disk_properties_meta = ItemDynamicLayout.set_fields('Instance', fields=[
     TextDyField.data_source('ID', 'data.id'),
     TextDyField.data_source('Name', 'data.name'),
-    EnumDyField.data_source('Disk Type', 'data.type',
+    EnumDyField.data_source('Disk Type', 'data.disk_type',
                             default_outline_badge=['local-ssd', 'pd-balanced', 'pd-ssd', 'pd-standard']),
     TextDyField.data_source('Size', 'data.size_display'),
     TextDyField.data_source('Zone', 'data.zone'),
@@ -20,21 +20,21 @@ disk_properties_meta = ItemDynamicLayout.set_fields('Instance', fields=[
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     ListDyField.data_source('Snapshot Schedule', 'data.snapshot_schedule',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
-    EnumDyField.data_source('Encryption Type', 'encryption', default_badge={
+    EnumDyField.data_source('Encryption Type', 'data.encryption', default_badge={
         'primary': ['Google managed'], 'indigo.500': ['Customer managed'], 'coral.600': ['Customer supplied']
     }),
     TextDyField.data_source('Source Image', 'data.source_image_display'),
-    DateTimeDyField.data_source('Last Attach Time', 'data.lastAttachTimestamp'),
-    DateTimeDyField.data_source('Last Detach Time', 'data.lastDetachTimestamp'),
+    DateTimeDyField.data_source('Last Attach Time', 'data.last_attach_timestamp'),
+    DateTimeDyField.data_source('Last Detach Time', 'data.last_detach_timestamp'),
     DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
 ])
 
 # TAB - Instance Group
 disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fields=[
-    TextDyField.data_source('Read IOPS', 'tags.read_iops'),
-    TextDyField.data_source('Write IOPS', 'tags.write_iops'),
-    TextDyField.data_source('Read Throughput(MB/s)', 'tags.read_throughput'),
-    TextDyField.data_source('Write Throughput(MB/s)', 'tags.write_throughput'),
+    TextDyField.data_source('Read IOPS', 'disk.read_iops'),
+    TextDyField.data_source('Write IOPS', 'disk.write_iops'),
+    TextDyField.data_source('Read Throughput(MB/s)', 'disk.read_throughput'),
+    TextDyField.data_source('Write Throughput(MB/s)', 'disk.write_throughput'),
 ])
 
 meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta])
