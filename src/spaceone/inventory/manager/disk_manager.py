@@ -104,6 +104,7 @@ class DiskManager(GoogleCloudManager):
                                         'schedule': policy_schedule,
                                         'retention_policy': retention,
                                     },
+                                   'region': self._get_disk_type(policy.get('region')),
                                    'labels': self._get_labels(snapshot_prop),
                                    'storage_locations': snapshot_prop.get('storageLocations', [])
                                    })

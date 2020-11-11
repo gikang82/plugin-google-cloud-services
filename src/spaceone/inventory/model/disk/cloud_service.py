@@ -40,7 +40,7 @@ disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fi
 schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snapshot_schedule', fields=[
     TextDyField.data_source('ID', 'id'),
     TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Description', 'description'),
+    TextDyField.data_source('Region', 'region'),
     ListDyField.data_source('Schedule frequency (UTC)', 'snapshot_schedule_policy.schedule_display',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     TextDyField.data_source('Autodelete Snapshots after', 'snapshot_schedule_policy.retention_policy.max_retention_days_display'),

@@ -52,6 +52,7 @@ class SnapShotSchedule(Model):
     name = StringType()
     status = StringType()
     description = StringType()
+    region = StringType()
     self_link = StringType(deserialize_from='selfLink')
     snapshot_schedule_policy = ModelType(SnapshotSchedulePolicy, deserialize_from='snapshotSchedulePolicy')
     storage_locations = ListType(StringType(), default=[])
