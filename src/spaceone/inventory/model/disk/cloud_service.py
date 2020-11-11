@@ -37,7 +37,7 @@ disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fi
     TextDyField.data_source('Write Throughput(MB/s)', 'data.write_throughput'),
 ])
 
-Schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snapshot_schedule', fields=[
+schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snapshot_schedule', fields=[
     TextDyField.data_source('ID', 'id'),
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Description', 'description'),
@@ -50,14 +50,14 @@ Schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snaps
 
 ])
 
-meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta, Schedule_meta])
+meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta])
 
 it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels', fields=[
     TextDyField.data_source('Key', 'key'),
     TextDyField.data_source('Value', 'value'),
 ])
 
-disk_meta = CloudServiceMeta.set_layouts([meta_disk_template, it_meta_labels])
+disk_meta = CloudServiceMeta.set_layouts([meta_disk_template, it_meta_labels, schedule_meta])
 
 
 class ComputeEngineResource(CloudServiceResource):
