@@ -41,9 +41,9 @@ schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snaps
     TextDyField.data_source('ID', 'id'),
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Region', 'region'),
-    ListDyField.data_source('Schedule frequency (UTC)', 'snapshot_schedule_policy.schedule_display',
+    ListDyField.data_source('Schedule Frequency (UTC)', 'snapshot_schedule_policy.schedule_display',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
-    TextDyField.data_source('Autodelete Snapshots after', 'snapshot_schedule_policy.retention_policy.max_retention_days_display'),
+    TextDyField.data_source('Auto-delete Snapshots After', 'snapshot_schedule_policy.retention_policy.max_retention_days_display'),
     ListDyField.data_source('Storage Locations', 'storage_locations',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
