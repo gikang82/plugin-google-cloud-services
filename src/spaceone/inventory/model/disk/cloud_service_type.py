@@ -23,7 +23,7 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
                                 default_outline_badge=['local-ssd', 'pd-balanced', 'pd-ssd', 'pd-standard']),
         ListDyField.data_source('In Used By', 'data.in_used_by',
                                 default_badge={'type': 'outline', 'delimiter': '<br>'}),
-        ListDyField.data_source('Snapshot Schedule', 'data.snapshot_schedule',
+        ListDyField.data_source('Snapshot Schedule', 'data.snapshot_schedule_display',
                                 default_badge={'type': 'outline', 'delimiter': '<br>'}),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
