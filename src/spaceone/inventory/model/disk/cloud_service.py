@@ -37,7 +37,20 @@ disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fi
     TextDyField.data_source('Write Throughput(MB/s)', 'data.write_throughput'),
 ])
 
-meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta])
+Schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snapshot_schedule', fields=[
+    TextDyField.data_source('ID', 'id'),
+    TextDyField.data_source('Name', 'name'),
+    TextDyField.data_source('Description', 'description'),
+    ListDyField.data_source('Schedule frequency (UTC)', 'snapshot_schedule_policy.schedule_display',
+                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
+    TextDyField.data_source('Autodelete Snapshots after', 'snapshot_schedule_policy.retention_policy.max_retention_days_display'),
+    ListDyField.data_source('Storage Locations', 'storage_locations',
+                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
+    DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
+
+])
+
+meta_disk_template = ListDynamicLayout.set_layouts('Disks', layouts=[disk_properties_meta, disk_performance_meta, Schedule_meta])
 
 it_meta_labels = TableDynamicLayout.set_fields('Labels', root_path='data.labels', fields=[
     TextDyField.data_source('Key', 'key'),
