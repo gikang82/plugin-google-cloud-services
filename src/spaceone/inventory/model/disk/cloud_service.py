@@ -9,7 +9,7 @@ from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, C
 INSTANCE
 '''
 
-disk_properties_meta = ItemDynamicLayout.set_fields('Instance', fields=[
+disk_properties_meta = ItemDynamicLayout.set_fields('Properties', fields=[
     TextDyField.data_source('ID', 'data.id'),
     TextDyField.data_source('Name', 'data.name'),
     EnumDyField.data_source('Disk Type', 'data.disk_type',
@@ -18,7 +18,7 @@ disk_properties_meta = ItemDynamicLayout.set_fields('Instance', fields=[
     TextDyField.data_source('Zone', 'data.zone'),
     ListDyField.data_source('In Used By', 'data.in_used_by',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
-    ListDyField.data_source('Snapshot Schedule', 'data.snapshot_schedule',
+    ListDyField.data_source('Snapshot Schedule', 'data.snapshot_schedule_display',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     EnumDyField.data_source('Encryption Type', 'data.encryption', default_badge={
         'primary': ['Google managed'], 'indigo.500': ['Customer managed'], 'coral.600': ['Customer supplied']
