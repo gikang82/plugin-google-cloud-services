@@ -37,7 +37,7 @@ disk_performance_meta = ItemDynamicLayout.set_fields('Estimated Performance', fi
     TextDyField.data_source('Write Throughput(MB/s)', 'data.write_throughput'),
 ])
 
-schedule_meta = TableDynamicLayout.set_fields('Schedule',  root_path='data.snapshot_schedule', fields=[
+schedule_meta = TableDynamicLayout.set_fields('Snapshot Schedule',  root_path='data.snapshot_schedule', fields=[
     TextDyField.data_source('ID', 'id'),
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Region', 'region'),
