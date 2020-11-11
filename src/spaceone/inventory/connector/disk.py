@@ -20,8 +20,8 @@ class DiskConnector(GoogleCloudConnector):
         result = self.client.disks().list(**query).execute()
         return result.get('items', [])
 
-    def list_machine_types(self, zone, **query):
-        query.update({'zone': zone})
+    def list_resource_policies(self, region, **query):
+        query.update({'region': region})
         query = self.generate_query(**query)
-        result = self.client.machineTypes().list(**query).execute()
+        result = self.client.resourcePolicies().list(**query).execute()
         return result.get('items', [])
