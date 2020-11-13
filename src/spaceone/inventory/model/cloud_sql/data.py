@@ -4,7 +4,7 @@ from schematics.types import ModelType, ListType, StringType, BooleanType, IntTy
 
 class SQLServerUserDetail(Model):
     disabled = BooleanType()
-    serverRoles = ListType(StringType, deserialize_from='serverRoles')
+    server_roles = ListType(StringType, deserialize_from='serverRoles')
 
 
 class User(Model):
@@ -112,6 +112,7 @@ class IPAddress(Model):
 class Instance(Model):
     name = StringType()
     kind = StringType()
+    display_state = StringType(choices=('RUNNING', 'STOPPED', 'UNKNOWN', 'ON-DEMAND'))
     state = StringType(choices=('SQL_INSTANCE_STATE_UNSPECIFIED', 'RUNNABLE', 'SUSPENDED', 'PENDING_DELETE',
                                 'PENDING_CREATE', 'MAINTENANCE', 'FAILED'))
     region = StringType()

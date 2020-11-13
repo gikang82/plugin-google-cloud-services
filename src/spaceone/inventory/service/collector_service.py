@@ -93,7 +93,7 @@ class CollectorService(BaseService):
         # print(f'TOTAL TIME : {time.time() - start_time} Seconds')
         # for resource_region in resource_regions:
         #     yield resource_region
-        print("[ EXECUTOR START: Google Cloud SVC ]")
+        print("[ EXECUTOR START: Google Cloud Service ]")
 
         for manager in self.execute_managers:
             _manager = self.locator.get_manager(manager)

@@ -37,8 +37,11 @@ class CloudSQLManager(GoogleCloudManager):
             # Get Users
             users = cloud_sql_conn.list_users(instance_name)
 
-            instance.update({'databases': [Database(database, strict=False) for database in databases]})
-            instance.update({'users': [User(user, strict=False) for user in users]})
+            instance.update({
+                'display_state': self._get_display_state(instance),
+                'databases': [Database(database, strict=False) for database in databases],
+                'users': [User(user, strict=False) for user in users],
+            })
 
             instance_data = Instance(instance, strict=False)
             instance_resource = InstanceResource({
@@ -51,3 +54,16 @@ class CloudSQLManager(GoogleCloudManager):
             yield InstanceResponse({'resource': instance_resource})
 
         print(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
+
+    @staticmethod
+    def _get_display_state(instance):
+        activation_policy = instance.get('settings', {}).get('activationPolicy', 'UNKNOWN')
+
+        if activation_policy in ['ALWAYS']:
+            return 'RUNNING'
+        elif activation_policy in ['NEVER']:
+            return 'STOPPED'
+        elif activation_policy in ['ON_DEMAND']:
+            return 'ON-DEMAND'
+        else:
+            return 'UNKNOWN'
