@@ -20,7 +20,7 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
                                 default_outline_badge=['STATELESS', 'STATEFUL', 'UNMANAGED']),
         TextDyField.data_source('Template', 'data.template.name'),
         TextDyField.data_source('Autoscaling', 'data.autoscaling_display'),
-        TextDyField.data_source('Zone', 'data.zone'),
+        TextDyField.data_source('Region', 'data.region'),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
     search=[

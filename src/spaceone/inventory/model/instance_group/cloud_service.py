@@ -68,7 +68,7 @@ autoscaling_policy = ItemDynamicLayout.set_fields('Auto Scaling Policy', fields=
 autoscaling_layout = ListDynamicLayout.set_layouts('Auto Scaler',
                                                    layouts=[autoscaler, autoscaling_policy])
 
-autohealing_layout = TableDynamicLayout.set_fields('Autohealing', root_path='data.auto_healing_policies', fields=[
+autohealing_layout = TableDynamicLayout.set_fields('AutoHealing', root_path='data.instance_group_manager.auto_healing_policies', fields=[
     TextDyField.data_source('Health Check', 'health_check'),
     TextDyField.data_source('Initial Delay (Seconds)', 'initial_delay_sec'),
 ])
