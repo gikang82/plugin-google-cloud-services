@@ -11,10 +11,10 @@ INSTANCE
 # TAB - Instance
 sql_meta_instance = ItemDynamicLayout.set_fields('Instance', fields=[
     TextDyField.data_source('Name', 'data.name'),
-    EnumDyField.data_source('State', 'data.state', default_state={
-        'safe': ['RUNNABLE'],
-        'warning': ['PENDING_DELETE', 'PENDING_CREATE'],
-        'alert': ['SUSPENDED', 'MAINTENANCE', 'FAILED'],
+    EnumDyField.data_source('State', 'data.display_state', default_state={
+        'safe': ['RUNNING'],
+        'disable': ['UNKNOWN', 'ON-DEMAND'],
+        'alert': ['STOPPED'],
     }),
     TextDyField.data_source('Type', 'data.database_version'),
     TextDyField.data_source('Project', 'data.project'),
@@ -56,16 +56,22 @@ sql_meta_connection = ItemDynamicLayout.set_fields('Connection', fields=[
 # TAB - Database
 sql_meta_database = TableDynamicLayout.set_fields('Database', 'data.databases', fields=[
     TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Host', 'host'),
-    TextDyField.data_source('Etag', 'etag'),
+    TextDyField.data_source('charset', 'charset'),
+    TextDyField.data_source('collation', 'collation'),
+    TextDyField.data_source('Compatibility Level', 'sql_server_database_details.compatibility_level'),
+    TextDyField.data_source('Recovery Model', 'sql_server_database_details.recovery_model'),
+    TextDyField.data_source('Self Link', 'self_link'),
 ])
 
 # TAB - User
-sql_meta_user = TableDynamicLayout.set_fields('User', 'data.databases', fields=[
-    TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('charset', 'host'),
-    TextDyField.data_source('collation', 'collation'),
-    TextDyField.data_source('Self Link', 'self_link'),
+sql_meta_user = TableDynamicLayout.set_fields('User', 'data.users', fields=[
+    TextDyField.data_source('User Name', 'name'),
+    EnumDyField.data_source('State', 'sql_server_user_details.disabled', default_badge={
+        'indigo.500': ['true'], 'coral.600': ['false']
+    }),
+    TextDyField.data_source('Host', 'host'),
+    ListDyField.data_source('Server Roles', 'sql_server_user_details.server_roles',
+                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
 ])
 
 # TAB - Backup
@@ -74,13 +80,19 @@ sql_meta_backup = ItemDynamicLayout.set_fields('Backup', fields=[
         'indigo.500': ['true'], 'coral.600': ['false']
     }),
     TextDyField.data_source('Location', 'data.settings.backup_configuration.location'),
-    TextDyField.data_source('collation', 'collation'),
-    TextDyField.data_source('Self Link', 'self_link'),
+    TextDyField.data_source('Start Time', 'data.settings.backup_configuration.start_time'),
+    EnumDyField.data_source('Binary Log Enabled', 'data.settings.backup_configuration.binary_log_enabled',
+                            default_badge={'indigo.500': ['true'], 'coral.600': ['false']}),
+    EnumDyField.data_source('Replication Log Archiving Enabled',
+                            'data.settings.backup_configuration.replication_log_archiving_enabled',
+                            default_badge={'indigo.500': ['true'], 'coral.600': ['false']}),
+    EnumDyField.data_source('Point In Time Recovery Enabled',
+                            'data.settings.backup_configuration.point_in_time_recovery_enabled',
+                            default_badge={'indigo.500': ['true'], 'coral.600': ['false']}),
 ])
 
-
 cloud_sql_meta = CloudServiceMeta.set_layouts([sql_meta_instance, sql_meta_configuration, sql_meta_connection,
-                                               sql_meta_user])
+                                               sql_meta_database, sql_meta_user, sql_meta_backup])
 
 
 class CloudSQLResource(CloudServiceResource):

@@ -16,10 +16,10 @@ cst_instance.tags = {
 cst_instance._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
-        EnumDyField.data_source('State', 'data.state', default_state={
-            'safe': ['RUNNABLE'],
-            'warning': ['PENDING_DELETE', 'PENDING_CREATE'],
-            'alert': ['SUSPENDED', 'MAINTENANCE', 'FAILED'],
+        EnumDyField.data_source('State', 'data.display_state', default_state={
+            'safe': ['RUNNING'],
+            'disable': ['UNKNOWN', 'ON-DEMAND'],
+            'alert': ['STOPPED'],
         }),
         TextDyField.data_source('Type', 'data.database_version'),
         TextDyField.data_source('Project', 'data.project'),

@@ -43,4 +43,13 @@ class CloudSQLConnector(GoogleCloudConnector):
             pass
         return result.get('items', [])
 
-
+    def list_backup_runs(self, instance_name, **query):
+        query.update({'instance': instance_name})
+        query = self.generate_query(**query)
+        result = {}
+        try:
+            result = self.client.backup_runs().list(**query).execute()
+        except Exception as e:
+            print(e)
+            pass
+        return result.get('items', [])
