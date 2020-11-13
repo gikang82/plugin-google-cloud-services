@@ -27,8 +27,10 @@ class GoogleCloudManager(BaseManager):
             yield cloud_service_type
 
         # Add zone lists in params
+        regions, zones = self.list_regions_zones(params['secret_data'])
         params.update({
-            'zones': self.list_zones(params['secret_data'])
+            'regions': regions,
+            'zones': zones
         })
 
         for cloud_service_response_schema in self.collect_cloud_service(params):
@@ -38,7 +40,10 @@ class GoogleCloudManager(BaseManager):
             if region := self.match_region_info(region_code):
                 yield RegionResponse({'resource': region})
 
-    def list_zones(self, secret_data):
+    def list_regions_zones(self, secret_data):
+        result_regions = []
+        result_zones = []
+
         query = {}
 
         if secret_data.get('region_name'):
@@ -47,7 +52,14 @@ class GoogleCloudManager(BaseManager):
 
         connector: GoogleCloudConnector = self.locator.get_connector('GoogleCloudConnector', secret_data=secret_data)
         zones = connector.list_zones(**query)
-        return [zone.get('name') for zone in zones if zone.get('name')]
+
+        for zone in zones:
+            result_zones.append(zone.get('name'))
+
+            if region := zone.get('region'):
+                result_regions.append(region.split('/')[-1])
+
+        return list(set(result_regions)), result_zones
 
     def set_region_code(self, region):
         if region not in self.collected_region_codes:
@@ -60,7 +72,6 @@ class GoogleCloudManager(BaseManager):
     @staticmethod
     def generate_region_from_zone(zone):
         return zone[:-2]
-
 
     @staticmethod
     def match_region_info(region_code):
