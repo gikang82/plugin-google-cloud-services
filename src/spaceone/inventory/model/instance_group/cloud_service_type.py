@@ -1,4 +1,4 @@
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, EnumDyField
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
@@ -16,8 +16,10 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
         TextDyField.data_source('Instances', 'data.instance_counts'),
+        EnumDyField.data_source('Type', 'data.instance_group_type',
+                                default_outline_badge=['STATELESS', 'STATEFUL', 'UNMANAGED']),
         TextDyField.data_source('Template', 'data.template.name'),
-        TextDyField.data_source('Autoscaling', 'data.auto_scaler.name'),
+        TextDyField.data_source('Autoscaling', 'data.autoscaling_display'),
         TextDyField.data_source('Zone', 'data.zone'),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
@@ -25,7 +27,6 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
         SearchField.set(name='Name', key='data.name'),
         SearchField.set(name='Instance Counts', key='data.name', data_type='integer'),
         SearchField.set(name='Template', key='data.template.name'),
-        SearchField.set(name='Autoscaling', key='data.auto_scaler.name'),
         SearchField.set(name='Region', key='region_code'),
         SearchField.set(name='Zone', key='data.zone'),
         SearchField.set(name='Creation Time', key='data.creation_timestamp', data_type='datetime'),
