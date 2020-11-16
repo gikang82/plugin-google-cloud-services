@@ -41,7 +41,6 @@ class InstanceGroupManager(GoogleCloudManager):
 
                 for instance_group in instance_groups:
                     instance_group.update({
-                        'region': self.generate_region_from_zone(zone),
                         'project': secret_data['project_id']
                     })
 
