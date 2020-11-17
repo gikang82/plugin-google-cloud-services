@@ -75,6 +75,8 @@ class InstanceGroupManager(GoogleCloudManager):
                         # Unmanaged
                         instance_group.update({'instance_group_type': 'UNMANAGED'})
 
+                    region = self.generate_region_from_zone_self_link(instance_group['zone'])
+
                     instances = instance_group_conn.list_instances(zone, instance_group['name'])
                     instance_group.update({
                         'instances': instances,
@@ -84,11 +86,11 @@ class InstanceGroupManager(GoogleCloudManager):
                     instance_group_data = InstanceGroup(instance_group, strict=False)
                     instance_group_resource = InstanceGroupResource({
                         'data': instance_group_data,
-                        'region_code': instance_group['region'],
+                        'region_code': region,
                         'reference': ReferenceModel(instance_group_data.reference())
                     })
 
-                    self.set_region_code(instance_group['region'])
+                    self.set_region_code(region)
                     yield InstanceGroupResponse({'resource': instance_group_resource})
 
         # Collect Regional Instance Groups
