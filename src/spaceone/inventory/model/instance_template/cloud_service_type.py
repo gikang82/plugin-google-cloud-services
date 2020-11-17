@@ -2,17 +2,16 @@ from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, S
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
-cst_instance_group = CloudServiceTypeResource()
-cst_instance_group.name = 'InstanceTemplate'
-cst_instance_group.provider = 'google_cloud'
-cst_instance_group.group = 'ComputeEngine'
-cst_instance_group.labels = ['Compute']
-cst_instance_group.tags = {
+cst_instance_template = CloudServiceTypeResource()
+cst_instance_template.name = 'InstanceTemplate'
+cst_instance_template.provider = 'google_cloud'
+cst_instance_template.group = 'ComputeEngine'
+cst_instance_template.labels = ['Compute']
+cst_instance_template.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
-    'spaceone:is_major': 'false',
 }
 # Basic table for
-cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
+cst_instance_template._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
         TextDyField.data_source('Machine Type', 'data.machine.machine_display'),
@@ -33,5 +32,5 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
 )
 
 CLOUD_SERVICE_TYPES = [
-    CloudServiceTypeResponse({'resource': cst_instance_group}),
+    CloudServiceTypeResponse({'resource': cst_instance_template}),
 ]
