@@ -1,5 +1,5 @@
 from schematics import Model
-from schematics.types import ListType, StringType, PolyModelType, DictType
+from schematics.types import ListType, StringType, PolyModelType, DictType, BooleanType
 from spaceone.inventory.libs.schema.metadata.dynamic_layout import QuerySearchTableDynamicLayout
 from .base import BaseMetaData, BaseResponse, MetaDataViewTable, MetaDataView
 
@@ -23,6 +23,9 @@ class CloudServiceTypeResource(Model):
     _metadata = PolyModelType(CloudServiceTypeMeta, serialize_when_none=False, serialized_name='metadata')
     labels = ListType(StringType(), serialize_when_none=False)
     tags = DictType(StringType, serialize_when_none=False)
+    is_primary = BooleanType(default=False)
+    is_major = BooleanType(default=False)
+    resource_type = StringType(default='inventory.CloudService')
 
 
 class CloudServiceTypeResponse(BaseResponse):

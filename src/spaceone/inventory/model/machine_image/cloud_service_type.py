@@ -2,23 +2,22 @@ from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, S
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
-cst_instance_group = CloudServiceTypeResource()
-cst_instance_group.name = 'MachineImage'
-cst_instance_group.provider = 'google_cloud'
-cst_instance_group.group = 'ComputeEngine'
-cst_instance_group.labels = ['Compute']
-cst_instance_group.tags = {
+cst_machine_image = CloudServiceTypeResource()
+cst_machine_image.name = 'MachineImage'
+cst_machine_image.provider = 'google_cloud'
+cst_machine_image.group = 'ComputeEngine'
+cst_machine_image.labels = ['Compute']
+cst_machine_image.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
-    'spaceone:is_major': 'false',
 }
 # Basic table for
-cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
+cst_machine_image._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
         TextDyField.data_source('Source Instance', 'data.machine.machine_display'),
         TextDyField.data_source('Machine Type', 'data.machine.machine_type'),
         ListDyField.data_source('Storage location', 'data.storage_locations',
-                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
+                                default_badge={'type': 'outline', 'delimiter': '<br>'}),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
     search=[
@@ -33,5 +32,5 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
 )
 
 CLOUD_SERVICE_TYPES = [
-    CloudServiceTypeResponse({'resource': cst_instance_group}),
+    CloudServiceTypeResponse({'resource': cst_machine_image}),
 ]
