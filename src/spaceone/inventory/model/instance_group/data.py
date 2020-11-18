@@ -1,5 +1,5 @@
 from schematics import Model
-from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType, DictType
+from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType, DictType, FloatType
 
 
 class InstanceGroupManagerVersionTargetSize(Model):
@@ -15,30 +15,35 @@ class AutoScalingPolicyScaleInControl(Model):
 
 
 class AutoScalerPolicyCPUUtilization(Model):
-    utilization_target = IntType(deserialize_from='utilizationTarget')
+    utilization_target = FloatType(deserialize_from='utilizationTarget')
 
 
 class LoadBalancingUtilization(Model):
-    utilization_target = IntType(deserialize_from='utilizationTarget')
+    utilization_target = FloatType(deserialize_from='utilizationTarget')
 
 
 class AutoScalerPolicyCustomMetricUtilization(Model):
-    metric = StringType()
+    metric = StringType(serialize_when_none=False)
+    filter = StringType(serialize_when_none=False)
     utilization_target_type = StringType(choices=('GAUGE', 'DELTA_PER_SECOND', 'DELTA_PER_MINUTE'),
-                                         deserialize_from='utilizationTargetType')
-    utilization_target = IntType(deserialize_from='utilizationTarget')
-    loadbalancing_utilization = ModelType(LoadBalancingUtilization,
-                                          deserialize_from='loadBalancingUtilization')
+                                         deserialize_from='utilizationTargetType', serialize_when_none=False)
+    utilization_target = FloatType(deserialize_from='utilizationTarget')
+    single_instance_assignment = FloatType(deserialize_from='singleInstanceAssignment', serialize_when_none=False)
 
 
 class AutoScalerPolicy(Model):
     min_num_replicas = IntType(deserialize_from='minNumReplicas')
     max_num_replicas = IntType(deserialize_from='maxNumReplicas')
-    scaler_in_control = ModelType(AutoScalingPolicyScaleInControl, deserialize_from='scaleInControl')
+    scaler_in_control = ModelType(AutoScalingPolicyScaleInControl,
+                                  deserialize_from='scaleInControl', serialize_when_none=False)
     cool_down_period_sec = IntType(deserialize_from='coolDownPeriodSec')
     cpu_utilization = ModelType(AutoScalerPolicyCPUUtilization, deserialize_from='cpuUtilization')
     custom_metric_utilizations = ListType(ModelType(AutoScalerPolicyCustomMetricUtilization),
-                                          deserialize_from='customMetricUtilizations')
+                                          deserialize_from='customMetricUtilizations',
+                                          serialize_when_none=False)
+    loadbalancing_utilization = ModelType(LoadBalancingUtilization,
+                                          deserialize_from='loadBalancingUtilization',
+                                          serialize_when_none=False)
     mode = StringType()
 
 
@@ -58,14 +63,15 @@ class AutoScaler(Model):
     name = StringType()
     kind = StringType()
     recommended_size = IntType(deserialize_from='recommendedSize')
-    description = StringType()
-    target = StringType()
+    description = StringType(default="")
+    target = StringType(serialize_when_none=False)
     autoscaling_policy = ModelType(AutoScalerPolicy, deserialize_from='autoscalingPolicy')
-    zone = StringType()
-    region = StringType()
+    zone = StringType(serialize_when_none=False)
+    region = StringType(serialize_when_none=False)
     self_link = StringType(deserialize_from='selfLink')
     status = StringType(choices=('PENDING', 'DELETING', 'ACTIVE', 'ERROR'))
-    status_details = ListType(ModelType(AutoScalerStatusDetail), deserialize_from='statusDetails')
+    status_details = ListType(ModelType(AutoScalerStatusDetail), deserialize_from='statusDetails',
+                              serialize_when_none=False)
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
 
@@ -75,7 +81,7 @@ class InstanceTemplate(Model):
     kind = StringType()
     self_link = StringType(deserialize_from='selfLink')
     source_instance = StringType(deserialize_from='sourceInstance', serialize_when_none=False)
-    description = StringType()
+    description = StringType(default="")
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
 
@@ -88,7 +94,7 @@ class Instance(Model):
     instance = StringType()
     status = StringType(choices=('PROVISIONING', 'STAGING', 'RUNNING', 'STOPPING', 'SUSPENDING',
                                  'SUSPENDED', 'REPAIRING', 'TERMINATED'))
-    name_ports = ListType(ModelType(NamedPort), deserialize_from='namedPorts')
+    name_ports = ListType(ModelType(NamedPort), deserialize_from='namedPorts', default=[])
 
 
 class DistributionPolicyZone(Model):
@@ -175,7 +181,7 @@ class InstanceGroupManagerStatefulPolicy(Model):
 class InstanceGroupManagers(Model):
     id = StringType()
     name = StringType()
-    description = StringType()
+    description = StringType(default="")
     zone = StringType()
     distribution_policy = ModelType(DistributionPolicy,
                                     deserialize_from='distributionPolicy',
@@ -206,22 +212,24 @@ class InstanceGroupManagers(Model):
 class InstanceGroup(Model):
     id = StringType()
     kind = StringType()
+    instance_group_type = StringType(choices=('STATELESS', 'STATEFUL', 'UNMANAGED'))
     name = StringType()
-    description = StringType()
+    description = StringType(default="")
     network = StringType()
     fingerprint = StringType()
-    zone = StringType()
+    zone = StringType(serialize_when_none=False)
     self_link = StringType(deserialize_from='selfLink')
     size = IntType()
-    region = StringType()
+    region = StringType(serialize_when_none=False)
     subnetwork = StringType()
     project = StringType()
-    instance_counts = IntType()
+    instance_counts = IntType(default=0)
     template = ModelType(InstanceTemplate, serialize_when_none=False)
     instance_group_manager = ModelType(InstanceGroupManagers, serialize_when_none=False)
     auto_scaler = ModelType(AutoScaler, serialize_when_none=False)
-    instances = ListType(ModelType(Instance))
+    instances = ListType(ModelType(Instance), default=[])
     named_ports = ListType(ModelType(NamedPort), deserialize_from='namedPorts', serialize_when_none=False)
+    autoscaling_display = StringType(default="")
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
     def reference(self):

@@ -22,10 +22,22 @@ class InstanceGroupConnector(GoogleCloudConnector):
         result = self.client.instanceGroups().list(**query).execute()
         return result.get('items', [])
 
+    def list_region_instance_groups(self, region, **query):
+        query.update({'region': region})
+        query = self.generate_query(**query)
+        result = self.client.regionInstanceGroups().list(**query).execute()
+        return result.get('items', [])
+
     def list_instance_group_managers(self, zone, **query):
         query.update({'zone': zone})
         query = self.generate_query(**query)
         result = self.client.instanceGroupManagers().list(**query).execute()
+        return result.get('items', [])
+
+    def list_region_instance_group_managers(self, region, **query):
+        query.update({'region': region})
+        query = self.generate_query(**query)
+        result = self.client.regionInstanceGroupManagers().list(**query).execute()
         return result.get('items', [])
 
     def list_instances(self, zone, instance_group, **query):
@@ -34,10 +46,22 @@ class InstanceGroupConnector(GoogleCloudConnector):
         result = self.client.instanceGroups().listInstances(**query).execute()
         return result.get('items', [])
 
+    def list_region_instances(self, region, instance_group, **query):
+        query.update({'region': region, 'instanceGroup': instance_group})
+        query = self.generate_query(**query)
+        result = self.client.regionInstanceGroups().listInstances(**query).execute()
+        return result.get('items', [])
+
     def list_autoscalers(self, zone, **query):
         query.update({'zone': zone})
         query = self.generate_query(**query)
         result = self.client.autoscalers().list(**query).execute()
+        return result.get('items', [])
+
+    def list_region_autoscalers(self, region, **query):
+        query.update({'region': region})
+        query = self.generate_query(**query)
+        result = self.client.regionAutoscalers().list(**query).execute()
         return result.get('items', [])
 
     def list_instance_templates(self, **query):
