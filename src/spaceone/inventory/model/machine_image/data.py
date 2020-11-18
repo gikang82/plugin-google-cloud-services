@@ -124,6 +124,7 @@ class MachineImage(Model):
     kind = StringType()
     labels = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
+    location = StringType()
 
     def reference(self):
         return {

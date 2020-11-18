@@ -99,12 +99,17 @@ class GoogleCloudManager(BaseManager):
             "us-west1": {"name": "US, Oregon (The Dalles)", "tags": {"latitude": "45.631800", "longitude": "-121.200921"}},
             "us-west2": {"name": "US, California (Los Angeles)", "tags": {"latitude": "34.049329", "longitude": "-118.255265"}},
             "us-west3": {"name": "US, Utah (Salt Lake City)", "tags": {"latitude": "40.730109", "longitude": "-111.951386"}},
-            "us-west4": {"name": "US, Nevada (Las Vegas)", "tags": {"latitude": "36.092498", "longitude": "-115.086073"}}
+            "us-west4": {"name": "US, Nevada (Las Vegas)", "tags": {"latitude": "36.092498", "longitude": "-115.086073"}},
+            "global": {"name": "Global"}
         }
 
         match_region_info = REGION_INFO.get(region_code)
 
         if match_region_info:
-            return RegionResource(match_region_info, strict=False)
+            region_info = match_region_info.copy()
+            region_info.update({
+                'region_code': region_code
+            })
+            return RegionResource(region_info, strict=False)
 
         return None

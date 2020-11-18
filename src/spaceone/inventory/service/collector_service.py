@@ -22,7 +22,7 @@ class CollectorService(BaseService):
             'InstanceGroupManager',
             'InstanceTemplateManager',
             'MachineImageManager',
-            'DiskManager',
+            'DiskManager'
         ]
 
     @check_required(['options'])
