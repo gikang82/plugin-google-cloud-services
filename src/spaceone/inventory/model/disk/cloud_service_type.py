@@ -3,18 +3,6 @@ from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, S
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
-cst_instance = CloudServiceTypeResource()
-cst_instance.name = 'Instance'
-cst_instance.provider = 'google_cloud'
-cst_instance.group = 'ComputeEngine'
-cst_instance.labels = ['Compute']
-cst_instance.is_primary = True
-cst_instance.is_major = True
-cst_instance.resource_type = 'inventory.Server'
-cst_instance.tags = {
-    'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
-}
-
 
 cst_disk = CloudServiceTypeResource()
 cst_disk.name = 'Disk'
@@ -54,6 +42,5 @@ cst_disk._metadata = CloudServiceTypeMeta.set_meta(
 )
 
 CLOUD_SERVICE_TYPES = [
-    CloudServiceTypeResponse({'resource': cst_instance}),
     CloudServiceTypeResponse({'resource': cst_disk}),
 ]
