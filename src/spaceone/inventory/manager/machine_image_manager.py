@@ -56,6 +56,8 @@ class MachineImageManager(GoogleCloudManager):
             boot_image = self.get_boot_image_data(properties, public_images)
             disks = self.get_disks(properties, boot_image)
 
+            region = self.get_matching_region(machine_image.get('storageLocations'))
+
             machine_image.update({
                 'project': secret_data['project_id'],
                 'deletion_protection': properties.get('deletionProtection', False),
@@ -68,7 +70,8 @@ class MachineImageManager(GoogleCloudManager):
                 'network_interfaces': self.get_network_interface(properties, properties.get('canIpForward', False)),
                 'total_storage_bytes': float(machine_image.get('totalStorageBytes', 0.0)),
                 'total_storage_display': self._convert_size(float(machine_image.get('totalStorageBytes', 0.0))),
-                'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint')
+                'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
+                'location': region.get('location')
             })
 
             svc_account = properties.get('serviceAccounts', [])
@@ -76,11 +79,13 @@ class MachineImageManager(GoogleCloudManager):
                 machine_image.update({'service_account': self._get_service_account(svc_account)})
 
             machine_image_data = MachineImage(machine_image, strict=False)
+
             machine_image_resource = MachineImageResource({
                 'data': machine_image_data,
-                'reference': ReferenceModel(machine_image_data.reference())
+                'reference': ReferenceModel(machine_image_data.reference()),
+                'region_code': region.get('region_code')
             })
-
+            self.set_region_code(region.get('region_code'))
             yield MachineImageResponse({'resource': machine_image_resource})
         print(f'** Machine Image Finished {time.time() - start_time} Seconds **')
 
@@ -206,6 +211,12 @@ class MachineImageManager(GoogleCloudManager):
                 break
 
         return os_data
+
+    def get_matching_region(self, svc_location):
+        region_code = svc_location[0] if len(svc_location) > 0 else 'global'
+        matched_info = self.match_region_info(region_code)
+        return {'region_code': region_code, 'location': 'regional'} if matched_info \
+            else {'region_code': 'global', 'location': 'multi'}
 
     @staticmethod
     def _check_matched(licenses, image):

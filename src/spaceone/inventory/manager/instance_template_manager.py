@@ -77,11 +77,15 @@ class InstanceTemplateManager(GoogleCloudManager):
                 inst_template.update({'service_account': self._get_service_account(svc_account)})
 
             instance_template_data = InstanceTemplate(inst_template, strict=False)
+
+            default_region = 'global'
             instance_template_resource = InstanceTemplateResource({
                 'data': instance_template_data,
-                'reference': ReferenceModel(instance_template_data.reference())
+                'reference': ReferenceModel(instance_template_data.reference()),
+                'region_code': default_region
             })
 
+            self.set_region_code(default_region)
             yield InstanceTemplateResponse({'resource': instance_template_resource})
 
         print(f'** Instance Template Finished {time.time() - start_time} Seconds **')

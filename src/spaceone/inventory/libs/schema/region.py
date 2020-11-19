@@ -6,11 +6,11 @@ from .base import BaseResponse
 class RegionResource(Model):
     name = StringType(default="")
     region_code = StringType()
-    region_type = StringType(default="GOOGLE_CLOUD")
+    provider = StringType(default="google_cloud")
     tags = DictType(StringType)
 
 
 class RegionResponse(BaseResponse):
     resource_type = StringType(default='inventory.Region')
-    match_rules = DictType(ListType(StringType), default={'1': ['region_type', 'region_code']})
+    match_rules = DictType(ListType(StringType), default={'1': ['region_code', 'provider']})
     resource = PolyModelType(RegionResource)
