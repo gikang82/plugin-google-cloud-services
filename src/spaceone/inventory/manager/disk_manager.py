@@ -45,7 +45,7 @@ class DiskManager(GoogleCloudManager):
             for disk in disks:
                 disk_type = self._get_disk_type(disk.get('type'))
                 disk_size = float(disk.get('sizeGb'))
-
+                size = self._get_bytes(int(disk.get('sizeGb')))
                 snapshots = self.get_matched_snapshot(current_region, disk, resource_policies)
 
                 disk.update({
@@ -60,7 +60,7 @@ class DiskManager(GoogleCloudManager):
                     'snapshot_schedule_display': self._get_snapshot_schedule(disk),
                     'encryption': self._get_encryption(disk),
                     'size_display': str(disk_size) + ' GB',
-                    'size': disk_size,
+                    'size': float(size),
                     'read_iops': self.get_iops_rate(disk_type, disk_size, 'read'),
                     'write_iops': self.get_iops_rate(disk_type, disk_size, 'write'),
                     'read_throughput': self.get_throughput_rate(disk_type, disk_size),
@@ -209,6 +209,10 @@ class DiskManager(GoogleCloudManager):
             used_single = user[user.rfind('/') + 1:]
             in_used_by.append(used_single)
         return in_used_by
+
+    @staticmethod
+    def _get_bytes(number):
+        return 1024 * 1024 * 1024 * number
 
     @staticmethod
     def _get_encryption(disk):
