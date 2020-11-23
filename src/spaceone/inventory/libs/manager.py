@@ -108,6 +108,10 @@ class GoogleCloudManager(BaseManager):
         match_region_info = REGION_INFO.get(region_code)
 
         if match_region_info:
-            return RegionResource(match_region_info, strict=False)
+            region_info = match_region_info.copy()
+            region_info.update({
+                'region_code': region_code
+            })
+            return RegionResource(region_info, strict=False)
 
         return None
