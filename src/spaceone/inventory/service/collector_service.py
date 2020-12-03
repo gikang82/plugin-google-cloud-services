@@ -68,9 +68,7 @@ class CollectorService(BaseService):
 
         print("[ EXECUTOR START: Google Cloud Service ]")
 
-        # TODO: Thread per cloud services
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
-            print("[ EXECUTOR START ]")
             future_executors = []
             for execute_manager in self.execute_managers:
                 print(f'@@@ {execute_manager} @@@')
