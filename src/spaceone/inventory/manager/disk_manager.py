@@ -58,7 +58,8 @@ class DiskManager(GoogleCloudManager):
                     'in_used_by': self._get_in_used_by(disk.get('users', [])),
                     'source_image_display': self._get_source_image_display(disk),
                     'disk_type': disk_type,
-                    'labels': self._get_labels(disk),
+                    'labels': self.convert_labels_format(disk.get('labels', {})),
+                    'tags': self.convert_labels_format(disk.get('labels', {})),
                     'snapshot_schedule': snapshots,
                     'snapshot_schedule_display': self._get_snapshot_schedule(disk),
                     'encryption': self._get_encryption(disk),
@@ -105,15 +106,17 @@ class DiskManager(GoogleCloudManager):
                     retention.update({'max_retention_days_display': str(retention.get('maxRetentionDays')) + ' days'})
                     policy_schedule = snapshot_schedule_policy.get('schedule', {})
 
-                    policy.update({'snapshot_schedule_policy': {
-                                        'schedule_display': self._get_schedule_display(policy_schedule),
-                                        'schedule': policy_schedule,
-                                        'retention_policy': retention,
-                                    },
-                                   'region': self._get_disk_type(policy.get('region')),
-                                   'labels': self._get_labels(snapshot_prop),
-                                   'storage_locations': snapshot_prop.get('storageLocations', [])
-                                   })
+                    policy.update({
+                        'snapshot_schedule_policy': {
+                            'schedule_display': self._get_schedule_display(policy_schedule),
+                            'schedule': policy_schedule,
+                            'retention_policy': retention
+                        },
+                        'region': self._get_disk_type(policy.get('region')),
+                        'labels': self.convert_labels_format(snapshot_prop.get('labels', {})),
+                        'tags': self.convert_labels_format(snapshot_prop.get('labels', {})),
+                        'storage_locations': snapshot_prop.get('storageLocations', [])
+                    })
                     matched_policies.append(policy)
 
         return matched_policies
@@ -151,16 +154,6 @@ class DiskManager(GoogleCloudManager):
         end = e.strftime("%I:%M %p")
 
         return f' between {start} and {end}'
-
-    @staticmethod
-    def _get_labels(instance):
-        labels = []
-        for k, v in instance.get('labels', {}).items():
-            labels.append(Labels({
-                'key': k,
-                'value': v
-            }, strict=False))
-        return labels
 
     @staticmethod
     def _get_iops_constant(disk_type, flag):

@@ -57,6 +57,7 @@ class SnapShotSchedule(Model):
     snapshot_schedule_policy = ModelType(SnapshotSchedulePolicy, deserialize_from='snapshotSchedulePolicy')
     storage_locations = ListType(StringType(), default=[])
     labels = ListType(ModelType(Labels), default=[])
+    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
 
@@ -84,6 +85,7 @@ class Disk(Model):
     snapshot_schedule = ListType(ModelType(SnapShotSchedule), default=[])
     self_link = StringType(deserialize_from='selfLink')
     labels = ListType(ModelType(Labels), default=[])
+    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
     last_attach_timestamp = DateTimeType(deserialize_from='lastAttachTimestamp', serialize_when_none=False)
     last_detach_timestamp = DateTimeType(deserialize_from='lastDetachTimestamp', serialize_when_none=False)

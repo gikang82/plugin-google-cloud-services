@@ -65,6 +65,8 @@ class MachineImageManager(GoogleCloudManager):
                 'disk_display': self._get_disk_type_display(disks, 'disk_type'),
                 'image': self._get_disk_type_display(disks, 'source_image_display'),
                 'disks': disks,
+                'labels': self.convert_labels_format(machine_image.get('labels', {})),
+                'tags': self.convert_labels_format(machine_image.get('labels', {})),
                 'scheduling': self._get_scheduling(properties),
                 'network_interfaces': self.get_network_interface(properties, properties.get('canIpForward', False)),
                 'total_storage_bytes': float(machine_image.get('totalStorageBytes', 0.0)),
@@ -251,16 +253,6 @@ class MachineImageManager(GoogleCloudManager):
                 'memory': memory
             })
         return machine_vo
-
-    @staticmethod
-    def _get_labels(instance):
-        labels = []
-        for k, v in instance.get('labels', {}).items():
-            labels.append({
-                'key': k,
-                'value': v
-            })
-        return labels
 
     @staticmethod
     def _get_access_configs_type_and_tier(access_configs):

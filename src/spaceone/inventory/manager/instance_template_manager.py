@@ -67,7 +67,8 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'instance_groups': matched_instance_group,
                 'network_interfaces': self.get_network_interface(properties),
                 'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
-                'labels': self._get_labels(properties)
+                'labels': self.convert_labels_format(inst_template.get('labels', {})),
+                'tags': self.convert_labels_format(inst_template.get('labels', {}))
             })
 
             svc_account = properties.get('serviceAccounts', [])
@@ -181,16 +182,6 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'memory': memory
             })
         return machine_vo
-
-    @staticmethod
-    def _get_labels(instance):
-        labels = []
-        for k, v in instance.get('labels', {}).items():
-            labels.append({
-                'key': k,
-                'value': v
-            })
-        return labels
 
     @staticmethod
     def _get_access_configs_type_and_tier(access_configs):
