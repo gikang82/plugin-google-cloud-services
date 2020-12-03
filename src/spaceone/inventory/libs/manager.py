@@ -126,3 +126,13 @@ class GoogleCloudManager(BaseManager):
             return RegionResource(region_info, strict=False)
 
         return None
+
+    @staticmethod
+    def convert_labels_format(labels):
+        convert_labels = []
+        for k, v in labels.items():
+            convert_labels.append({
+                'key': k,
+                'value': v
+            })
+        return convert_labels

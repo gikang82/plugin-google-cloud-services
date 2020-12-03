@@ -75,11 +75,6 @@ class MachineType(Model):
     memory = FloatType(default=0.0)
 
 
-class Labels(Model):
-    key = StringType()
-    value = StringType()
-
-
 class Scheduling(Model):
     on_host_maintenance = StringType(choices=('MIGRATE', 'TERMINATE'))
     automatic_restart = StringType(choices=('On', 'Off'))
@@ -123,6 +118,7 @@ class MachineImage(Model):
     service_account = ModelType(ServiceAccount, serialize_when_none=False)
     kind = StringType()
     labels = ListType(ModelType(Labels), default=[])
+    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
     location = StringType()
 
