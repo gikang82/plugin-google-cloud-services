@@ -27,7 +27,7 @@ class CloudSQLManager(GoogleCloudManager):
 
         cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Instance
+        collected_cloud_services = []
         for instance in cloud_sql_conn.list_instances():
             instance_name = instance['name']
 
@@ -51,9 +51,10 @@ class CloudSQLManager(GoogleCloudManager):
             })
 
             self.set_region_code(instance['region'])
-            yield InstanceResponse({'resource': instance_resource})
+            collected_cloud_services.append(InstanceResponse({'resource': instance_resource}))
 
         print(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     @staticmethod
     def _get_display_state(instance):

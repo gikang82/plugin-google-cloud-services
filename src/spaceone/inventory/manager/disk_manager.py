@@ -28,15 +28,17 @@ class DiskManager(GoogleCloudManager):
         secret_data = params['secret_data']
         disk_conn: DiskConnector = self.locator.get_connector(self.connector_name, **params)
         resource_policies = {}
-        current_region = ''
+
+        collected_cloud_services = []
         for zone in params.get('zones', []):
-            print(f"====== ZONE: {zone} ======")
+            current_region = ''
             disks = disk_conn.list_disks(zone)
 
-            if len(disks) > 0:
+            if disks:
+                current_region = self.generate_region_from_zone(zone)
 
-                if current_region != self.generate_region_from_zone(zone):
-                    current_region = self.generate_region_from_zone(zone)
+                # if current_region != self.generate_region_from_zone(zone):
+                #     current_region = self.generate_region_from_zone(zone)
 
                 if current_region not in resource_policies:
                     resource_policies_under_region = disk_conn.list_resource_policies(current_region)
@@ -51,7 +53,8 @@ class DiskManager(GoogleCloudManager):
                 disk.update({
                     'project': secret_data['project_id'],
                     'zone': zone,
-                    'region': self.generate_region_from_zone(zone),
+                    # 'region': self.generate_region_from_zone(zone),
+                    'region': current_region,
                     'in_used_by': self._get_in_used_by(disk.get('users', [])),
                     'source_image_display': self._get_source_image_display(disk),
                     'disk_type': disk_type,
@@ -73,10 +76,12 @@ class DiskManager(GoogleCloudManager):
                     'region_code': disk['region'],
                     'reference': ReferenceModel(disk_data.reference())
                 })
+
                 self.set_region_code(disk['region'])
-                yield DiskResponse({'resource': disk_resource})
+                collected_cloud_services.append(DiskResponse({'resource': disk_resource}))
 
         print(f'** Disk Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     def get_iops_rate(self, disk_type, disk_size, flag):
         const = self._get_iops_constant(disk_type, flag)
@@ -90,6 +95,7 @@ class DiskManager(GoogleCloudManager):
         matched_policies = []
         policy_self_links = disk.get('resourcePolicies', [])
         policies = resource_policies.get(region)
+
         for self_link in policy_self_links:
             for policy in policies:
                 if policy.get('selfLink') == self_link:
@@ -109,6 +115,7 @@ class DiskManager(GoogleCloudManager):
                                    'storage_locations': snapshot_prop.get('storageLocations', [])
                                    })
                     matched_policies.append(policy)
+
         return matched_policies
 
     def _get_schedule_display(self, schedule):
@@ -226,5 +233,5 @@ class DiskManager(GoogleCloudManager):
         return encryption
 
     @staticmethod
-    def _get_disk_type(type):
-        return type[type.rfind('/') + 1:]
+    def _get_disk_type(disk_type):
+        return disk_type[disk_type.rfind('/') + 1:]

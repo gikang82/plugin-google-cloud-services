@@ -46,6 +46,3 @@ class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
                 print(traceback.format_exc())
                 print(f'[ERROR: ResourceInfo]: {e}')
 
-
-
-

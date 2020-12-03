@@ -35,12 +35,11 @@ class MachineImageManager(GoogleCloudManager):
         disk_types = []
         public_images = {}
 
+        collected_cloud_services = []
+
         if machine_images:
             public_images = machine_image_conn.list_public_images()
             for zone in params.get('zones', []):
-
-                print(f"====== ZONE: {zone} ======")
-
                 if not machine_types:
                     list_machine_types = machine_image_conn.list_machine_types(zone)
                     machine_types.extend(list_machine_types)
@@ -86,8 +85,10 @@ class MachineImageManager(GoogleCloudManager):
                 'region_code': region.get('region_code')
             })
             self.set_region_code(region.get('region_code'))
-            yield MachineImageResponse({'resource': machine_image_resource})
+            collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
+
         print(f'** Machine Image Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     def get_disks(self, instance, boot_image):
         disk_info = []
