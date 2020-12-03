@@ -1,6 +1,4 @@
 spaceone-core
 spaceone-api
-docker
 schematics
-moto
 google-api-python-client
