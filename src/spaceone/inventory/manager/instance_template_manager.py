@@ -32,12 +32,10 @@ class InstanceTemplateManager(GoogleCloudManager):
         instance_groups_over_zones = []
         machine_types = []
         disk_types = []
+        collected_cloud_services = []
 
         if instance_templates:
             for zone in params.get('zones', []):
-
-                print(f"====== ZONE: {zone} ======")
-
                 instance_group_managers = instance_template_conn.list_instance_group_managers(zone)
                 instance_groups_over_zones.extend(instance_group_managers)
 
@@ -86,9 +84,10 @@ class InstanceTemplateManager(GoogleCloudManager):
             })
 
             self.set_region_code(default_region)
-            yield InstanceTemplateResponse({'resource': instance_template_resource})
+            collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
 
         print(f'** Instance Template Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     def match_instance_group(self, instance_template, instance_group_managers: list):
         in_used_by = []
