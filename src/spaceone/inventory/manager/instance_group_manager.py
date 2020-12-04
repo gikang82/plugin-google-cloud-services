@@ -30,6 +30,8 @@ class InstanceGroupManager(GoogleCloudManager):
         # Get Instance Templates
         instance_templates = instance_group_conn.list_instance_templates()
 
+        collected_cloud_services = []
+
         # Collect Zonal Instance Groups
         for zone in params.get('zones', []):
             if instance_groups := instance_group_conn.list_instance_groups(zone):
@@ -91,7 +93,7 @@ class InstanceGroupManager(GoogleCloudManager):
                     })
 
                     self.set_region_code(region)
-                    yield InstanceGroupResponse({'resource': instance_group_resource})
+                    collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
 
         # Collect Regional Instance Groups
         for region in params.get('regions', []):
@@ -152,9 +154,10 @@ class InstanceGroupManager(GoogleCloudManager):
                     })
 
                     self.set_region_code(region)
-                    yield InstanceGroupResponse({'resource': instance_group_resource})
+                    collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
 
         print(f'** Instance Group Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     @staticmethod
     def match_instance_template(instance_templates, instance_template_self_link):

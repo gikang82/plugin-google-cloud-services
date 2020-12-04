@@ -32,12 +32,10 @@ class InstanceTemplateManager(GoogleCloudManager):
         instance_groups_over_zones = []
         machine_types = []
         disk_types = []
+        collected_cloud_services = []
 
         if instance_templates:
             for zone in params.get('zones', []):
-
-                print(f"====== ZONE: {zone} ======")
-
                 instance_group_managers = instance_template_conn.list_instance_group_managers(zone)
                 instance_groups_over_zones.extend(instance_group_managers)
 
@@ -69,7 +67,8 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'instance_groups': matched_instance_group,
                 'network_interfaces': self.get_network_interface(properties),
                 'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
-                'labels': self._get_labels(properties)
+                'labels': self.convert_labels_format(inst_template.get('labels', {})),
+                'tags': self.convert_labels_format(inst_template.get('labels', {}))
             })
 
             svc_account = properties.get('serviceAccounts', [])
@@ -86,9 +85,10 @@ class InstanceTemplateManager(GoogleCloudManager):
             })
 
             self.set_region_code(default_region)
-            yield InstanceTemplateResponse({'resource': instance_template_resource})
+            collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
 
         print(f'** Instance Template Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     def match_instance_group(self, instance_template, instance_group_managers: list):
         in_used_by = []
@@ -182,16 +182,6 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'memory': memory
             })
         return machine_vo
-
-    @staticmethod
-    def _get_labels(instance):
-        labels = []
-        for k, v in instance.get('labels', {}).items():
-            labels.append({
-                'key': k,
-                'value': v
-            })
-        return labels
 
     @staticmethod
     def _get_access_configs_type_and_tier(access_configs):

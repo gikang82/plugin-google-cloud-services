@@ -28,15 +28,17 @@ class DiskManager(GoogleCloudManager):
         secret_data = params['secret_data']
         disk_conn: DiskConnector = self.locator.get_connector(self.connector_name, **params)
         resource_policies = {}
-        current_region = ''
+
+        collected_cloud_services = []
         for zone in params.get('zones', []):
-            print(f"====== ZONE: {zone} ======")
+            current_region = ''
             disks = disk_conn.list_disks(zone)
 
-            if len(disks) > 0:
+            if disks:
+                current_region = self.generate_region_from_zone(zone)
 
-                if current_region != self.generate_region_from_zone(zone):
-                    current_region = self.generate_region_from_zone(zone)
+                # if current_region != self.generate_region_from_zone(zone):
+                #     current_region = self.generate_region_from_zone(zone)
 
                 if current_region not in resource_policies:
                     resource_policies_under_region = disk_conn.list_resource_policies(current_region)
@@ -51,11 +53,13 @@ class DiskManager(GoogleCloudManager):
                 disk.update({
                     'project': secret_data['project_id'],
                     'zone': zone,
-                    'region': self.generate_region_from_zone(zone),
+                    # 'region': self.generate_region_from_zone(zone),
+                    'region': current_region,
                     'in_used_by': self._get_in_used_by(disk.get('users', [])),
                     'source_image_display': self._get_source_image_display(disk),
                     'disk_type': disk_type,
-                    'labels': self._get_labels(disk),
+                    'labels': self.convert_labels_format(disk.get('labels', {})),
+                    'tags': self.convert_labels_format(disk.get('labels', {})),
                     'snapshot_schedule': snapshots,
                     'snapshot_schedule_display': self._get_snapshot_schedule(disk),
                     'encryption': self._get_encryption(disk),
@@ -73,10 +77,12 @@ class DiskManager(GoogleCloudManager):
                     'region_code': disk['region'],
                     'reference': ReferenceModel(disk_data.reference())
                 })
+
                 self.set_region_code(disk['region'])
-                yield DiskResponse({'resource': disk_resource})
+                collected_cloud_services.append(DiskResponse({'resource': disk_resource}))
 
         print(f'** Disk Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     def get_iops_rate(self, disk_type, disk_size, flag):
         const = self._get_iops_constant(disk_type, flag)
@@ -90,6 +96,7 @@ class DiskManager(GoogleCloudManager):
         matched_policies = []
         policy_self_links = disk.get('resourcePolicies', [])
         policies = resource_policies.get(region)
+
         for self_link in policy_self_links:
             for policy in policies:
                 if policy.get('selfLink') == self_link:
@@ -99,16 +106,19 @@ class DiskManager(GoogleCloudManager):
                     retention.update({'max_retention_days_display': str(retention.get('maxRetentionDays')) + ' days'})
                     policy_schedule = snapshot_schedule_policy.get('schedule', {})
 
-                    policy.update({'snapshot_schedule_policy': {
-                                        'schedule_display': self._get_schedule_display(policy_schedule),
-                                        'schedule': policy_schedule,
-                                        'retention_policy': retention,
-                                    },
-                                   'region': self._get_disk_type(policy.get('region')),
-                                   'labels': self._get_labels(snapshot_prop),
-                                   'storage_locations': snapshot_prop.get('storageLocations', [])
-                                   })
+                    policy.update({
+                        'snapshot_schedule_policy': {
+                            'schedule_display': self._get_schedule_display(policy_schedule),
+                            'schedule': policy_schedule,
+                            'retention_policy': retention
+                        },
+                        'region': self._get_disk_type(policy.get('region')),
+                        'labels': self.convert_labels_format(snapshot_prop.get('labels', {})),
+                        'tags': self.convert_labels_format(snapshot_prop.get('labels', {})),
+                        'storage_locations': snapshot_prop.get('storageLocations', [])
+                    })
                     matched_policies.append(policy)
+
         return matched_policies
 
     def _get_schedule_display(self, schedule):
@@ -144,16 +154,6 @@ class DiskManager(GoogleCloudManager):
         end = e.strftime("%I:%M %p")
 
         return f' between {start} and {end}'
-
-    @staticmethod
-    def _get_labels(instance):
-        labels = []
-        for k, v in instance.get('labels', {}).items():
-            labels.append(Labels({
-                'key': k,
-                'value': v
-            }, strict=False))
-        return labels
 
     @staticmethod
     def _get_iops_constant(disk_type, flag):
@@ -226,5 +226,5 @@ class DiskManager(GoogleCloudManager):
         return encryption
 
     @staticmethod
-    def _get_disk_type(type):
-        return type[type.rfind('/') + 1:]
+    def _get_disk_type(disk_type):
+        return disk_type[disk_type.rfind('/') + 1:]

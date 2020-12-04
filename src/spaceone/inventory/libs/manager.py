@@ -50,8 +50,10 @@ class GoogleCloudManager(BaseManager):
         raise NotImplemented
 
     def collect_resources(self, params) -> list:
-        for cloud_service_type in self.collect_cloud_service_type():
-            yield cloud_service_type
+        resources = []
+
+        # Collect Cloud Service Type
+        resources.extend(self.collect_cloud_service_type())
 
         # Add zone lists in params
         regions, zones = self.list_regions_zones(params['secret_data'])
@@ -60,12 +62,13 @@ class GoogleCloudManager(BaseManager):
             'zones': zones
         })
 
-        for cloud_service_response_schema in self.collect_cloud_service(params):
-            yield cloud_service_response_schema
+        # Collect Cloud Service
+        resources.extend(self.collect_cloud_service(params))
 
-        for region_code in self.collected_region_codes:
-            if region := self.match_region_info(region_code):
-                yield RegionResponse({'resource': region})
+        # Collect Region
+        resources.extend(self.collect_region())
+
+        return resources
 
     def list_regions_zones(self, secret_data):
         result_regions = []
@@ -87,6 +90,14 @@ class GoogleCloudManager(BaseManager):
                 result_regions.append(region.split('/')[-1])
 
         return list(set(result_regions)), result_zones
+
+    def collect_region(self):
+        results = []
+        for region_code in self.collected_region_codes:
+            if region := self.match_region_info(region_code):
+                results.append(RegionResponse({'resource': region}))
+
+        return results
 
     def set_region_code(self, region):
         if region not in REGION_INFO:
@@ -115,3 +126,13 @@ class GoogleCloudManager(BaseManager):
             return RegionResource(region_info, strict=False)
 
         return None
+
+    @staticmethod
+    def convert_labels_format(labels):
+        convert_labels = []
+        for k, v in labels.items():
+            convert_labels.append({
+                'key': k,
+                'value': v
+            })
+        return convert_labels

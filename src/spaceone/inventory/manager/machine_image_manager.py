@@ -35,12 +35,11 @@ class MachineImageManager(GoogleCloudManager):
         disk_types = []
         public_images = {}
 
+        collected_cloud_services = []
+
         if machine_images:
             public_images = machine_image_conn.list_public_images()
             for zone in params.get('zones', []):
-
-                print(f"====== ZONE: {zone} ======")
-
                 if not machine_types:
                     list_machine_types = machine_image_conn.list_machine_types(zone)
                     machine_types.extend(list_machine_types)
@@ -66,6 +65,8 @@ class MachineImageManager(GoogleCloudManager):
                 'disk_display': self._get_disk_type_display(disks, 'disk_type'),
                 'image': self._get_disk_type_display(disks, 'source_image_display'),
                 'disks': disks,
+                'labels': self.convert_labels_format(machine_image.get('labels', {})),
+                'tags': self.convert_labels_format(machine_image.get('labels', {})),
                 'scheduling': self._get_scheduling(properties),
                 'network_interfaces': self.get_network_interface(properties, properties.get('canIpForward', False)),
                 'total_storage_bytes': float(machine_image.get('totalStorageBytes', 0.0)),
@@ -86,8 +87,10 @@ class MachineImageManager(GoogleCloudManager):
                 'region_code': region.get('region_code')
             })
             self.set_region_code(region.get('region_code'))
-            yield MachineImageResponse({'resource': machine_image_resource})
+            collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
+
         print(f'** Machine Image Finished {time.time() - start_time} Seconds **')
+        return collected_cloud_services
 
     def get_disks(self, instance, boot_image):
         disk_info = []
@@ -250,16 +253,6 @@ class MachineImageManager(GoogleCloudManager):
                 'memory': memory
             })
         return machine_vo
-
-    @staticmethod
-    def _get_labels(instance):
-        labels = []
-        for k, v in instance.get('labels', {}).items():
-            labels.append({
-                'key': k,
-                'value': v
-            })
-        return labels
 
     @staticmethod
     def _get_access_configs_type_and_tier(access_configs):
