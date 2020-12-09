@@ -4,3 +4,4 @@ from spaceone.inventory.connector.instance_template import InstanceTemplateConne
 from spaceone.inventory.connector.instance_group import InstanceGroupConnector
 from spaceone.inventory.connector.machine_image import MachineImageConnector
 from spaceone.inventory.connector.disk import DiskConnector
+from spaceone.inventory.connector.snapshot import SnapshotConnector

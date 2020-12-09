@@ -4,7 +4,6 @@ from spaceone.inventory.model.machine_image.data import *
 from spaceone.inventory.model.machine_image.cloud_service import *
 from spaceone.inventory.connector.machine_image import MachineImageConnector
 from spaceone.inventory.model.machine_image.cloud_service_type import CLOUD_SERVICE_TYPES
-import math
 import time
 
 
@@ -341,13 +340,3 @@ class MachineImageManager(GoogleCloudManager):
         if access_configs:
             public_ip = access_configs[0].get('natIP')
         return public_ip
-
-    @staticmethod
-    def _convert_size(size_bytes):
-        if size_bytes == 0:
-            return "0 B"
-        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-        i = int(math.floor(math.log(size_bytes, 1024)))
-        p = math.pow(1024, i)
-        s = round(size_bytes / p, 2)
-        return "%s %s" % (s, size_name[i])

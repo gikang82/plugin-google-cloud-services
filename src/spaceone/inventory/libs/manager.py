@@ -1,3 +1,4 @@
+import math
 from spaceone.core.manager import BaseManager
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.schema.region import RegionResource, RegionResponse
@@ -29,6 +30,7 @@ REGION_INFO = {
     "us-west4": {"name": "US, Nevada (Las Vegas)", "tags": {"latitude": "36.092498", "longitude": "-115.086073"}},
     "global": {"name": "Global"}
 }
+
 
 class GoogleCloudManager(BaseManager):
     connector_name = None
@@ -136,3 +138,13 @@ class GoogleCloudManager(BaseManager):
                 'value': v
             })
         return convert_labels
+
+    @staticmethod
+    def _convert_size(size_bytes):
+        if size_bytes == 0:
+            return "0 B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return "%s %s" % (s, size_name[i])
