@@ -32,8 +32,6 @@ snapshot_schedule_meta = TableDynamicLayout.set_fields('Snapshot Schedules', roo
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     TextDyField.data_source('Auto-delete Snapshots After',
                             'snapshot_schedule_policy.retention_policy.max_retention_days_display'),
-    ListDyField.data_source('Storage Locations', 'storage_locations',
-                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
 ])
 
