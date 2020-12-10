@@ -55,6 +55,7 @@ class SnapshotManager(GoogleCloudManager):
                 'creation_type': 'Scheduled' if snapshot.get('autoCreated') else 'Manual',
                 'encryption': self._get_encryption_info(snapshot),
                 'labels': self.convert_labels_format(snapshot.get('labels', {})),
+                'tags': self.convert_labels_format(snapshot.get('labels', {})),
             })
 
             snapshot_data = Snapshot(snapshot, strict=False)
