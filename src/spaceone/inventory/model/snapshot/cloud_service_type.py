@@ -14,12 +14,12 @@ cst_snapshot.tags = {
 
 cst_snapshot._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
+        TextDyField.data_source('Name', 'data.name'),
         EnumDyField.data_source('Status', 'data.status', default_state={
             'safe': ['READY'],
             'warning': ['CREATING', 'UPLOADING', 'DELETING'],
             'alert': ['FAILED'],
         }),
-        TextDyField.data_source('Name', 'data.name'),
         ListDyField.data_source('Location', 'data.storage_locations'),
         TextDyField.data_source('Snapshot Size', 'data.disk.storage_bytes_display'),
         TextDyField.data_source('Creation Type', 'data.creation_type'),
