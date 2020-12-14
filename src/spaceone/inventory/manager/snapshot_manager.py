@@ -66,7 +66,7 @@ class SnapshotManager(GoogleCloudManager):
             })
 
             self.set_region_code(region.get('region_code'))
-            collected_cloud_services.append(MachineImageResponse({'resource': snapshots_resource}))
+            collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
 
         print(f'** SnapShot Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

@@ -57,5 +57,5 @@ class SnapshotResource(ComputeEngineResource):
     _metadata = ModelType(CloudServiceMeta, default=instance_template_meta, serialized_name='metadata')
 
 
-class MachineImageResponse(CloudServiceResponse):
+class SnapshotResponse(CloudServiceResponse):
     resource = PolyModelType(SnapshotResource)
