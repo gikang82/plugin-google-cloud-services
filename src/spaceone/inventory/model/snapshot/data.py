@@ -93,7 +93,7 @@ class Snapshot(Model):
     snapshot_schedule_display = ListType(StringType(), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
     creation_type = StringType(choices=('Manual', 'Scheduled'))
-    encryption = StringType(choices=('Google managed', 'Customer managed, Customer supplied'))
+    encryption = StringType(choices=('Google managed', 'Customer managed', 'Customer supplied'))
     labels = ListType(ModelType(Labels), default=[])
     tags = ListType(ModelType(Labels), default=[])
 
