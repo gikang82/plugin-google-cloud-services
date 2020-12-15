@@ -24,8 +24,8 @@ bucket_configuration_meta = ItemDynamicLayout.set_fields('Configurations', field
     TextDyField.data_source('Access Control', 'data.access_control'),
     TextDyField.data_source('Link URL', 'data.links.link_url'),
     TextDyField.data_source('Link for gsutil', 'data.links.gsutil_link'),
-    TextDyField.data_source('Created', 'data.disk.source_disk_display'),
-    TextDyField.data_source('Updated', 'data.disk.disk_size_display'),
+    DateTimeDyField.data_source('Created', 'data.disk.creation_timestamp'),
+    DateTimeDyField.data_source('Updated', 'data.disk.update_timestamp'),
 ])
 
 
