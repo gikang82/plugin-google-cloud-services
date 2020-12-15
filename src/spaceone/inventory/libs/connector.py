@@ -2,7 +2,6 @@ import google.oauth2.service_account
 import googleapiclient
 import googleapiclient.discovery
 
-from google.cloud import storage
 from spaceone.core.error import *
 from spaceone.core.connector import BaseConnector
 from pprint import pprint
