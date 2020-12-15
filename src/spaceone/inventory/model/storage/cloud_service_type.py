@@ -37,9 +37,7 @@ cst_bucket._metadata = CloudServiceTypeMeta.set_meta(
             'warning': ['ON'],
         }),
         TextDyField.data_source('Retention Policy', 'data.retention_policy_display'),
-        TextDyField.data_source('Encryption', 'data.encryption'),
-        DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
-        DateTimeDyField.data_source('Update Time', 'data.update_timestamp'),
+        TextDyField.data_source('Encryption', 'data.encryption')
     ],
 
     search=[
