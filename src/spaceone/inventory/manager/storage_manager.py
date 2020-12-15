@@ -296,5 +296,5 @@ class StorageManager(GoogleCloudManager):
             rp_in_days = retention_period / 86400
             day_month = 'days' if rp_in_days < 91 else 'months'
             period = rp_in_days if rp_in_days < 91 else rp_in_days / 31
-            display = f'{period} {day_month}'
+            display = f'{str(int(period))} {day_month}'
         return display
