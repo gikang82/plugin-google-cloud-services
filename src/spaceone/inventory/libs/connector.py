@@ -2,9 +2,10 @@ import google.oauth2.service_account
 import googleapiclient
 import googleapiclient.discovery
 
+from google.cloud import storage
 from spaceone.core.error import *
 from spaceone.core.connector import BaseConnector
-
+from pprint import pprint
 DEFAULT_SCHEMA = 'google_oauth_client_id'
 
 
@@ -32,7 +33,8 @@ class GoogleCloudConnector(BaseConnector):
 
         try:
             credentials = google.oauth2.service_account.Credentials.from_service_account_info(secret_data)
-            self.client = googleapiclient.discovery.build(self.google_client_service, self.version,
+            self.client = googleapiclient.discovery.build(self.google_client_service,
+                                                          self.version,
                                                           credentials=credentials)
 
         except Exception as e:
