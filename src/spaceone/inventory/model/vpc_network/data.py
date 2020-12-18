@@ -148,6 +148,7 @@ class IPAddress(Model):
     name = StringType(default='')
     address = StringType()
     region = StringType()
+    subnet_name = StringType()
     address_type = StringType(choices=('INTERNAL', 'EXTERNAL'), deserialize_from='addressType')
     is_ephemeral = StringType(choices=('Static', 'Ephemeral'))
     purpose = StringType(choices=('GCE_ENDPOINT', 'DNS_RESOLVER', 'VPC_PEERING', 'IPSEC_INTERCONNECT'), serialize_when_none=False)
