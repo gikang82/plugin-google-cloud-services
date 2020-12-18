@@ -109,12 +109,6 @@ class LogConfig(Model):
     metadata = StringType(serialize_when_none=False)
 
 class FirewallDisplay(Model):
-    # 'type_display': 'Ingress' if firewall.get('direction') == 'INGRESS' else 'Egress',
-    # 'target_display': ['Apply to all'] if not target_tag else target_tag,
-    # 'filter': f'IP ranges: {filter_range}',
-    # 'protocols_port': protocol_port,
-    # 'Action': 'Allow' if 'allowed' in firewall else 'Deny',
-    # 'Logs': 'On' if log_config.get('enable') else 'Off'
     type_display = StringType()
     target_display = ListType(StringType(default=[]))
     filter = StringType(default='')
@@ -162,7 +156,8 @@ class IPAddress(Model):
     region = StringType()
     used_by = ListType(StringType(), default=[])
     self_link = StringType(deserialize_from='selfLink')
-    ip_version = StringType(choices=('IPV4', 'IPV6'), serialize_when_none=False)
+    ip_version = StringType(choices=('IPV4', 'IPV6'), deserialize_from='ipVersion', serialize_when_none=False)
+    ip_version_display = StringType()
     status = StringType(choices=('RESERVED', 'RESERVING', 'IN_USE'))
     users = ListType(StringType(), default= [])
     labels = ListType(ModelType(Labels), default=[])
