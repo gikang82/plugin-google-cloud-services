@@ -15,16 +15,16 @@ FILTER_FORMAT = []
 class CollectorService(BaseService):
     def __init__(self, metadata):
         super().__init__(metadata)
-
+        # set google cloud service manager
         self.execute_managers = [
-            # set google cloud service manager
             'CloudSQLManager',
             'InstanceGroupManager',
             'InstanceTemplateManager',
             'MachineImageManager',
             'DiskManager',
             'SnapshotManager',
-            'StorageManager'
+            'StorageManager',
+            'VPCNetworkManager'
         ]
 
     @check_required(['options'])
