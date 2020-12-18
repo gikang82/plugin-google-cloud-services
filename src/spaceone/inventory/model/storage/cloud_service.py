@@ -75,11 +75,11 @@ instance_template_meta = CloudServiceMeta.set_layouts([bucket_configuration_meta
                                                        bucket_labels_meta])
 
 
-class StorageResource(CloudServiceResource):
+class StorageGroupResource(CloudServiceResource):
     cloud_service_group = StringType(default='Storage')
 
 
-class StorageResource(StorageResource):
+class StorageResource(StorageGroupResource):
     cloud_service_type = StringType(default='Bucket')
     data = ModelType(Storage)
     _metadata = ModelType(CloudServiceMeta, default=instance_template_meta, serialized_name='metadata')
