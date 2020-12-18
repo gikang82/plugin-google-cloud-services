@@ -27,13 +27,13 @@ vpc_network_subnets_meta = TableDynamicLayout.set_fields('Subnets', root_path='d
     TextDyField.data_source('Flow logs', 'flow_log'),
 ])
 
-vpc_network_subnets_ip_address_meta = TableDynamicLayout.set_fields('Static Internal IP Addresses', root_path='data.subnetwork_data.subnets', fields=[
-    TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Region', 'region'),
-    TextDyField.data_source('Ip Address Ranges', 'ip_cidr_range'),
-    TextDyField.data_source('Gateway', 'gateway_address'),
-    TextDyField.data_source('Private Google Access', 'google_access'),
-    TextDyField.data_source('Flow logs', 'flow_log'),
+vpc_network_subnets_ip_address_meta = TableDynamicLayout.set_fields('Static Internal IP Addresses', root_path='data', fields=[
+    TextDyField.data_source('Name', 'ip_address_data.name'),
+    TextDyField.data_source('Internal Ip Address', 'ip_address_data.address'),
+    TextDyField.data_source('Subnetwork', 'name'),
+    TextDyField.data_source('Region', 'ip_address_data.region'),
+    TextDyField.data_source('Version', 'ip_address_data.ip_version_display'),
+    ListDyField.data_source('In Used By', 'ip_address_data.used_by'),
 ])
 
 vpc_network_firewall_meta = TableDynamicLayout.set_fields('Firewall Rules', root_path='data.firewall_data.firewall', fields=[
