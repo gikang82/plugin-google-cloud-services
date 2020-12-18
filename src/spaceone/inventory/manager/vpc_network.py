@@ -96,6 +96,7 @@ class VPCNetworkManager(GoogleCloudManager):
                         users = ip_address.get('users')
 
                         ip_address.update({
+                            'subnet_name': network.get('name'),
                             'ip_version_display': self._valid_ip_address(ip_address.get('address')),
                             'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
                             'used_by': self._get_parse_users(users) if users else ['None'],
