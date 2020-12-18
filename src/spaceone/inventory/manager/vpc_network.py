@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.vpc_network.data import *
+from ipaddress import ip_address, IPv4Address
 from spaceone.inventory.model.vpc_network.cloud_service import *
 from spaceone.inventory.connector.vpc_network import VPCNetworkConnector
 from spaceone.inventory.model.vpc_network.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -95,6 +96,7 @@ class VPCNetworkManager(GoogleCloudManager):
                         users = ip_address.get('users')
 
                         ip_address.update({
+                            'ip_version_display': self._valid_ip_address(ip_address.get('address')),
                             'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
                             'used_by': self._get_parse_users(users) if users else ['None'],
                             'is_ephemeral': 'Static'
@@ -296,6 +298,13 @@ class VPCNetworkManager(GoogleCloudManager):
 
                 firewall_vos.append(firewall)
         return firewall_vos
+
+    @staticmethod
+    def _valid_ip_address(ip):
+        try:
+            return "IPv4" if type(ip_address(ip)) is IPv4Address else "IPv6"
+        except ValueError:
+            return "Invalid"
 
     @staticmethod
     def _get_global_dynamic_route(network, flag):
