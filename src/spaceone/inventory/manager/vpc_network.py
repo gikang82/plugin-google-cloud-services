@@ -1,6 +1,5 @@
 import re
 import time
-import netaddr
 from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
