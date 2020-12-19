@@ -24,7 +24,8 @@ class CollectorService(BaseService):
             'DiskManager',
             'SnapshotManager',
             'StorageManager',
-            'VPCNetworkManager'
+            'VPCNetworkManager',
+            'ExternalIPAddressManager'
         ]
 
     @check_required(['options'])
