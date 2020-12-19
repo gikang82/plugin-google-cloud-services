@@ -20,7 +20,7 @@ class ExternalIpAddress(Model):
     purpose = StringType(choices=('GCE_ENDPOINT', 'DNS_RESOLVER', 'VPC_PEERING', 'IPSEC_INTERCONNECT'),
                          serialize_when_none=False)
     network_tier = StringType(choices=('PREMIUM', 'STANDARD'),  deserialize_from='networkTier', serialize_when_none=False)
-    network_tier_display = StringType(default='')
+    network_tier_display = StringType()
     used_by = ListType(StringType(), default=[])
     self_link = StringType(deserialize_from='selfLink')
     ip_version = StringType(choices=('IPV4', 'IPV6'), deserialize_from='ipVersion', serialize_when_none=False)
