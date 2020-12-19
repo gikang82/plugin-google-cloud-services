@@ -24,7 +24,8 @@ class CollectorService(BaseService):
             'DiskManager',
             'SnapshotManager',
             'StorageManager',
-            'VPCNetworkManager'
+            'VPCNetworkManager',
+            'ExternalIPAddressManager'
         ]
 
     @check_required(['options'])
@@ -33,7 +34,7 @@ class CollectorService(BaseService):
         """
         capability = {
             'filter_format': FILTER_FORMAT,
-            'supported_resource_type': SUPPORTED_RESOURCE_TYPE
+            'supported_resource_typse': SUPPORTED_RESOURCE_TYPE
         }
         return {'metadata': capability}
 

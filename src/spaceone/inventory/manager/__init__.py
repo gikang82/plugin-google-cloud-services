@@ -6,3 +6,4 @@ from spaceone.inventory.manager.disk_manager import DiskManager
 from spaceone.inventory.manager.snapshot_manager import SnapshotManager
 from spaceone.inventory.manager.storage_manager import StorageManager
 from spaceone.inventory.manager.vpc_network import VPCNetworkManager
+from spaceone.inventory.manager.external_ip_address import ExternalIPAddressManager

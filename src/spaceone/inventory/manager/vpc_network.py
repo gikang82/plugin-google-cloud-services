@@ -105,69 +105,6 @@ class VPCNetworkManager(GoogleCloudManager):
                         all_Internal_addresses.append(IPAddress(ip_address, strict=False))
         return all_Internal_addresses
 
-    # def get_ip_addresses_for_vpc(self, regional_address, global_address):
-    #
-    #     all_ip_addresses = []
-    #     for forwarding_rule in forwarding_rules:
-    #         forwarding_rule.update({
-    #             'is_ephemeral': 'Ephemeral',
-    #             'address_type': forwarding_rule.get('loadBalancingScheme'),
-    #             'address': forwarding_rule.get('IPAddress'),
-    #             'region': '',
-    #         })
-    #         all_ip_addresses.append(IPAddress(forwarding_rule, strict=False))
-    #
-    #     '''
-    #             id = StringType(default='')
-    #             name = StringType(default='')
-    #             address = StringType()
-    #             region = StringType()
-    #             address_type = StringType(choices=('INTERNAL', 'EXTERNAL'), deserialize_from='addressType')
-    #             is_ephemeral = StringType(choices=('Static', 'Ephemeral'))
-    #             purpose = StringType(choices=('GCE_ENDPOINT', 'DNS_RESOLVER', 'VPC_PEERING', 'IPSEC_INTERCONNECT'), serialize_when_none=False)
-    #             description = StringType()
-    #             network_tier = StringType(deserialize_from='networkTier')
-    #             region = StringType()
-    #             used_by = ListType(StringType(), default= [])
-    #             self_link = StringType(deserialize_from='selfLink')
-    #             ip_version = StringType(choices=('IPV4', 'IPV6'), serialize_when_none=False)
-    #             status = StringType(choices=('RESERVED', 'RESERVING','IN_USE'))
-    #             users = ListType(StringType(), default= [])
-    #             labels = ListType(ModelType(Labels), default=[])
-    #             creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
-    #     '''
-    #
-    #     for instance in instances_over_region:
-    #         network_interfaces = instance.get('networkInterfaces', [])
-    #         for network_interface in network_interfaces:
-    #             network_interface.update({
-    #
-    #             })
-    #             all_ip_addresses.append(forwarding_rule)
-    #
-    #     for region in regional_address.keys():
-    #         if 'addresses' in regional_address.get(region):
-    #             for ip_address in regional_address.get(region).get('addresses'):
-    #                 simple_region = ip_address.get('region')
-    #                 users = ip_address.get('users')
-    #                 ip_address.update({
-    #                     'region': simple_region[simple_region.rfind('/')+1:] if simple_region else 'global',
-    #                     'used_by': self._get_parse_users(users) if users else ['None'],
-    #                     'is_ephemeral': 'Static'
-    #                 })
-    #                 all_ip_addresses.append(IPAddress(ip_address, strict=False))
-    #
-    #     for item in global_address:
-    #         users = item.get('users')
-    #         item.update({
-    #             'region': 'global',
-    #             'is_ephemeral': 'Static',
-    #             'used_by': self._get_parse_users(users) if users else ['None']
-    #         })
-    #         all_ip_addresses.append(IPAddress(item, strict=False))
-    #
-    #     return all_ip_addresses
-
     def get_peering(self, network):
         updated_peering = []
         for peer in network.get('peerings', []):
