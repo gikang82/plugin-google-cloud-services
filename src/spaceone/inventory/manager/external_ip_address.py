@@ -85,11 +85,10 @@ class ExternalIPAddressManager(GoogleCloudManager):
             forwarding_ip_juso = forwarding_rule.get('IPAddress')
             if forwarding_rule.get('loadBalancingScheme') == 'EXTERNAL' and forwarding_ip_juso not in all_ip_juso_only_check_dup:
                 rule_name = forwarding_rule.get('name')
-                pprint(forwarding_rule)
                 forwarding_rule.update({
                     'is_ephemeral': 'Ephemeral',
                     'ip_version_display': self._valid_ip_address(forwarding_ip_juso),
-                    #'network_tier_display': self._get_network_tier_display(external_ip_info),
+                    'network_tier_display': self._get_network_tier_display(forwarding_rule),
                     'address_type': forwarding_rule.get('loadBalancingScheme'),
                     'address': forwarding_ip_juso,
                     'region': self._get_region_from_forwarding_rule(forwarding_rule),
