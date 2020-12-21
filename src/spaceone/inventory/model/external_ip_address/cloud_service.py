@@ -13,10 +13,10 @@ INSTANCE
 external_ip_address_detail_meta = ItemDynamicLayout.set_fields('External IP Address Details', fields=[
     TextDyField.data_source('ID', 'data.id'),
     TextDyField.data_source('Name', 'data.name'),
-    EnumDyField.data_source('Version', 'data.status', default_state={
-            'safe': ['RESERVED'],
-            'warning': ['IN_USE'],
-            'disable':['RESERVING'],
+    EnumDyField.data_source('Version', 'data.status_display', default_state={
+            'safe': ['Reserved'],
+            'warning': ['In Use'],
+            'disable':['Reserving'],
 
     }),
     TextDyField.data_source('Region', 'data.region'),

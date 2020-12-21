@@ -17,9 +17,7 @@ firewall_detail_meta = ItemDynamicLayout.set_fields('Firewall Details', fields=[
         'indigo.500': ['On'], 'coral.600': ['Off']
     }),
     TextDyField.data_source('Priority', 'data.priority'),
-    EnumDyField.data_source('Direction', 'data.display.direction_display', default_badge={
-        'indigo.500': ['Ingress'], 'coral.600': ['Egress']
-    }),
+    TextDyField.data_source('Direction', 'data.display.direction_display'),
     EnumDyField.data_source('Action On Match', 'data.display.action', default_badge={
         'indigo.500': ['Allow'], 'coral.600': ['Deny']
     }),
