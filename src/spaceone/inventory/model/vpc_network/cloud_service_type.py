@@ -17,11 +17,8 @@ cst_network._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
         TextDyField.data_source('Number of Subnet', 'data.subnetwork_data.total_number'),
-        TextDyField.data_source('MTU', 'data.mtu'),
-        EnumDyField.data_source('Mode', 'data.subnet_creation_mode', default_state={
-            'safe': ['Auto'],
-            'warning': ['Custom'],
-        }),
+        TextDyField.data_source('Maximum transmission unit', 'data.mtu'),
+        TextDyField.data_source('Mode', 'data.subnet_creation_mode'),
         EnumDyField.data_source('Global Dynamic Routing', 'data.global_dynamic_route', default_state={
             'safe': ['On'],
             'warning': ['Off'],
