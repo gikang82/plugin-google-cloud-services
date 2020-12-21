@@ -38,7 +38,9 @@ class RouteManager(GoogleCloudManager):
             display = {
                 'network_display': self._get_matched_last_target('network', route),
                 'next_hop': self.get_next_hop(route),
-                'instance_tags': self._get_tags_display(route, 'list'),
+                'instance_tags_on_list': self._get_tags_display(route, 'list'),
+                'instance_tags': self._get_tags_display(route, 'not list'),
+
             }
 
             route.update({
@@ -122,7 +124,7 @@ class RouteManager(GoogleCloudManager):
 
     @staticmethod
     def _get_tags_display(route, flag):
-        contents = 'None' if flag == 'list' else 'This route applies to all instances within the specified network'
+        contents = [] if flag == 'list' else ['This route applies to all instances within the specified network']
         return [contents] if not route.get('tags', []) else route.get('tags', [])
 
     @staticmethod

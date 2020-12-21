@@ -19,7 +19,7 @@ cst_route._metadata = CloudServiceTypeMeta.set_meta(
         TextDyField.data_source('Description', 'data.description'),
         TextDyField.data_source('Destination IP Range', 'data.dest_range'),
         TextDyField.data_source('Priority', 'data.priority'),
-        ListDyField.data_source('Instance Tags', 'data.display.instance_tags'),
+        ListDyField.data_source('Instance Tags (Detail)', 'data.display.instance_tags'),
         TextDyField.data_source('Network', 'data.display.network_display'),
         TextDyField.data_source('Next Hop', 'data.display.next_hop'),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
