@@ -8,3 +8,4 @@ from spaceone.inventory.connector.snapshot import SnapshotConnector
 from spaceone.inventory.connector.storage import StorageConnector
 from spaceone.inventory.connector.vpc_network import VPCNetworkConnector
 from spaceone.inventory.connector.external_ip_address import ExternalIPAddressConnector
+from spaceone.inventory.connector.firewall import FirewallConnector
