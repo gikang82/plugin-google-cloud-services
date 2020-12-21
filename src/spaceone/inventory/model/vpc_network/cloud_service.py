@@ -1,7 +1,7 @@
 from schematics.types import ModelType, StringType, PolyModelType
 
 from spaceone.inventory.model.vpc_network.data import *
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, EnumDyField, ListDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, EnumDyField, ListDyField, DateTimeDyField
 from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout, TableDynamicLayout
 from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
 
@@ -11,11 +11,17 @@ INSTANCE
 
 # TAB - Bucket
 vpc_network_detail_meta = ItemDynamicLayout.set_fields('VPC Network Details', fields=[
+    TextDyField.data_source('Name', 'data.name'),
     TextDyField.data_source('Description', 'data.description'),
-    TextDyField.data_source('Subnet Creation mode', 'data.subnet_creation_mode'),
+    TextDyField.data_source('Maximum transmission unit', 'data.mtu'),
+    TextDyField.data_source('Mode', 'data.subnet_creation_mode'),
+    EnumDyField.data_source('Global Dynamic Routing', 'data.global_dynamic_route', default_state={
+            'safe': ['On'],
+            'warning': ['Off'],
+    }),
     TextDyField.data_source('Dynamic Routing mode', 'data.dynamic_routing_mode'),
     #TextDyField.data_source('DNS Server Policy', 'data.location.location_type'),
-    TextDyField.data_source('Maximum transmission unit', 'data.mtu'),
+    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
 ])
 
 vpc_network_subnets_meta = TableDynamicLayout.set_fields('Subnets', root_path='data.subnetwork_data.subnets', fields=[
@@ -43,7 +49,9 @@ vpc_network_firewall_meta = TableDynamicLayout.set_fields('Firewall Rules', root
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     TextDyField.data_source('Filters', 'display.filter'),
     ListDyField.data_source('Protocols / Ports', 'display.protocols_port'),
-    TextDyField.data_source('Action', 'display.action'),
+    EnumDyField.data_source('Action On Match', 'data.action', default_badge={
+        'indigo.500': ['Allow'], 'coral.600': ['Deny']
+    }),
     TextDyField.data_source('Priority', 'priority'),
     TextDyField.data_source('Logs', 'display.Logs')
 ])

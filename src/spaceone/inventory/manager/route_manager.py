@@ -38,8 +38,7 @@ class RouteManager(GoogleCloudManager):
             display = {
                 'network_display': self._get_matched_last_target('network', route),
                 'next_hop': self.get_next_hop(route),
-                'instance_tags': self._get_tags_display(route, 'Not list'),
-                'instance_tags_on_list': self._get_tags_display(route, 'list')
+                'instance_tags': self._get_tags_display(route, 'list'),
             }
 
             route.update({

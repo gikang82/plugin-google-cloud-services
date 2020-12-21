@@ -42,7 +42,9 @@ class ExternalIPAddressManager(GoogleCloudManager):
 
         for external_ip_juso in all_external_ip_addresses:
             region = external_ip_juso.get('region') if external_ip_juso.get('region') else 'global'
-            external_ip_juso.update({'project': secret_data['project_id']})
+            external_ip_juso.update({'project': secret_data['project_id'],
+                                     'status_display': external_ip_juso.get('status').replace('_', ' ').title()
+                                     })
             if external_ip_juso.get('selfLink') is None:
                 external_ip_juso.update({'self_link': self._get_external_self_link_when_its_empty(external_ip_juso)})
 
@@ -73,7 +75,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
                         users = ip_juso.get('users')
                         ip_juso.update({
                             'region': simple_region[simple_region.rfind('/')+1:] if simple_region else 'global',
-                            'used_by': self._get_parse_users(users) if users else ['None'],
+                            'used_by': self._get_parse_users(users) if users else [],
                             'ip_version_display': self._valid_ip_address(ip_juso.get('address')),
                             'network_tier_display': self._get_network_tier_display(ip_juso),
                             'is_ephemeral': 'Static'
