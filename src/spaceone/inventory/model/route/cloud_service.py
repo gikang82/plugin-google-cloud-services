@@ -17,7 +17,7 @@ route_detail_meta = ItemDynamicLayout.set_fields('Firewall Details', fields=[
     TextDyField.data_source('Network', 'data.display.network_display'),
     TextDyField.data_source('Destination IP Address Range', 'data.dest_range'),
     TextDyField.data_source('Priority', 'data.priority'),
-    ListDyField.data_source('Instance tags', 'data.display.instance_tags'),
+    ListDyField.data_source('Instance tags', 'data.display.instance_tags_on_list'),
     DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
 ])
 
