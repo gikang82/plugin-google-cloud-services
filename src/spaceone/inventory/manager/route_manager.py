@@ -125,7 +125,7 @@ class RouteManager(GoogleCloudManager):
     @staticmethod
     def _get_tags_display(route, flag):
         contents = [] if flag == 'list' else ['This route applies to all instances within the specified network']
-        return [contents] if not route.get('tags', []) else route.get('tags', [])
+        return contents if not route.get('tags', []) else route.get('tags', [])
 
     @staticmethod
     def _get_service_accounts(service_accounts):
