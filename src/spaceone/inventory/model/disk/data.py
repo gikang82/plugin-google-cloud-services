@@ -78,7 +78,6 @@ class Disk(Model):
     status = StringType(choices=('INVALID', 'CREATING', 'machine_image_conn', 'DELETING', 'UPLOADING'))
     encryption = StringType(choices=('Google managed', 'Customer managed, Customer supplied'))
     size = FloatType()
-    size_display = StringType()
     region = StringType()
     fingerprint = StringType(deserialize_from='labelFingerprint')
     snapshot_schedule_display = ListType(StringType(), default=[])

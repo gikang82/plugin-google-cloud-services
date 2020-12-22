@@ -98,14 +98,14 @@ class MachineImageManager(GoogleCloudManager):
 
         # if there's another option for disk encryption
         # encryption_list = instance.get('sourceDiskEncryptionKeys', [])
-
         for idx, disk in enumerate(instance.get('disks', [])):
+            size = self._get_bytes(int(disk.get('diskSizeGb')))
             single_disk = {
                 'device_index': disk.get('index'),
                 'device': disk.get('deviceName'),
                 'device_type': disk.get('type', ''),
                 'device_mode': disk.get('mode', ''),
-                'size': disk.get('diskSizeGb'),
+                'size': float(size),
                 'tags': self.get_tags_info(disk)
             }
             if idx == 0:
@@ -324,6 +324,10 @@ class MachineImageManager(GoogleCloudManager):
             constant = 0.48
 
         return constant
+
+    @staticmethod
+    def _get_bytes(number):
+        return 1024 * 1024 * 1024 * number
 
     @staticmethod
     def _get_scheduling(properties):

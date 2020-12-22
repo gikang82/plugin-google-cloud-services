@@ -1,7 +1,8 @@
 from schematics.types import ModelType, StringType, PolyModelType
 
 from spaceone.inventory.model.disk.data import Disk
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, DateTimeDyField, EnumDyField, ListDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, DateTimeDyField, \
+    EnumDyField, ListDyField, SizeField
 from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout, TableDynamicLayout, ListDynamicLayout
 from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
 
@@ -14,7 +15,7 @@ disk_properties_meta = ItemDynamicLayout.set_fields('Properties', fields=[
     TextDyField.data_source('Name', 'data.name'),
     EnumDyField.data_source('Disk Type', 'data.disk_type',
                             default_outline_badge=['local-ssd', 'pd-balanced', 'pd-ssd', 'pd-standard']),
-    TextDyField.data_source('Size', 'data.size_display'),
+    SizeField.data_source('Size', 'data.size'),
     TextDyField.data_source('Zone', 'data.zone'),
     ListDyField.data_source('In Used By', 'data.in_used_by',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),

@@ -109,12 +109,13 @@ class InstanceTemplateManager(GoogleCloudManager):
         disk_info = []
         for disk in instance.get('disks', []):
             init_param = disk.get('initializeParams', {})
+            size = self._get_bytes(int(init_param.get('diskSizeGb')))
             disk_info.append(Disk({
                 'device_index': disk.get('index'),
                 'device': disk.get('deviceName'),
                 'device_type': disk.get('type', ''),
                 'device_mode': disk.get('mode', ''),
-                'size': init_param.get('diskSizeGb'),
+                'size': float(size),
                 'tags': self.get_tags_info(disk)
             }, strict=False))
         return disk_info
@@ -247,6 +248,10 @@ class InstanceTemplateManager(GoogleCloudManager):
             return disk_type
         else:
             return ''
+
+    @staticmethod
+    def _get_bytes(number):
+        return 1024 * 1024 * 1024 * number
 
     @staticmethod
     def _get_properties_item(properties: dict, item_key: str, key: str):

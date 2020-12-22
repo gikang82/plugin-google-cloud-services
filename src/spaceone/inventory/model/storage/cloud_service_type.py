@@ -1,4 +1,4 @@
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, EnumDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, EnumDyField, SizeField
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
@@ -26,18 +26,16 @@ cst_bucket._metadata = CloudServiceTypeMeta.set_meta(
             'warning': ['Not authorized'],
             'alert': ['Public to internet'],
         }),
-
         TextDyField.data_source('Object Total Counts', 'data.object_count'),
-        TextDyField.data_source('Object Size (Bytes)', 'data.object_total_size'),
-
+        SizeField.data_source('Object Size', 'data.object_total_size'),
         TextDyField.data_source('Access Control', 'data.access_control'),
         TextDyField.data_source('Lifecycle rules', 'data.lifecycle_rule.lifecycle_rule_display'),
-        EnumDyField.data_source('Requester Pays', 'data.requester_pays', default_state={
-            'safe': ['OFF'],
-            'warning': ['ON'],
+        EnumDyField.data_source('Requester Pays', 'data.requester_pays', default_badge={
+            'indigo.500': ['OFF'], 'coral.600': ['ON']
         }),
         TextDyField.data_source('Retention Policy', 'data.retention_policy_display'),
-        TextDyField.data_source('Encryption', 'data.encryption')
+        TextDyField.data_source('Encryption', 'data.encryption'),
+        DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
 
     search=[
