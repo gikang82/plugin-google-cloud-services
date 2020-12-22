@@ -1,7 +1,7 @@
 from schematics.types import ModelType, StringType, PolyModelType
 
 from spaceone.inventory.model.storage.data import *
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, DateTimeDyField, EnumDyField, ListDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, DateTimeDyField, EnumDyField, ListDyField, SizeField
 from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout, TableDynamicLayout, ListDynamicLayout, SimpleTableDynamicLayout
 from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
 
@@ -17,9 +17,15 @@ bucket_configuration_meta = ItemDynamicLayout.set_fields('Configurations', field
     EnumDyField.data_source('Default Storage Class', 'data.default_storage_class',
                             default_outline_badge=['Standard', 'Nearline', 'Coldline', 'Archive']),
     TextDyField.data_source('Encryption Type', 'data.encryption'),
-    EnumDyField.data_source('Requester Pays', 'data.requester_pays', default_state={
-        'safe': ['OFF'],
-        'warning': ['ON'],
+    TextDyField.data_source('Object Total Counts', 'data.object_count'),
+    SizeField.data_source('Object Size', 'data.object_total_size'),
+    EnumDyField.data_source('Public Access', 'data.public_access', default_state={
+            'safe': ['Subject to object ACLs', 'Not public'],
+            'warning': ['Not authorized'],
+            'alert': ['Public to internet'],
+    }),
+    EnumDyField.data_source('Requester Pays', 'data.requester_pays', default_badge={
+        'indigo.500': ['OFF'], 'coral.600': ['ON']
     }),
     TextDyField.data_source('Access Control', 'data.access_control'),
     TextDyField.data_source('Link URL', 'data.links.link_url'),
