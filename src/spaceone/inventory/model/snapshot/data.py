@@ -65,10 +65,9 @@ class Disk(Model):
     source_disk = StringType()
     source_disk_display = StringType()
     source_disk_id = StringType()
-    disk_size_gb = FloatType()
-    disk_size_display = StringType()
+    disk_size = FloatType()
     storage_bytes = IntType()
-    storage_bytes_display = StringType()
+
 
 
 class Encryption(Model):

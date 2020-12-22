@@ -1,7 +1,7 @@
 from schematics.types import ModelType, StringType, PolyModelType
 
 from spaceone.inventory.model.snapshot.data import *
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, DateTimeDyField, EnumDyField, ListDyField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, DateTimeDyField, EnumDyField, ListDyField, SizeField
 from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout, TableDynamicLayout
 from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
 
@@ -13,8 +13,8 @@ INSTANCE
 # snapshot details
 snapshot_instance_meta = ItemDynamicLayout.set_fields('Snapshot Details', fields=[
     TextDyField.data_source('Source Disk', 'data.disk.source_disk_display'),
-    TextDyField.data_source('Disk Size', 'data.disk.disk_size_display'),
-    TextDyField.data_source('SnapShot Size', 'data.disk.storage_bytes_display'),
+    SizeField.data_source('Disk Size', 'data.disk.disk_size'),
+    SizeField.data_source('SnapShot Size', 'data.disk.storage_bytes'),
     ListDyField.data_source('Locations', 'data.storage_locations',
                             default_badge={'type': 'outline', 'delimiter': '<br>'}),
     DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),

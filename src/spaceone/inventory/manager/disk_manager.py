@@ -63,7 +63,6 @@ class DiskManager(GoogleCloudManager):
                     'snapshot_schedule': snapshots,
                     'snapshot_schedule_display': self._get_snapshot_schedule(disk),
                     'encryption': self._get_encryption(disk),
-                    'size_display': str(disk_size) + ' GB',
                     'size': float(size),
                     'read_iops': self.get_iops_rate(disk_type, disk_size, 'read'),
                     'write_iops': self.get_iops_rate(disk_type, disk_size, 'write'),

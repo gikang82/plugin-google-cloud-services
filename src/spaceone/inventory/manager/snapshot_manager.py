@@ -89,14 +89,13 @@ class SnapshotManager(GoogleCloudManager):
         '''
         disk_gb = snapshot.get('diskSizeGb', 0.0)
         st_byte = snapshot.get('storageBytes', 0)
+        size = self._get_bytes(int(disk_gb))
         return {
             'source_disk': snapshot.get('sourceDisk', ''),
             'source_disk_display': self._get_display_name(snapshot.get('sourceDisk', ''), 'disks/', 6),
             'source_disk_id': snapshot.get('sourceDiskId', ''),
-            'disk_size_gb': float(disk_gb),
-            'disk_size_display': f'{str(disk_gb)} GB',
+            'disk_size': float(size),
             'storage_bytes': int(st_byte),
-            'storage_bytes_display': self._convert_size(int(st_byte)),
         }
 
     def get_matched_snapshot_schedule(self, policy):
@@ -174,6 +173,10 @@ class SnapshotManager(GoogleCloudManager):
     @staticmethod
     def _get_last_target(target_str):
         return target_str[target_str.rfind('/') + 1:]
+
+    @staticmethod
+    def _get_bytes(number):
+        return 1024 * 1024 * 1024 * number
 
     @staticmethod
     def _get_disk_name_key(snapshot_name):
