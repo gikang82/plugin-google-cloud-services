@@ -21,7 +21,12 @@ class StorageConnector(GoogleCloudConnector):
             'projection': 'full',
             'alt': 'json'
         })
-        result = self.client.buckets().list(**query).execute()
+        result = {}
+        try:
+            result = self.client.buckets().list(**query).execute()
+        except Exception as e:
+            print(e)
+            pass
         return result.get('items', [])
 
     def list_iam_policy(self, bucket_name, **query):
