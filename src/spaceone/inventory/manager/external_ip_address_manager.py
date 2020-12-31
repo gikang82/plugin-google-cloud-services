@@ -106,7 +106,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
             zone = self._get_matched_last_target('zone', instance)
             region = zone[:-2]
             for network_interface in network_interfaces:
-                external_ip_infos = network_interface.get('accessConfigs')
+                external_ip_infos = network_interface.get('accessConfigs', [])
                 for external_ip_info in external_ip_infos:
                     if 'natIP' in external_ip_info and external_ip_info.get('natIP') not in all_ip_juso_only_check_dup:
                         instance_name = instance.get('name')
