@@ -42,7 +42,7 @@ class ExternalIPAddressConnector(GoogleCloudConnector):
             for name, forwarding_rules_scoped_list in response['items'].items():
                 if 'forwardingRules' in forwarding_rules_scoped_list:
                     forwarding_rule_list.extend(forwarding_rules_scoped_list.get('forwardingRules'))
-            request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
+            request = self.client.forwardingRules().aggregatedList_next(previous_request=request, previous_response=response)
         return forwarding_rule_list
 
     def list_regional_addresses(self, **query):
