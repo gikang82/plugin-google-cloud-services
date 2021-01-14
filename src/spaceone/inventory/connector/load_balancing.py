@@ -160,3 +160,16 @@ class LoadBalancingConnector(GoogleCloudConnector):
             request = self.client.targetHttpsProxies().aggregatedList_next(previous_request=request,
                                                                            previous_response=response)
         return https_proxy_list
+
+    def list_instance_groups(self, **query):
+        instance_group_list = []
+        query.update({'project': self.project_id})
+        request = self.client.instanceGroupManagers().aggregatedList(**query)
+        while request is not None:
+            response = request.execute()
+            for key, forwarding_scoped_list in response['items'].items():
+                if 'instanceGroupManagers' in forwarding_scoped_list:
+                    instance_group_list.extend(forwarding_scoped_list.get('instanceGroupManagers'))
+            request = self.client.instanceGroupManagers().aggregatedList_next(previous_request=request,
+                                                                           previous_response=response)
+        return instance_group_list

@@ -1,5 +1,5 @@
 from schematics import Model
-from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType
+from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType, FloatType
 
 
 class Labels(Model):
@@ -121,23 +121,94 @@ class ForwardingRule(Model):
     fingerprint = StringType(serialize_when_none=False)
     kind = StringType(serialize_when_none=False)
     target = StringType(serialize_when_none=False)
+    self_link = StringType(deserialize_from='selfLink', serialize_when_none=False)
+    load_balancing_scheme = StringType(choices=['EXTERNAL','INTERNAL','INTERNAL_MANAGED','INTERNAL_SELF_MANAGED'], serialize_when_none=False)
+    subnetwork = StringType()
+    network = StringType()
+    back_service = StringType()
+    service_label = StringType()
+    service_name = StringType()
+    network_tier = StringType(choices=('Premium', 'Standard'))
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp', serialize_when_none=False)
 
 
+class LogConfig(Model):
+    enable = BooleanType(serialize_when_none=False)
+    sample_rate = IntType(deserialize_from='sampleRate', serialize_when_none=False)
+
+
+class BackendServiceBackend(Model):
+    description = StringType()
+    group = StringType()
+    balancing_mode = StringType(deserialize_from='balancingMode', choices=['RATE', 'UTILIZATION', 'CONNECTION'])
+    max_utilization = FloatType(deserialize_from='maxUtilization', serialize_when_none=False)
+    max_rate = IntType(deserialize_from='maxRate', serialize_when_none=False)
+    max_rate_per_instance = FloatType(deserialize_from='maxRatePerInstance', serialize_when_none=False)
+    max_rate_per_endpoint = FloatType(deserialize_from='maxRatePerEndpoint', serialize_when_none=False)
+    max_connections = IntType(deserialize_from='maxConnections', serialize_when_none=False)
+    max_connections_per_instance = IntType(deserialize_from='maxConnectionsPerInstance', serialize_when_none=False)
+    max_connections_per_endpoint = IntType(deserialize_from='maxConnectionsPerEndpoint', serialize_when_none=False)
+    capacity_scaler = FloatType(deserialize_from='capacityScaler', serialize_when_none=False)
+    failover = BooleanType
+
+class FailOverPolicy(Model):
+    disable_connection_drain_on_failover = BooleanType(deserialize_from='disableConnectionDrainOnFailover', serialize_when_none=False)
+    drop_traffic_if_unhealthy = BooleanType(deserialize_from='dropTrafficIfUnhealthy', serialize_when_none=False)
+    failover_ratio = FloatType(deserialize_from='failoverRatio', serialize_when_none=False)
+
+class ConnectionDraining(Model):
+    draining_timeout_sec = IntType(deserialize_from='drainingTimeoutSec', serialize_when_none=False)
+
 class BackendService(Model):
+    id = StringType()
     name = StringType()
     description = StringType()
-    type = StringType()
     region = StringType()
-    in_used_by = StringType()
+    backends = ListType(ModelType(BackendServiceBackend), default=[], serialize_when_none=False)
+    health_checks = ListType(StringType(), default=[], deserialize_from='healthChecks', serialize_when_none=False)
+    timeout_sec = IntType(deserialize_from='timeoutSec', serialize_when_none=False)
+    port = IntType(serialize_when_none=False)
+    protocol = StringType(choices=['HTTP', 'HTTPS', 'HTTP2', 'TCP', 'SSL', 'UDP' 'GRPC'])
+    fingerprint = StringType()
+    port_name = StringType(deserialize_from='portName', serialize_when_none=False)
+    enable_cdn = BooleanType(deserialize_from='enableCDN', serialize_when_none=False)
+    sessionAffinity = StringType(deserialize_from='sessionAffinity',
+                                 choices=['NONE', 'CLIENT_IP', 'CLIENT_IP_PROTO','CLIENT_IP_PORT_PROTO',
+                                          'INTERNAL_MANAGED', 'INTERNAL_SELF_MANAGED', 'GENERATED_COOKIE',
+                                          'HEADER_FIELD', 'HTTP_COOKIE'],
+                                 serialize_when_none=False)
+    affinity_cookie_ttl_sec = IntType(deserialize_from='affinityCookieTtlSec', serialize_when_none=False)
+    failover_policy = ModelType(FailOverPolicy, serialize_when_none=False)
+    load_balancing_scheme = StringType(deserialize_from='loadBalancingScheme',
+                                 choices=['EXTERNAL','INTERNAL','INTERNAL_MANAGED','INTERNAL_SELF_MANAGED'],
+                                 serialize_when_none=False)
+    log_config = ModelType(LogConfig, serialize_when_none=False)
+    connection_draining = ModelType(ConnectionDraining, serialize_when_none=False)
+    self_link = StringType(deserialize_from='selfLink')
+    creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
+
+class CDNPolicy(Model):
+    signed_url_key_names = ListType(StringType(), default=[],
+                                       deserialize_from='signedUrlKeyNames',
+                                       serialize_when_none=False)
+    signed_url_cache_max_age_sec = StringType(deserialize_from='signedUrlCacheMaxAgeSec')
+
+    bucket_name = StringType(deserialize_from='bucketName')
+    bucket_name = StringType(deserialize_from='bucketName')
 
 
 class BackEndBucket(Model):
+    id = StringType()
     name = StringType()
+    bucket_name = StringType(deserialize_from='bucketName')
     description = StringType()
-    bucket = StringType()
-    in_used_by = StringType()
-
+    self_link = StringType(deserialize_from='selfLink')
+    cdn_policy = ModelType(CDNPolicy, serialize_when_none=False)
+    enable_cdn = BooleanType(deserialize_from='enableCDN', serialize_when_none=False)
+    custom_response_headers = ListType(StringType(), default=[],
+                                       deserialize_from='customResponseHeaders',
+                                       serialize_when_none=False)
+    creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
 class Certificate(Model):
     name = StringType()
@@ -149,11 +220,17 @@ class Certificate(Model):
 
 
 class TargetPools(Model):
+    id = StringType()
     name = StringType()
-    region = StringType()
-    number_of_instance = IntType(default=0)
-    health_check = StringType()
-    in_used_by = StringType()
+    description = StringType()
+    region = StringType(serialize_when_none=False)
+    healthChecks = ListType(StringType(), deserialize_from='healthChecks', default=[])
+    instances = ListType(StringType(), default=[])
+    session_affinity = StringType(deserialize_from='sessionAffinity',serialize_when_none=False)
+    failover_ratio = FloatType(deserialize_from='failoverRatio',serialize_when_none=False)
+    backup_pool = StringType(deserialize_from='backupPool',serialize_when_none=False)
+    self_link = StringType(deserialize_from='selfLink')
+    kind = StringType(serialize_when_none=False)
 
 
 class HealthCheck(Model):
@@ -169,20 +246,30 @@ class HealthCheck(Model):
 
 class Backend(Model):
     name = StringType()
-    type = StringType()
-    scope = IntType(default=0)
-    protocol = StringType()
-    logging = StringType(choices=['On', 'Off'])
-    sample_rate = IntType(default=0)
-    health_check = ModelType(HealthCheck)
+    session_affinity = StringType(serialize_when_none=False)
+    connection_draining_timeout = StringType(serialize_when_none=False)
+    logging = StringType(serialize_when_none=False)
+    region = StringType(serialize_when_none=False)
+    endpoint_protocol = StringType(serialize_when_none=False)
+    name_port = StringType(serialize_when_none=False)
+    time_out = StringType(serialize_when_none=False)
+    cloud_cdn = StringType(serialize_when_none=False)
+    traffic_policy = StringType(serialize_when_none=False)
+    Health_check = ListType(StringType(), default=[])
 
 
 class Frontend(Model):
     name = StringType()
-    scope = StringType(choices=('Regional', 'Global'))
-    address = StringType()
+    ip_port = StringType()
     protocols = StringType(choices=('HTTP', 'TCP', 'UDP', 'HTTPS'))
+    certificate = StringType()
     network_tier = StringType(choices=('Premium', 'Standard'))
+
+
+class HostAndPathRule(Model):
+    host = StringType()
+    path = StringType()
+    back_end = StringType()
 
 
 class LoadBalancing(Model):
@@ -191,10 +278,12 @@ class LoadBalancing(Model):
     description = StringType()
     project = StringType()
     region = StringType()
-    type = StringType(choices=('HTTP', 'TCP', 'UDP', 'HTTP(S)'))
+    lb_type = StringType()
+    #type = StringType(choices=('HTTP', 'TCP', 'UDP', 'HTTP(S)'))
     protocols = ListType(StringType(), default=[])
-    source_link = StringType(deserialize_from='selfLink', serialize_when_none=False)
+    source_link = StringType(deserialize_from='identifier', serialize_when_none=False)
     self_link = StringType(default="")
+    host_and_paths = ListType(ModelType(HostAndPathRule), serialize_when_none=False)
     backends = ListType(ModelType(Backend), default=[])
     frontends = ListType(ModelType(Frontend), default=[])
     forwarding_rules = ListType(ModelType(ForwardingRule), default=[])
