@@ -10,3 +10,4 @@ from spaceone.inventory.connector.vpc_network import VPCNetworkConnector
 from spaceone.inventory.connector.external_ip_address import ExternalIPAddressConnector
 from spaceone.inventory.connector.firewall import FirewallConnector
 from spaceone.inventory.connector.route import RouteConnector
+from spaceone.inventory.connector.load_balancing import LoadBalancingConnector

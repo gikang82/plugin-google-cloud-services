@@ -81,7 +81,6 @@ class GoogleCloudManager(BaseManager):
         if secret_data.get('region_name'):
             region_self_link = f'https://www.googleapis.com/compute/v1/projects/{secret_data["project_id"]}/regions/{secret_data.get("region_name")}'
             query.update({'filter': f'region="{region_self_link}"'})
-
         connector: GoogleCloudConnector = self.locator.get_connector('GoogleCloudConnector', secret_data=secret_data)
         zones = connector.list_zones(**query)
 

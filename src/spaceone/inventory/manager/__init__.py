@@ -9,3 +9,4 @@ from spaceone.inventory.manager.vpc_network_manager import VPCNetworkManager
 from spaceone.inventory.manager.external_ip_address_manager import ExternalIPAddressManager
 from spaceone.inventory.manager.firewall_manager import FirewallManager
 from spaceone.inventory.manager.route_manager import RouteManager
+from spaceone.inventory.manager.load_balancing_manager import LoadBalancingManager
