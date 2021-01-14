@@ -1,10 +1,8 @@
 import logging
-
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.model.vpc_network.data import *
 from spaceone.inventory.error import *
 from pprint import pprint
-
 __all__ = ['LoadBalancingConnector']
 _LOGGER = logging.getLogger(__name__)
 
@@ -18,10 +16,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
 
     def list_url_maps(self, **query):
         url_map_list = []
-
         query.update({'project': self.project_id})
         request = self.client.urlMaps().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, url_scoped_list in response['items'].items():
@@ -32,10 +28,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
 
     def list_back_end_services(self, **query):
         backend_svc_list = []
-
         query.update({'project': self.project_id})
         request = self.client.backendServices().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, url_scoped_list in response['items'].items():
@@ -47,10 +41,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
 
     def list_target_pools(self, **query):
         target_pool_list = []
-
         query.update({'project': self.project_id})
         request = self.client.targetPools().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, pool_scoped_list in response['items'].items():
@@ -62,10 +54,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
 
     def list_forwarding_rules(self, **query):
         forwarding_rule_list = []
-
         query.update({'project': self.project_id})
         request = self.client.forwardingRules().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, forwarding_scoped_list in response['items'].items():
@@ -75,10 +65,38 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                         previous_response=response)
         return forwarding_rule_list
 
-    def list_grpc_proxies(self, **query):
+    def list_tcp_proxies(self, **query):
+        tcp_proxy_list = []
         query.update({'project': self.project_id})
-        result = self.client.targetGrpcProxies().list(**query).execute()
-        return result.get('items', [])
+        request = self.client.targetTcpProxies().list(**query)
+        while request is not None:
+            response = request.execute()
+            for tcp_proxy in response.get('items', []):
+                tcp_proxy_list.append(tcp_proxy)
+            request = self.client.targetTcpProxies().list_next(previous_request=request, previous_response=response)
+        return tcp_proxy_list
+
+    def list_ssl_proxies(self, **query):
+        ssl_proxy_list = []
+        query.update({'project': self.project_id})
+        request = self.client.targetSslProxies().list(**query)
+        while request is not None:
+            response = request.execute()
+            for ssl_proxy in response.get('items', []):
+                ssl_proxy_list.append(ssl_proxy)
+            request = self.client.targetSslProxies().list_next(previous_request=request, previous_response=response)
+        return ssl_proxy_list
+
+    def list_grpc_proxies(self, **query):
+        grpc_proxy_list = []
+        query.update({'project': self.project_id})
+        request = self.client.targetGrpcProxies().list(**query)
+        while request is not None:
+            response = request.execute()
+            for grpc_proxy in response.get('items', []):
+                grpc_proxy_list.append(grpc_proxy)
+            request = self.client.targetGrpcProxies().list_next(previous_request=request, previous_response=response)
+        return grpc_proxy_list
 
     def list_back_end_buckets(self, **query):
         bucket_bucket_list = []
@@ -93,10 +111,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
 
     def list_target_http_proxies(self, **query):
         http_proxy_list = []
-
         query.update({'project': self.project_id})
         request = self.client.targetHttpProxies().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, forwarding_scoped_list in response['items'].items():
@@ -110,7 +126,6 @@ class LoadBalancingConnector(GoogleCloudConnector):
         https_proxy_list = []
         query.update({'project': self.project_id})
         request = self.client.targetHttpsProxies().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, forwarding_scoped_list in response['items'].items():
@@ -124,7 +139,6 @@ class LoadBalancingConnector(GoogleCloudConnector):
         ssl_certificate_list = []
         query.update({'project': self.project_id})
         request = self.client.sslCertificates().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, forwarding_scoped_list in response['items'].items():
@@ -136,10 +150,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
 
     def list_backend_https_proxies(self, **query):
         https_proxy_list = []
-
         query.update({'project': self.project_id})
         request = self.client.targetHttpsProxies().aggregatedList(**query)
-
         while request is not None:
             response = request.execute()
             for key, forwarding_scoped_list in response['items'].items():

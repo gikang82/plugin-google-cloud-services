@@ -38,6 +38,7 @@ class LoadBalancingManager(GoogleCloudManager):
         url_maps = load_bal_conn.list_url_maps()
         forwarding_rules = load_bal_conn.list_forwarding_rules()
         backend_services = load_bal_conn.list_back_end_services()
+
         backend_buckets = load_bal_conn.list_back_end_buckets()
         ssl_certificates = load_bal_conn.list_ssl_certificates()
 
@@ -45,15 +46,27 @@ class LoadBalancingManager(GoogleCloudManager):
         grpc_proxies = load_bal_conn.list_grpc_proxies()
         http_proxies = load_bal_conn.list_target_http_proxies()
         https_proxies = load_bal_conn.list_target_https_proxies()
+        ssl_proxies = load_bal_conn.list_ssl_proxies()
+        tcp_proxies = load_bal_conn.list_tcp_proxies()
 
-        target_proxies = self.get_all_proxy_list(grpc_proxies, http_proxies, https_proxies, forwarding_rules)
+        target_proxies, selective_proxies = self.get_all_proxy_list(grpc_proxies,
+                                                                   http_proxies,
+                                                                   https_proxies,
+                                                                   ssl_proxies,
+                                                                   tcp_proxies,
+                                                                   forwarding_rules)
+
 
         load_balances = self.get_load_balancer_infos(url_maps,
                                                      backend_services,
                                                      target_pools,
                                                      forwarding_rules,
                                                      target_proxies,
+                                                     selective_proxies,
+                                                     backend_buckets,
                                                      project_id)
+        print(len(load_balances))
+        pprint(load_balances)
 
         for load_balance in load_balances:
             identifier = load_balance.get('identifier')
@@ -75,28 +88,45 @@ class LoadBalancingManager(GoogleCloudManager):
         print(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
-    def get_load_balancer_infos(self, url_maps, backend_services, target_pools, forwarding_rules, all_proxies, project):
+    def get_load_balancer_infos(self, url_maps,
+                                backend_services,
+                                target_pools,
+                                forwarding_rules,
+                                target_proxies,
+                                selective_proxies,
+                                backend_buckets,
+                                project):
+
         load_balance_infos = []
-        load_balance_infos.extend(self.get_load_balancer_from_url_maps(url_maps, backend_services, project))
+        load_balance_infos.extend(self.get_load_balacer_from_target_proxy(backend_services, selective_proxies, project))
+        load_balance_infos.extend(self.get_load_balancer_from_url_maps(url_maps, backend_services, backend_buckets, project))
         load_balance_infos.extend(self.get_load_balancer_from_target_pools(target_pools, forwarding_rules, project))
+
+        #pprint(load_balance_infos)
 
         return load_balance_infos
 
-    def get_all_proxy_list(self, grpc_proxies, http_proxies, https_proxies, forwarding_rules):
+    def get_all_proxy_list(self, grpc_proxies, http_proxies, https_proxies, ssl_proxies, tcp_proxies, forwarding_rules):
         proxy_list = []
+        proxy_list_relate_to_load_balancer = []
+
         all_resources = [{'type': 'grpc',
                           'source': grpc_proxies},
                          {'type': 'http',
                           'source': http_proxies},
                          {'type': 'https',
-                          'source': https_proxies}]
+                          'source': https_proxies},
+                         {'type': 'ssl',
+                          'source': ssl_proxies},
+                         {'type': 'tcp',
+                          'source': tcp_proxies}
+                         ]
 
         for resource in all_resources:
             for proxy in resource.get('source', []):
 
                 proxy_type = resource.get('type')
-                proxy_key: str = 'grpc_proxy' if proxy_type == 'grpc' \
-                    else 'http_proxy' if proxy_type == 'http' else 'https_proxy'
+                proxy_key: str = self._get_proxy_key(resource.get('type'))
                 in_used_by, in_used_by_display = self._get_in_used_by_forwarding_rule(proxy, forwarding_rules)
 
                 proxy_vo = {
@@ -109,22 +139,29 @@ class LoadBalancingManager(GoogleCloudManager):
                     'target_proxy_display': {
                         'name': proxy.get('name', ''),
                         'description': proxy.get('description', ''),
-                        'type': f'{proxy_type.capitalize()} Proxy',
+                        'type': f'{proxy_type.upper()} Proxy',
                         'target_resource': self._get_matched_last_target('urlMap', proxy),
                         'in_used_by_display': in_used_by_display
                     },
                 }
+                if proxy_type in ['ssl', 'tcp']:
+                    proxy_list_relate_to_load_balancer.append(proxy_vo)
+                proxy_list.append(proxy_vo)
+                #     proxy_list_relate_to_load_balancer.append(TargetProxy(proxy_vo, strict=False))
+                # proxy_list.append(TargetProxy(proxy_vo, strict=False))
 
-                proxy_list.append(TargetProxy(proxy_vo))
+        return proxy_list, proxy_list_relate_to_load_balancer
 
-        return proxy_list
-
-    def get_load_balancer_from_url_maps(self, url_maps, backend_services, project):
+    def get_load_balancer_from_url_maps(self, url_maps, backend_services, backend_buckets, project):
         load_balancer_list = []
 
         for url_map in url_maps:
-            url_map_single_vo = {}
             region = self._get_matched_last_target('region', url_map) if url_map.get('region') else 'global'
+            url_map_single_vo = {}
+            identifiers = self._get_matched_services(url_map)
+            backend_svc_list =self._get_lb_info_from_selected_items(identifiers, 'selfLink', backend_services)
+            backend_bucktet_list = self._get_lb_info_from_selected_items(identifiers, 'selfLink', backend_buckets)
+
             url_map_single_vo.update({
                 'project': project,
                 'region': region,
@@ -132,22 +169,10 @@ class LoadBalancingManager(GoogleCloudManager):
                 'name': url_map.get('name'),
                 'self_link': self._get_self_link(project, region, url_map.get('name')),
                 'identifier': url_map.get('selfLink'),
-                'creation_timestamp': url_map.get('creationTimestamp')
+                'creation_timestamp': url_map.get('creationTimestamp'),
+                'backend_services': backend_svc_list,
+                'backend_buckets': backend_bucktet_list
             })
-
-            identifier = url_map.get('defaultService')
-            lb_info_from_be = self._get_lb_info_from_selected_items(identifier, 'selfLink', backend_services)
-
-            if lb_info_from_be:
-                print('lb from forwarding backend')
-                pprint(lb_info_from_be)
-                print()
-                # url_map_single_vo.update({
-                #     'protocol': self._get_list_from_str(lb_info_from_be.get('protocol')),
-                #     'scheme': lb_info_from_be.get('loadBalancingScheme'),
-                #     'port_range': self._get_list_from_str(lb_info_from_be.get('port')),
-                #     'network_tier': lb_info_from_be.get('networkTier')
-                # })
 
             load_balancer_list.append(url_map_single_vo)
 
@@ -170,13 +195,13 @@ class LoadBalancingManager(GoogleCloudManager):
                 'creation_timestamp': target_pool.get('creationTimestamp')
             })
 
-            target_link = target_pool.get('selfLink')
-            lb_info = self._get_lb_info_from_selected_items(target_link, 'target', forwarding_rules)
+            # target_link = target_pool.get('selfLink')
+            # lb_info = self._get_lb_info_from_selected_items(target_link, 'target', forwarding_rules)
 
-            if lb_info:
-                print('lb from forwarding rule')
-                pprint(lb_info)
-                print()
+            # if lb_info:
+            #     print('lb from forwarding rule')
+            #     pprint(lb_info)
+            #     print()
                 # target_pool_single_vo.update({
                 #     'protocol': self._get_list_from_str(lb_info.get('IPProtocol')),
                 #     'port_range': self._get_list_from_str(lb_info.get('portRange')),
@@ -188,6 +213,30 @@ class LoadBalancingManager(GoogleCloudManager):
 
         return load_balancer_list
 
+    def _get_back_svc_from_selected_items(self, source_from, selected_items):
+        matching_svc = []
+        if 'pathRules' in source_from:
+            pass
+        else:
+            pass
+
+    @staticmethod
+    def _get_matched_services(target_item):
+        matching_item_self_links = []
+        if 'defaultService' in target_item:
+            matching_item_self_links.append(target_item.get('defaultService'))
+
+        if 'pathMatchers' in target_item and isinstance(target_item.get('pathMatchers'), list):
+            for path_matcher in target_item.get('pathMatchers'):
+                if path_matcher.get('defaultService', '') not in matching_item_self_links:
+                    matching_item_self_links.append(path_matcher.get('defaultService', ''))
+
+                if 'pathRules' in path_matcher and isinstance(path_matcher.get('pathRules'), list):
+                    for rule in path_matcher.get('pathRules'):
+                        if rule.get('service') not in matching_item_self_links:
+                            matching_item_self_links.append(rule.get('service'))
+
+        return matching_item_self_links
     @staticmethod
     def _get_matched_last_target(key, source):
         a = source.get(key, '')
@@ -229,6 +278,31 @@ class LoadBalancingManager(GoogleCloudManager):
 
         return in_used_by, in_used_by_display
 
+    def get_load_balacer_from_target_proxy(self, backends, selective_proxies, project):
+        backend_proxies = []
+
+        for ssl_tcp_proxy in selective_proxies:
+            key = 'tcp_proxy' if 'tcp_proxy' in ssl_tcp_proxy else 'ssl_proxy'
+            proxy_info = ssl_tcp_proxy.get(key, {})
+            for backend in backends:
+                if backend.get('selfLink') == proxy_info.get('service', ''):
+                    region = self._extract_region_from_proxy(proxy_info.get('selfLink'), project)
+                    backend_proxy_vo = {
+                        'project': project,
+                        'id': proxy_info.get('id'),
+                        'region': region,
+                        'name': proxy_info.get('name'),
+                        'self_link': self._get_self_link(project, region, proxy_info.get('name')),
+                        'identifier': proxy_info.get('selfLink'),
+                        'creation_timestamp': proxy_info.get('creationTimestamp'),
+                        'target_proxies': [ssl_tcp_proxy],
+                        'backend_services': [backend]
+                    }
+
+                    backend_proxies.append(backend_proxy_vo)
+
+        return backend_proxies
+
     @staticmethod
     def _get_matching_target_proxy(loadbalancer, all_proxies):
         target_proxies = []
@@ -247,9 +321,32 @@ class LoadBalancingManager(GoogleCloudManager):
         return target_proxies
 
     @staticmethod
+    def _extract_region_from_proxy(self_link, project):
+        p_len = len(project)+1
+        p_key = f'{project}/'
+        _region = self_link[self_link.find(p_key)+p_len:]
+        return _region[:_region.find('/')]
+
+
+    @staticmethod
+    def _get_proxy_key(proxy_type):
+        proxy_key = 'tcp_proxy'
+        if proxy_type == 'grpc':
+            proxy_key = 'grpc_proxy'
+        elif proxy_type == 'http':
+            proxy_key = 'http_proxy'
+        elif proxy_type == 'https':
+            proxy_key = 'https_proxy'
+        elif proxy_type == 'ssl':
+            proxy_key = 'ssl_proxy'
+        return proxy_key
+
+
+    @staticmethod
     def _get_lb_info_from_selected_items(identifier, key, selected_items):
         matched_lb_vo = []
         for selected_item in selected_items:
-            if selected_item.get(key, '') == identifier:
+            if selected_item.get(key, '') in identifier:
                 matched_lb_vo.append(selected_item)
         return matched_lb_vo
+

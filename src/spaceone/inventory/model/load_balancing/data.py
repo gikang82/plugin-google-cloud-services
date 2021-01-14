@@ -1,5 +1,5 @@
 from schematics import Model
-from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType, FloatType, DictType, UnionType, MultiType
+from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType
 
 
 class Labels(Model):
@@ -7,11 +7,37 @@ class Labels(Model):
     value = StringType()
 
 
+class TargetTCPProxy(Model):
+    id = StringType()
+    name = StringType()
+    description = StringType(default='')
+    self_link = StringType(deserialize_from='selfLink', serialize_when_none=False)
+    region = StringType(default='global')
+    service = StringType()
+    proxy_header = StringType(choices=['NONE', 'PROXY_V1'], deserialize_from='proxyHeader', serialize_when_none=False)
+    creation_timestamp = DateTimeType(deserialize_from='creationTimestamp', serialize_when_none=False)
+    kind = StringType()
+
+
+class TargetSSLProxy(Model):
+    id = StringType()
+    name = StringType()
+    description = StringType(default='')
+    self_link = StringType(deserialize_from='selfLink', serialize_when_none=False)
+    region = StringType(default='global')
+    service = StringType()
+    ssl_certificates = StringType(deserialize_from='sslCertificates', serialize_when_none=False)
+    proxy_header = StringType(choices=['NONE', 'PROXY_V1'], deserialize_from='proxyHeader', serialize_when_none=False)
+    ssl_policy = StringType(deserialize_from='sslPolicy', serialize_when_none=False)
+    creation_timestamp = DateTimeType(deserialize_from='creationTimestamp', serialize_when_none=False)
+    kind = StringType()
+
+
 class TargetGRPCProxy(Model):
     id = StringType()
     name = StringType()
     description = StringType(default='')
-    self_link = StringType()
+    self_link = StringType(deserialize_from='selfLink', serialize_when_none=False)
     kind = StringType()
     region = StringType(default='global')
     self_link_with_id = StringType(deserialize_from='selfLinkWithId', serialize_when_none=False)
@@ -75,6 +101,8 @@ class TargetProxy(Model):
     grpc_proxy = ModelType(TargetGRPCProxy, serialize_when_none=False)
     http_proxy = ModelType(TargetHttpProxy, serialize_when_none=False)
     https_proxy = ModelType(TargetHttpsProxy, serialize_when_none=False)
+    tcp_proxy = ModelType(TargetTCPProxy, serialize_when_none=False)
+    ssl_proxy = ModelType(TargetSSLProxy, serialize_when_none=False)
     target_resource = ModelType(InUsedBy, default={})
     target_proxy_display = ModelType(TargetProxyDisplay, serialize_when_none=False)
     in_used_by = ListType(ModelType(InUsedBy), default=[])
@@ -164,7 +192,8 @@ class LoadBalancing(Model):
     project = StringType()
     region = StringType()
     type = StringType(choices=('HTTP', 'TCP', 'UDP', 'HTTP(S)'))
-    identifier = StringType(default='')
+    protocols = ListType(StringType(), default=[])
+    source_link = StringType(deserialize_from='selfLink', serialize_when_none=False)
     self_link = StringType(default="")
     backends = ListType(ModelType(Backend), default=[])
     frontends = ListType(ModelType(Frontend), default=[])
@@ -177,7 +206,6 @@ class LoadBalancing(Model):
     labels = ListType(ModelType(Labels), default=[])
     tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
-
     def reference(self):
         return {
             "resource_id": self.self_link,
