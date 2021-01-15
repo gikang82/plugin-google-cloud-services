@@ -161,6 +161,41 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                            previous_response=response)
         return https_proxy_list
 
+    def list_health_checks(self, **query):
+        health_check_list = []
+        query.update({'project': self.project_id})
+        request = self.client.healthChecks().aggregatedList(**query)
+        while request is not None:
+            response = request.execute()
+            for key, forwarding_scoped_list in response['items'].items():
+                if 'healthChecks' in forwarding_scoped_list:
+                    health_check_list.extend(forwarding_scoped_list.get('healthChecks'))
+            request = self.client.healthChecks().aggregatedList_next(previous_request=request,
+                                                                     previous_response=response)
+        return health_check_list
+
+    def list_http_health_checks(self, **query):
+        http_health_list = []
+        query.update({'project': self.project_id})
+        request = self.client.httpHealthChecks().list(**query)
+        while request is not None:
+            response = request.execute()
+            for backend_bucket in response.get('items', []):
+                http_health_list.append(backend_bucket)
+            request = self.client.httpHealthChecks().list_next(previous_request=request, previous_response=response)
+        return http_health_list
+
+    def list_https_health_checks(self, **query):
+        https_health_list = []
+        query.update({'project': self.project_id})
+        request = self.client.httpsHealthChecks().list(**query)
+        while request is not None:
+            response = request.execute()
+            for backend_bucket in response.get('items', []):
+                https_health_list.append(backend_bucket)
+            request = self.client.httpsHealthChecks().list_next(previous_request=request, previous_response=response)
+        return https_health_list
+
     def list_instance_groups(self, **query):
         instance_group_list = []
         query.update({'project': self.project_id})
@@ -171,5 +206,5 @@ class LoadBalancingConnector(GoogleCloudConnector):
                 if 'instanceGroupManagers' in forwarding_scoped_list:
                     instance_group_list.extend(forwarding_scoped_list.get('instanceGroupManagers'))
             request = self.client.instanceGroupManagers().aggregatedList_next(previous_request=request,
-                                                                           previous_response=response)
+                                                                              previous_response=response)
         return instance_group_list
