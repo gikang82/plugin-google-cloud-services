@@ -151,7 +151,9 @@ lb_backend_meta = TableDynamicLayout.set_fields('Backends', root_path='data.back
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Type', 'type'),
     TextDyField.data_source('Scope', 'scope'),
-    TextDyField.data_source('Protocol', 'protocol'),
+    EnumDyField.data_source('Protocol', 'protocols', default_badge={
+        'primary': ['HTTP', 'HTTPS'], 'indigo.500': ['TCP'], 'coral.600': ['UDP']
+    }),
 ])
 
 lb_frontend_meta = TableDynamicLayout.set_fields('Frontends', root_path='data.frontends', fields=[
@@ -188,7 +190,7 @@ lb_target_proxies_meta = TableDynamicLayout.set_fields('Target Proxies', root_pa
     TextDyField.data_source('Description', 'target_proxy_display.description'),
     TextDyField.data_source('Type', 'target_proxy_display.type'),
     TextDyField.data_source('Target Resource', 'target_proxy_display.target_resource'),
-    DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
+    DateTimeDyField.data_source('Creation Time', 'target_proxy_display.creation_timestamp')
 ])
 
 lb_health_checks_meta = TableDynamicLayout.set_fields('Health Checks', root_path='data.heath_check_vos.health_checks',
