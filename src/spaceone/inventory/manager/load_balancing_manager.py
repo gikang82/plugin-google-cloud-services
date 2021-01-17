@@ -516,12 +516,17 @@ class LoadBalancingManager(GoogleCloudManager):
 
                             managed = matching_one.get(key, {})
                             domain_info = managed.get('domainStatus', {})
+                            domain_status = self.convert_labels_format(managed.get('domainStatus', {}))
+
                             domains = [dd for dd in domain_info]
                             matching_one.update({
                                 'domains': domains,
                                 'type': ssl_type
                             })
+                            if domain_status:
+                                matching_one['managed'].update({'domain_status': domain_status})
                             matched_certificate.append(matching_one)
+
                     matched_target_proxies.append(target_proxy)
 
         return matched_target_proxies, matched_certificate

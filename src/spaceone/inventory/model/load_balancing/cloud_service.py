@@ -33,7 +33,7 @@ lb_host_path_in_detail = SimpleTableDynamicLayout.set_fields('Host & Path Rules'
                                                               TextDyField.data_source('Name', 'backend'),
                                                           ])
 
-lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend',
+lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend (Url Map)',
                                                                 root_path='data.backends.url_map_backend',
                                                                 fields=[
                                                                     TextDyField.data_source('Name', 'name'),
@@ -70,7 +70,7 @@ lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend',
                                                                             'delimiter': '<br>'}),
                                                                 ])
 
-lb_backend_target_pool_item_in_detail = ItemDynamicLayout.set_fields('Backend',
+lb_backend_target_pool_item_in_detail = ItemDynamicLayout.set_fields('Backend with Target Pool',
                                                                   root_path='data.backends.target_pool_backend',
                                                                   fields=[
                                                                       TextDyField.data_source('Name', 'name'),
@@ -97,7 +97,7 @@ lb_backend_target_pool_table_in_detail = SimpleTableDynamicLayout.set_fields('Ba
                                                                                                       'address'),
                                                                           ])
 
-lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend',
+lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend (Proxy)',
                                                                    root_path='data.backends.proxy_backend',
                                                                    fields=[
                                                                        TextDyField.data_source('Name', 'name'),
@@ -137,9 +137,9 @@ lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend',
 
 load_balancing_details = ListDynamicLayout.set_layouts('Load Balancer Details', layouts=[lb_frontend_in_detaail,
                                                                                         lb_host_path_in_detail,
-                                                                                        lb_backend_url_map_in_detail,
                                                                                         lb_backend_target_pool_item_in_detail,
                                                                                         lb_backend_target_pool_table_in_detail,
+                                                                                        lb_backend_url_map_in_detail,
                                                                                         lb_details_tab_in_backend_proxy
                                                                                         ])
 
