@@ -115,9 +115,9 @@ class LoadBalancingConnector(GoogleCloudConnector):
         request = self.client.targetHttpProxies().aggregatedList(**query)
         while request is not None:
             response = request.execute()
-            for key, forwarding_scoped_list in response['items'].items():
-                if 'targetHttpProxies' in forwarding_scoped_list:
-                    http_proxy_list.extend(forwarding_scoped_list.get('targetHttpProxies'))
+            for key, thp_list in response['items'].items():
+                if 'targetHttpProxies' in thp_list:
+                    http_proxy_list.extend(thp_list.get('targetHttpProxies'))
             request = self.client.targetHttpProxies().aggregatedList_next(previous_request=request,
                                                                           previous_response=response)
         return http_proxy_list
@@ -128,9 +128,9 @@ class LoadBalancingConnector(GoogleCloudConnector):
         request = self.client.targetHttpsProxies().aggregatedList(**query)
         while request is not None:
             response = request.execute()
-            for key, forwarding_scoped_list in response['items'].items():
-                if 'targetHttpsProxies' in forwarding_scoped_list:
-                    https_proxy_list.extend(forwarding_scoped_list.get('targetHttpsProxies'))
+            for key, hp_list in response['items'].items():
+                if 'targetHttpsProxies' in hp_list:
+                    https_proxy_list.extend(hp_list.get('targetHttpsProxies'))
             request = self.client.targetHttpsProxies().aggregatedList_next(previous_request=request,
                                                                            previous_response=response)
         return https_proxy_list
@@ -141,25 +141,47 @@ class LoadBalancingConnector(GoogleCloudConnector):
         request = self.client.sslCertificates().aggregatedList(**query)
         while request is not None:
             response = request.execute()
-            for key, forwarding_scoped_list in response['items'].items():
-                if 'sslCertificates' in forwarding_scoped_list:
-                    ssl_certificate_list.extend(forwarding_scoped_list.get('sslCertificates'))
+            for key, sc_list in response['items'].items():
+                if 'sslCertificates' in sc_list:
+                    ssl_certificate_list.extend(sc_list.get('sslCertificates'))
             request = self.client.sslCertificates().aggregatedList_next(previous_request=request,
                                                                         previous_response=response)
         return ssl_certificate_list
 
-    def list_backend_https_proxies(self, **query):
-        https_proxy_list = []
+    def list_health_checks(self, **query):
+        health_check_list = []
         query.update({'project': self.project_id})
-        request = self.client.targetHttpsProxies().aggregatedList(**query)
+        request = self.client.healthChecks().aggregatedList(**query)
         while request is not None:
             response = request.execute()
-            for key, forwarding_scoped_list in response['items'].items():
-                if 'targetHttpsProxies' in forwarding_scoped_list:
-                    https_proxy_list.extend(forwarding_scoped_list.get('targetHttpsProxies'))
-            request = self.client.targetHttpsProxies().aggregatedList_next(previous_request=request,
-                                                                           previous_response=response)
-        return https_proxy_list
+            for key, hc_list in response['items'].items():
+                if 'healthChecks' in hc_list:
+                    health_check_list.extend(hc_list.get('healthChecks'))
+            request = self.client.healthChecks().aggregatedList_next(previous_request=request,
+                                                                     previous_response=response)
+        return health_check_list
+
+    def list_http_health_checks(self, **query):
+        http_health_list = []
+        query.update({'project': self.project_id})
+        request = self.client.httpHealthChecks().list(**query)
+        while request is not None:
+            response = request.execute()
+            for backend_bucket in response.get('items', []):
+                http_health_list.append(backend_bucket)
+            request = self.client.httpHealthChecks().list_next(previous_request=request, previous_response=response)
+        return http_health_list
+
+    def list_https_health_checks(self, **query):
+        https_health_list = []
+        query.update({'project': self.project_id})
+        request = self.client.httpsHealthChecks().list(**query)
+        while request is not None:
+            response = request.execute()
+            for backend_bucket in response.get('items', []):
+                https_health_list.append(backend_bucket)
+            request = self.client.httpsHealthChecks().list_next(previous_request=request, previous_response=response)
+        return https_health_list
 
     def list_instance_groups(self, **query):
         instance_group_list = []
@@ -167,9 +189,37 @@ class LoadBalancingConnector(GoogleCloudConnector):
         request = self.client.instanceGroupManagers().aggregatedList(**query)
         while request is not None:
             response = request.execute()
-            for key, forwarding_scoped_list in response['items'].items():
-                if 'instanceGroupManagers' in forwarding_scoped_list:
-                    instance_group_list.extend(forwarding_scoped_list.get('instanceGroupManagers'))
+            for key, ig_list in response['items'].items():
+                if 'instanceGroupManagers' in ig_list:
+                    instance_group_list.extend(ig_list.get('instanceGroupManagers'))
             request = self.client.instanceGroupManagers().aggregatedList_next(previous_request=request,
-                                                                           previous_response=response)
+                                                                              previous_response=response)
         return instance_group_list
+
+    def list_auto_scalers(self, **query):
+        auto_scaler_list = []
+        query.update({'project': self.project_id})
+        request = self.client.autoscalers().aggregatedList(**query)
+        while request is not None:
+            response = request.execute()
+            for key, as_list in response['items'].items():
+                if 'autoscalers' in as_list:
+                    auto_scaler_list.extend(as_list.get('autoscalers'))
+            request = self.client.autoscalers().aggregatedList_next(previous_request=request,
+                                                                              previous_response=response)
+        return auto_scaler_list
+
+
+    def list_buckets(self, **query):
+        query.update({
+            'project': self.project_id,
+            'projection': 'full',
+            'alt': 'json'
+        })
+        result = {}
+        try:
+            result = self.client.buckets().list(**query).execute()
+        except Exception as e:
+            print(e)
+            pass
+        return result.get('items', [])

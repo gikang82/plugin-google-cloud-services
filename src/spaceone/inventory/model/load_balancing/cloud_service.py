@@ -2,100 +2,245 @@ from schematics.types import ModelType, StringType, PolyModelType
 
 from spaceone.inventory.model.load_balancing.data import *
 from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, EnumDyField, ListDyField, DateTimeDyField
-from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout, TableDynamicLayout
+from spaceone.inventory.libs.schema.metadata.dynamic_layout import ItemDynamicLayout, TableDynamicLayout, \
+    SimpleTableDynamicLayout, ListDynamicLayout
 from spaceone.inventory.libs.schema.cloud_service import CloudServiceResource, CloudServiceResponse, CloudServiceMeta
 
 '''
 INSTANCE
 '''
+lb_frontend_in_detaail = SimpleTableDynamicLayout.set_fields('Frontend',
+                                                          root_path='data.frontends',
+                                                          fields=[
+                                                              TextDyField.data_source('Name', 'name'),
+                                                              TextDyField.data_source('Protocol', 'protocols'),
+                                                              ListDyField.data_source('Port', 'port'),
+                                                              TextDyField.data_source('Scope', 'scope'),
+                                                              ListDyField.data_source('Certificate', 'certificate'),
+                                                              EnumDyField.data_source('Network Tier',
+                                                                                      'network_tier',
+                                                                                      default_badge={
+                                                                                          'indigo.500': ['Premium'],
+                                                                                          'coral.600': ['Standard']
+                                                                                      }),
+                                                          ])
 
-# TAB - Bucket
-vpc_network_detail_meta = ItemDynamicLayout.set_fields('VPC Network Details', fields=[
-    TextDyField.data_source('Name', 'data.name'),
-    TextDyField.data_source('Description', 'data.description'),
-    TextDyField.data_source('Maximum transmission unit', 'data.mtu'),
-    TextDyField.data_source('Mode', 'data.subnet_creation_mode'),
-    EnumDyField.data_source('Global Dynamic Routing', 'data.global_dynamic_route', default_state={
-            'safe': ['On'],
-            'warning': ['Off'],
-    }),
-    TextDyField.data_source('Dynamic Routing mode', 'data.dynamic_routing_mode'),
-    #TextDyField.data_source('DNS Server Policy', 'data.location.location_type'),
-    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
-])
+lb_host_path_in_detail = SimpleTableDynamicLayout.set_fields('Host & Path Rules',
+                                                          root_path='data.host_and_paths',
+                                                          fields=[
+                                                              ListDyField.data_source('Hosts', 'host'),
+                                                              ListDyField.data_source('Paths', 'path'),
+                                                              TextDyField.data_source('Name', 'backend'),
+                                                          ])
 
-vpc_network_subnets_meta = TableDynamicLayout.set_fields('Subnets', root_path='data.subnetwork_data.subnets', fields=[
+lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend',
+                                                                root_path='data.backends.url_map_backend',
+                                                                fields=[
+                                                                    TextDyField.data_source('Name', 'name'),
+                                                                    TextDyField.data_source('Type', 'type'),
+                                                                    TextDyField.data_source('Instance Name',
+                                                                                            'instance_name'),
+                                                                    TextDyField.data_source('Cloud CDN',
+                                                                                            'cloud_cdn'),
+                                                                    ListDyField.data_source('Health Check',
+                                                                                            'health_check'),
+                                                                    EnumDyField.data_source('Scheme', 'scheme',
+                                                                                            default_badge={
+                                                                                                'indigo.500': [
+                                                                                                    'EXTERNAL'],
+                                                                                                'coral.600': [
+                                                                                                    'INTERNAL']
+                                                                                            }),
+                                                                    TextDyField.data_source('Endpoint Protocol',
+                                                                                            'end_point_protocol'),
+                                                                    TextDyField.data_source('Endpoint Protocol',
+                                                                                            'end_point_protocol'),
+                                                                    TextDyField.data_source('Named port',
+                                                                                            'named_port'),
+                                                                    TextDyField.data_source('Timeout', 'timeout'),
+                                                                    TextDyField.data_source('Autoscaling',
+                                                                                            'autoscaling_display'),
+                                                                    TextDyField.data_source('Balancing Mode',
+                                                                                            'balancing_mode_display'),
+                                                                    TextDyField.data_source('Capacity',
+                                                                                            'capacity_display'),
+
+                                                                    ListDyField.data_source('Selected Port',
+                                                                                            'selected_port', options={
+                                                                            'delimiter': '<br>'}),
+                                                                ])
+
+lb_backend_target_pool_item_in_detail = ItemDynamicLayout.set_fields('Backend',
+                                                                  root_path='data.backends.target_pool_backend',
+                                                                  fields=[
+                                                                      TextDyField.data_source('Name', 'name'),
+                                                                      TextDyField.data_source('Region', 'region'),
+                                                                      TextDyField.data_source('Session Affinity',
+                                                                                              'session_affinity'),
+                                                                      ListDyField.data_source('Health Check',
+                                                                                              'health_check'),
+                                                                      TextDyField.data_source('Backup Pool',
+                                                                                              'backup_pool'),
+                                                                      TextDyField.data_source('Failover Ratio',
+                                                                                              'fail_over_display'),
+                                                                  ])
+
+lb_backend_target_pool_table_in_detail = SimpleTableDynamicLayout.set_fields('Backend Instances',
+                                                                          root_path='data.backends.target_pool_backend.backend_instances',
+                                                                          fields=[
+                                                                              TextDyField.data_source('Name', 'name'),
+                                                                              TextDyField.data_source('Type', 'type'),
+                                                                              TextDyField.data_source('Region',
+                                                                                                      'region'),
+                                                                              TextDyField.data_source('Zone', 'zone'),
+                                                                              ListDyField.data_source('Address',
+                                                                                                      'address'),
+                                                                          ])
+
+lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend',
+                                                                   root_path='data.backends.proxy_backend',
+                                                                   fields=[
+                                                                       TextDyField.data_source('Name', 'name'),
+                                                                       TextDyField.data_source('Type', 'type'),
+                                                                       TextDyField.data_source('Instance Name',
+                                                                                               'instance_name'),
+                                                                       TextDyField.data_source('Cloud CDN',
+                                                                                               'cloud_cdn'),
+                                                                       ListDyField.data_source('Health Check',
+                                                                                               'health_check'),
+                                                                       EnumDyField.data_source('Scheme', 'scheme',
+                                                                                               default_badge={
+                                                                                                   'indigo.500': [
+                                                                                                       'EXTERNAL'],
+                                                                                                   'coral.600': [
+                                                                                                       'INTERNAL']
+                                                                                               }),
+                                                                       TextDyField.data_source('Endpoint Protocol',
+                                                                                               'end_point_protocol'),
+                                                                       TextDyField.data_source('Endpoint Protocol',
+                                                                                               'end_point_protocol'),
+                                                                       TextDyField.data_source('Named port',
+                                                                                               'named_port'),
+                                                                       TextDyField.data_source('Timeout', 'timeout'),
+                                                                       TextDyField.data_source('Autoscaling',
+                                                                                               'autoscaling_display'),
+                                                                       TextDyField.data_source('Balancing Mode',
+                                                                                               'balancing_mode_display'),
+                                                                       TextDyField.data_source('Capacity',
+                                                                                               'capacity_display'),
+
+                                                                       ListDyField.data_source('Selected Port',
+                                                                                               'selected_port',
+                                                                                               options={
+                                                                                                   'delimiter': '<br>'}),
+                                                                   ])
+
+load_balancing_details = ListDynamicLayout.set_layouts('Load Balancer Details', layouts=[lb_frontend_in_detaail,
+                                                                                        lb_host_path_in_detail,
+                                                                                        lb_backend_url_map_in_detail,
+                                                                                        lb_backend_target_pool_item_in_detail,
+                                                                                        lb_backend_target_pool_table_in_detail,
+                                                                                        lb_details_tab_in_backend_proxy
+                                                                                        ])
+
+lb_backend_meta = TableDynamicLayout.set_fields('Backends', root_path='data.backend_tabs', fields=[
     TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Region', 'region'),
-    TextDyField.data_source('Ip Address Ranges', 'ip_cidr_range'),
-    TextDyField.data_source('Gateway', 'gateway_address'),
-    TextDyField.data_source('Private Google Access', 'google_access'),
-    TextDyField.data_source('Flow logs', 'flow_log'),
-])
-
-vpc_network_subnets_ip_address_meta = TableDynamicLayout.set_fields('Static Internal IP Addresses', root_path='data.ip_address_data', fields=[
-    TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Internal Ip Address', 'address'),
-    TextDyField.data_source('Subnetwork', 'subnet_name'),
-    TextDyField.data_source('Region', 'region'),
-    TextDyField.data_source('Version', 'ip_version_display'),
-    ListDyField.data_source('In Used By', 'used_by'),
-])
-
-vpc_network_firewall_meta = TableDynamicLayout.set_fields('Firewall Rules', root_path='data.firewall_data.firewall', fields=[
-    TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Type', 'display.type_display'),
-    ListDyField.data_source('Targets', 'display.target_display',
-                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
-    TextDyField.data_source('Filters', 'display.filter'),
-    ListDyField.data_source('Protocols / Ports', 'display.protocols_port'),
-    EnumDyField.data_source('Action On Match', 'data.action', default_badge={
-        'indigo.500': ['Allow'], 'coral.600': ['Deny']
-    }),
+    TextDyField.data_source('Type', 'type'),
+    TextDyField.data_source('Scope', 'scope'),
     TextDyField.data_source('Priority', 'priority'),
-    TextDyField.data_source('Logs', 'display.Logs')
 ])
 
+lb_frontend_meta = TableDynamicLayout.set_fields('Frontends', root_path='data.frontends', fields=[
+    TextDyField.data_source('Name', 'name'),
+    TextDyField.data_source('Scope', 'scope'),
+    TextDyField.data_source('Address', 'ip_address'),
+    ListDyField.data_source('Port', 'port'),
+    EnumDyField.data_source('Protocol', 'protocols', default_badge={
+        'primary': ['HTTP', 'HTTPS'], 'indigo.500': ['TCP'], 'coral.600': ['UDP']
+    }),
+    EnumDyField.data_source('Network Tier',
+                            'network_tier',
+                            default_badge={
+                                'indigo.500': ['Premium'],
+                                'coral.600': ['Standard']
+                            }),
+])
 
-vpc_network_route_meta = TableDynamicLayout.set_fields('Routes', root_path='data.route_data.route', fields=[
+lb_forwarding_rule_meta = TableDynamicLayout.set_fields('Forwarding Rules', root_path='data.forwarding_rules', fields=[
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Description', 'description'),
-    TextDyField.data_source('Destination IP Range', 'dest_range'),
-    TextDyField.data_source('Priority', 'priority'),
-    ListDyField.data_source('Instance Tags', 'tags',
-                            default_badge={'type': 'outline', 'delimiter': '<br>'}),
-    TextDyField.data_source('Next Hop', 'next_hop'),
-])
-
-vpc_network_peering_meta = TableDynamicLayout.set_fields('VPC Network Peering', root_path='data.peerings', fields=[
-    TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Your VPC Network', 'display.your_network'),
-    TextDyField.data_source('Peered VPC Network', 'display.peered_network'),
-    TextDyField.data_source('Peered Project ID', 'display.project_id'),
-    EnumDyField.data_source('Status', 'display.state_display', default_badge={
-        'indigo.500': ['Active'], 'coral.600': ['Inactive']
+    TextDyField.data_source('Type', 'type'),
+    TextDyField.data_source('Type', 'region'),
+    TextDyField.data_source('Address', 'ip_address'),
+    TextDyField.data_source('Port', 'port_range'),
+    EnumDyField.data_source('Protocol', 'ip_protocol', default_badge={
+        'primary': ['HTTP', 'HTTPS'], 'indigo.500': ['TCP'], 'coral.600': ['UDP']
     }),
-    TextDyField.data_source('Exchange Custom Routes', 'display.ex_custom_route'),
-    TextDyField.data_source('Exchange Subnet Routes With Public IP', 'display.ex_route_public_ip_display'),
+    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp')
+])
+
+lb_target_proxies_meta = TableDynamicLayout.set_fields('Target Proxies', root_path='data.target_proxies', fields=[
+    TextDyField.data_source('Name', 'target_proxy_display.name'),
+    TextDyField.data_source('Description', 'target_proxy_display.description'),
+    TextDyField.data_source('Type', 'target_proxy_display.type'),
+    TextDyField.data_source('Target Resource', 'target_proxy_display.target_resource'),
+    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp')
+])
+
+lb_health_checks_meta = TableDynamicLayout.set_fields('Health Checks', root_path='data.heath_check_vos.health_checks', fields=[
+    TextDyField.data_source('Name', 'name'),
+    TextDyField.data_source('Healthy Threshold', 'healthy_threshold'),
+    TextDyField.data_source('Unhealthy Threshold', 'unhealthy_threshold'),
+    TextDyField.data_source('Timeout in sec', 'timeout_sec'),
+    TextDyField.data_source('Check Interval', 'check_interval_sec'),
+    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp')
 ])
 
 
-instance_template_meta = CloudServiceMeta.set_layouts([vpc_network_detail_meta,
-                                                       vpc_network_subnets_meta,
-                                                       vpc_network_subnets_ip_address_meta,
-                                                       vpc_network_firewall_meta,
-                                                       vpc_network_route_meta,
-                                                       vpc_network_peering_meta])
+lb_backend_service_meta = TableDynamicLayout.set_fields('Backend Services', root_path='data.backend_services', fields=[
+    TextDyField.data_source('Name', 'name'),
+    TextDyField.data_source('Description', 'description'),
+    TextDyField.data_source('Type', 'type'),
+    ListDyField.data_source('Region', 'region'),
+    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp')
+])
+
+lb_certificates_meta = TableDynamicLayout.set_fields('Certificates', root_path='data.certificates', fields=[
+    TextDyField.data_source('Name', 'name'),
+    TextDyField.data_source('Description', 'description'),
+    ListDyField.data_source('Domain', 'domains'),
+    TextDyField.data_source('Expires', 'expire_time'),
+    TextDyField.data_source('Type', 'type'),
+    TextDyField.data_source('Status', 'managed.status'),
+    DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp')
+])
+
+lb_target_pools_meta = TableDynamicLayout.set_fields('Target Pools', root_path='data.target_pools', fields=[
+    TextDyField.data_source('Name', 'name'),
+    TextDyField.data_source('Region', '_region'),
+    TextDyField.data_source('Instances', 'num_of_instance'),
+    ListDyField.data_source('Health Check', 'health_checks'),
+])
+
+load_balancing_meta = CloudServiceMeta.set_layouts([load_balancing_details,
+                                                       lb_backend_meta,
+                                                       lb_frontend_meta,
+                                                       lb_forwarding_rule_meta,
+                                                       lb_target_proxies_meta,
+                                                       lb_health_checks_meta,
+                                                       lb_backend_service_meta,
+                                                       lb_certificates_meta,
+                                                       lb_target_pools_meta])
 
 
 class LoadBalancingResource(CloudServiceResource):
-    cloud_service_group = StringType(default='VPC')
+    cloud_service_group = StringType(default='NetworkService')
 
 
 class LoadBalancingResource(LoadBalancingResource):
-    cloud_service_type = StringType(default='VPCNetwork')
+    cloud_service_type = StringType(default='LoadBalancing')
     data = ModelType(LoadBalancing)
-    _metadata = ModelType(CloudServiceMeta, default=instance_template_meta, serialized_name='metadata')
+    _metadata = ModelType(CloudServiceMeta, default=load_balancing_meta, serialized_name='metadata')
 
 
 class LoadBalancingResponse(CloudServiceResponse):

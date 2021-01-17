@@ -8,6 +8,8 @@ from spaceone.core.service import *
 _LOGGER = logging.getLogger(__name__)
 MAX_WORKER = 20
 SUPPORTED_RESOURCE_TYPE = ['inventory.CloudService', 'inventory.CloudServiceType', 'inventory.Region']
+SUPPORTED_FEATURES = ['garbage_collection']
+
 FILTER_FORMAT = []
 
 
@@ -28,7 +30,7 @@ class CollectorService(BaseService):
             'ExternalIPAddressManager',
             'FirewallManager',
             'RouteManager',
-            #'LoadBalancingManager'
+            'LoadBalancingManager'
         ]
 
     @check_required(['options'])
@@ -38,7 +40,7 @@ class CollectorService(BaseService):
         capability = {
             'filter_format': FILTER_FORMAT,
             'supported_resource_type': SUPPORTED_RESOURCE_TYPE,
-            'supported_features': ['garbage_collection']
+            'supported_features': SUPPORTED_FEATURES
         }
         return {'metadata': capability}
 
