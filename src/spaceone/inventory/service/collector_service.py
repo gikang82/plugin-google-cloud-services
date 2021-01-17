@@ -19,17 +19,17 @@ class CollectorService(BaseService):
         super().__init__(metadata)
         # set google cloud service manager
         self.execute_managers = [
-            # 'CloudSQLManager',
-            # 'InstanceGroupManager',
-            # 'InstanceTemplateManager',
-            # 'MachineImageManager',
-            # 'DiskManager',
-            # 'SnapshotManager',
-            # 'StorageManager',
-            # 'VPCNetworkManager',
-            # 'ExternalIPAddressManager',
-            # 'FirewallManager',
-            # 'RouteManager',
+            'CloudSQLManager',
+            'InstanceGroupManager',
+            'InstanceTemplateManager',
+            'MachineImageManager',
+            'DiskManager',
+            'SnapshotManager',
+            'StorageManager',
+            'VPCNetworkManager',
+            'ExternalIPAddressManager',
+            'FirewallManager',
+            'RouteManager',
             'LoadBalancingManager'
         ]
 

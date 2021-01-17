@@ -31,7 +31,6 @@ class LoadBalancingManager(GoogleCloudManager):
         secret_data = params['secret_data']
         load_bal_conn: LoadBalancingConnector = self.locator.get_connector(self.connector_name, **params)
 
-        region = 'global'
         project_id = secret_data.get('project_id')
         load_balancers = []
 
@@ -43,8 +42,7 @@ class LoadBalancingManager(GoogleCloudManager):
 
         backend_buckets = load_bal_conn.list_back_end_buckets()
         ssl_certificates = load_bal_conn.list_ssl_certificates()
-
-
+        auto_scalers = load_bal_conn.list_auto_scalers()
         health_checks = load_bal_conn.list_health_checks()
 
         legacy_health_checks = []
@@ -79,22 +77,27 @@ class LoadBalancingManager(GoogleCloudManager):
         load_balancers.extend(lbs_from_target_pool)
 
         for load_balancer in load_balancers:
+            lb_type = load_balancer.get('lb_type')
             health_checks_vo = load_balancer.get('heath_check_vos', {})
             health_self_links = health_checks_vo.get('health_check_self_link_list', [])
-
+            ##################################
             # Set Target Proxies
-            if load_balancer.get('lb_type') != 'target_proxy':
+            ##################################
+            if lb_type != 'target_proxy':
                 matched_target_proxies, matched_certificates = self.get_matched_target_proxies(load_balancer,
                                                                                                target_proxies,
                                                                                                ssl_certificates)
                 load_balancer.update({'target_proxies': matched_target_proxies,
                                       'certificates': matched_certificates})
-
+            ##################################
             # Set forwarding Rules to LoadBlancer
+            ##################################
             matched_forwarding_rules = self.get_matched_forwarding_rules(load_balancer, forwarding_rules)
             load_balancer.update({'forwarding_rules': matched_forwarding_rules})
 
+            ##################################
             # Set Health Check to LoadBlancer
+            ##################################
             if len(health_self_links) > 0:
                 filter_check_list = list(set(health_checks_vo.get('health_check_list', [])))
                 filter_check_self_link_list = list(set(health_checks_vo.get('health_check_self_link_list', [])))
@@ -115,36 +118,204 @@ class LoadBalancingManager(GoogleCloudManager):
                         'health_check_self_link_list': filter_check_self_link_list,
                         'health_checks': matched_health_list
                     })
-
+            ############################
             # Set Front to LoadBlancer
+            ############################
+
             frontends = self.get_front_from_loadbalancer(load_balancer)
+            frontend_display = self._get_frontend_display(frontends)
             if len(frontends) > 0:
-                load_balancer.update({'frontends': frontends})
+                load_balancer.update({'frontends': frontends,
+                                      'frontend_display': frontend_display})
 
+            #############################
+            # Set Backend to LoadBlancer
+            #############################
+            backend_vo = {}
+            if lb_type in ['target_pool']:
+                backend_vo.update({
+                    'type': 'target_pool',
+                    'target_pool_backend': self.get_backend_from_target_pools(load_balancer, instance_groups)
+                })
 
+            elif lb_type in ['url_map', 'target_proxy']:
+                key = 'proxy_backend' if lb_type == 'target_proxy' else 'url_map_backend'
+                backends = self.get_backend_from_url_map_and_proxy(load_balancer, instance_groups, auto_scalers)
+                backend_vo.update({
+                    'type': 'proxy' if lb_type == 'target_proxy' else 'url_map',
+                    key: backends
+                })
 
+            load_balancer.update({'backends': backend_vo})
 
+            ########################################
+            # Set Backend Tab to LoadBlancer
+            ########################################
+            backends_tab = self._get_backend_tabs(load_balancer)
+            load_balancer.update({
+                'backend_tabs': backends_tab
+            })
+
+            ########################################
+            # Set Backend Display
+            ########################################
+            backend_display = self._get_backend_display(load_balancer)
+            load_balancer.update({
+                'backends_display': backend_display
+            })
+
+            '''
+                        Get Appropriate Region & Protocols
+
+                        Protocols
+                        -  1. Frontend's forwarding Maps
+                           2. Backend's end protocol
+
+                        Region 
+                        - backend-svc's backend
+
+            '''
+            lead_protocol = self._get_lead_protocol(load_balancer)
+            region = self._get_proper_region(load_balancer)
+            load_balancer.update({
+                'lead_protocol': lead_protocol,
+                'region': region
+            })
+            refer_link = self._get_refer_link(load_balancer, project_id)
             load_balance_data = LoadBalancing(load_balancer, strict=False)
-            npn = load_balancer.get('name')
-            print('#########################')
-            print(f'LOAD BALANCER: {npn}')
-            print('#########################')
-            print()
-            pprint(load_balance_data.to_primitive())
-            print()
-            print()
 
-            # route_resource = LoadBalancingResource({
-            #     'region_code': region,
-            #     'data': load_balance_data,
-            #     'reference': ReferenceModel(load_balance_data.reference())
-            # })
-            #
-            # self.set_region_code(region)
-            # collected_cloud_services.append(LoadBalancingResponse({'resource': route_resource}))
+            lb_resource = LoadBalancingResource({
+                'region_code': region,
+                'data': load_balance_data,
+                'reference': ReferenceModel(load_balance_data.reference(refer_link))
+            })
+
+            self.set_region_code(region)
+            collected_cloud_services.append(LoadBalancingResponse({'resource': lb_resource}))
 
         print(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
+
+    def get_backend_from_target_pools(self, loadbalcnacer, instance_group):
+        for pool in loadbalcnacer.get('target_pools', []):
+            ratio = pool.get('failover_ratio')
+
+            target_backend = {
+                'name': pool.get('name'),
+                'region': self._get_matched_last_target('region', pool),
+                'session_affinity': pool.get('session_affinity'),
+                'health_check': self._get_matched_last_target_in_list(pool.get('health_checks', [])),
+                'backup_pool': self._get_matched_last_target('backup_pool', pool) if pool.get('backup_pool') else '',
+                'fail_over': 0.0 if ratio is None else float(ratio),
+                'fail_over_display': '0.0 %' if ratio is None else f'{str(float(ratio) * 100)} %',
+                'backend_instances': self.get_instance_for_back_ends(loadbalcnacer, pool, instance_group)
+            }
+            return target_backend
+
+    def get_backend_from_url_map_and_proxy(self, loadbalcnacer, instance_group, auto_scalers):
+        target_backend_list = []
+        backend_services = loadbalcnacer.get('backend_services', [])
+        backend_buckets = loadbalcnacer.get('backend_buckets', [])
+
+        for service in backend_services:
+            selected_port = self.get_selected_port(service.get('healthChecks'), loadbalcnacer.get('heath_check_vos'))
+            for backend_service_back in service.get('backends', []):
+                balancing_mode = backend_service_back.get('balancingMode')
+                balancing_mode_display = self._get_balancing_mode_display(backend_service_back)
+                auto_scaler_vo = self._get_selected_instance_group(backend_service_back, instance_group, auto_scalers)
+                target_backend_svc = {
+                    'name': service.get('name'),
+                    'type': 'Instance group',
+                    'instance_name': self._get_matched_last_target('group', backend_service_back),
+                    'region': self.get_region_from_group(backend_service_back.get('group', '')),
+                    'cloud_cdn': 'enabled' if service.get('enableCdn') else 'disabled',
+                    'end_point_protocol': service.get('protocol'),
+                    'named_port': service.get('portName'),
+                    'timeout': str(service.get('timeoutSec')) + ' seconds',
+                    'health_check': self._get_matched_last_target_in_list(service.get('healthChecks', [])),
+                    'capacity': float(backend_service_back.get('capacityScaler', 0.0)),
+                    'capacity_display': str(float(backend_service_back.get('capacityScaler', 0.0)) * 100) + ' %',
+                    'selected_port': selected_port,
+                    'balancing_mode': balancing_mode,
+                    'balancing_mode_display': balancing_mode_display,
+                    'scheme': service.get('loadBalancingScheme')
+                }
+
+                if auto_scaler_vo is not None:
+                    auto_display = self._get_autoscaling_display(auto_scaler_vo)
+                    target_backend_svc.update({
+                        'autoscaling_policy': auto_scaler_vo,
+                        'autoscaling_display': 'No configuration' if auto_display == '' else auto_display,
+                    })
+                else:
+                    target_backend_svc.update({
+                        'autoscaling_display': 'No configuration',
+                    })
+
+                target_backend_list.append(target_backend_svc)
+
+        for bucket in backend_buckets:
+            region = self._get_matched_last_target('region', bucket) if bucket.get('region') else 'global'
+
+            target_backend_bucket = {
+                'name': bucket.get('name'),
+                'instance_name': bucket.get('bucketName'),
+                'type': 'Backend Bucket',
+                'region': region,
+                'cloud_cdn': 'enabled' if bucket.get('enableCdn') else 'disabled',
+                'custom_response_headers': bucket.get('customResponseHeaders', [])
+            }
+            target_backend_list.append(target_backend_bucket)
+
+        return target_backend_list
+
+    def get_selected_port(self, health_checks, health_checks_vos):
+        selected_port = []
+        for hk in health_checks:
+            for single_hk in health_checks_vos.get('health_checks', []):
+                if hk == single_hk.get('selfLink'):
+                    key = self._get_key_name_for_health_check(single_hk)
+                    hc_vo = single_hk.get(key, {}).get('port')
+                    if key and hc_vo:
+                        selected_port.append(hc_vo)
+        return selected_port
+
+    def get_region_from_group(self, group_link):
+        if '/zones/' in group_link:
+            parsed_group = group_link[group_link.find('/zones/') + 7:]
+            zone = parsed_group[:parsed_group.find('/')]
+            return zone[:-2]
+        else:
+            return self._extract_region_from_group(group_link)
+
+    def get_instance_for_back_ends(self, lb, pool, instance_groups):
+        instance_list = []
+        instances = pool.get('instances', [])
+        addresses = [d.get('IPAddress') for d in lb.get('forwarding_rules', []) if d.get('IPAddress', '') != '']
+
+        source_link = lb.get('source_link')
+        for instance_group in instance_groups:
+            if source_link in instance_group.get('targetPools', []):
+                instance_list.append({
+                    'type': 'Instance Group',
+                    'name': instance_group.get('name'),
+                    'region': 'global' if instance_group.get('region') is None else self._get_matched_last_target(
+                        'region', instance_group),
+                    'zone': '',
+                    'address': addresses
+                })
+
+        for instance in instances:
+            zone = self._extract_zone(instance)
+            instance_list.append({
+                'type': 'Compute VM',
+                'name': instance[instance.rfind('/') + 1:],
+                'region': zone[:-2],
+                'zone': zone,
+                'address': addresses
+            })
+
+        return instance_list
 
     def get_all_proxy_list(self, grpc_proxies, http_proxies, https_proxies, ssl_proxies, tcp_proxies, forwarding_rules):
         proxy_list = []
@@ -182,7 +353,8 @@ class LoadBalancingManager(GoogleCloudManager):
                         'description': proxy.get('description', ''),
                         'type': f'{proxy_type.upper()} Proxy',
                         'target_resource': self._get_matched_last_target('urlMap', proxy),
-                        'in_used_by_display': in_used_by_display
+                        'in_used_by_display': in_used_by_display,
+                        'creation_timestamp': proxy.get('creationTimestamp'),
                     },
                 }
                 if proxy_type in ['ssl', 'tcp']:
@@ -201,9 +373,9 @@ class LoadBalancingManager(GoogleCloudManager):
             url_map_single_vo = {}
 
             identifiers = self._get_matched_services(url_map)
-            backend_svc_list = self._get_lb_info_from_selected_items(identifiers, 'selfLink', backend_services)
+            backend_svc_list = self.get_lb_info_from_selected_items(identifiers, 'selfLink', backend_services)
             health_check_list = self._get_health_checks_from_backend_svc(backend_svc_list)
-            backend_bucktet_list = self._get_lb_info_from_selected_items(identifiers, 'selfLink', backend_buckets)
+            backend_bucktet_list = self.get_lb_info_from_selected_items(identifiers, 'selfLink', backend_buckets)
             host_and_path_rules = self.get_matched_host_and_path(url_map)
 
             url_map_single_vo.update({
@@ -235,6 +407,10 @@ class LoadBalancingManager(GoogleCloudManager):
         for target_pool in target_pools:
             region = self._get_matched_last_target('region', target_pool) if target_pool.get('region') else 'global'
             health_checks = target_pool.get('healthChecks', [])
+            target_pool.update({
+                '_region': region,
+                'num_of_instance': len(target_pool.get('instances', []))
+            })
             target_pool_vo = {
                 'lb_type': 'target_pool',
                 'project': project,
@@ -262,10 +438,11 @@ class LoadBalancingManager(GoogleCloudManager):
         for ssl_tcp_proxy in selective_proxies:
             key = 'tcp_proxy' if 'tcp_proxy' in ssl_tcp_proxy else 'ssl_proxy'
             proxy_info = ssl_tcp_proxy.get(key, {})
-            region = self._extract_region_from_proxy(proxy_info.get('selfLink'), project)
             for backend in backends:
                 health_checks = backend.get('healthChecks', [])
                 if backend.get('selfLink') == proxy_info.get('service', ''):
+                    region = self._extract_region_from_proxy(backend.get('selfLink'), project)
+                    backend.update({'region': region})
                     backend_proxy_vo = {
                         'lb_type': 'target_proxy',
                         'project': project,
@@ -284,23 +461,37 @@ class LoadBalancingManager(GoogleCloudManager):
                     }
 
                     backend_proxies.append(backend_proxy_vo)
-
         return backend_proxies
 
     def get_matched_forwarding_rules(self, loadbalancer, forwarding_rules):
         matched_forwarding_rules = []
         lb_type = loadbalancer.get('lb_type')
 
-        # It's difficult to predict what's lb_type for forwarding_rules
         if lb_type == 'target_pool':
             for forwarding_rule in forwarding_rules:
                 if loadbalancer.get('identifier') == forwarding_rule.get('target'):
+                    region = forwarding_rule.get('region')
+                    r_type = 'Global' if region == 'global' or region is None else 'Regional'
+                    if r_type == 'Regional':
+                        _region = region[region.rfind('/')+1:]
+                        forwarding_rule.update({'region': _region})
+                    forwarding_rule.update({'type': r_type})
+                    if forwarding_rule.get('portRange', '').find('-') > 0:
+                        forwarding_rule.update({'portRange': self._get_port_ranage_from_str(forwarding_rule.get('portRange', ''))})
                     matched_forwarding_rules.append(forwarding_rule)
 
         elif lb_type in ['url_map', 'target_proxy']:
             self_links = self._get_self_links_from_proxies(loadbalancer.get('target_proxies', []))
             for forwarding_rule in forwarding_rules:
                 if forwarding_rule.get('target') in self_links:
+                    region = forwarding_rule.get('region')
+                    r_type = 'Global' if region == 'global' or region is None else 'Regional'
+                    if r_type == 'Regional':
+                        _region = region[region.rfind('/')+1:]
+                        forwarding_rule.update({'region': _region})
+                    forwarding_rule.update({'type': r_type})
+                    if forwarding_rule.get('portRange', '').find('-') > 0:
+                        forwarding_rule.update({'portRange': self._get_port_ranage_from_str(forwarding_rule.get('portRange', ''))})
                     matched_forwarding_rules.append(forwarding_rule)
 
         return matched_forwarding_rules
@@ -315,7 +506,22 @@ class LoadBalancingManager(GoogleCloudManager):
                 if proxy_info.get('urlMap') == lb.get('identifier'):
                     if 'sslCertificates' in proxy_info:
                         matching_ones = self._get_matched_certificates(certs, proxy_info.get('sslCertificates', []))
-                        matched_certificate.extend(matching_ones)
+                        for matching_one in matching_ones:
+                            key = 'managed' if 'managed' in matching_one else 'selfManaged'
+                            ssl_type = 'Customer supplied'
+                            if key == 'managed':
+                                ssl_type = 'Google managed'
+                            elif key == 'selfManaged':
+                                ssl_type = 'Customer managed'
+
+                            managed = matching_one.get(key, {})
+                            domain_info = managed.get('domainStatus', {})
+                            domains = [dd for dd in domain_info]
+                            matching_one.update({
+                                'domains': domains,
+                                'type': ssl_type
+                            })
+                            matched_certificate.append(matching_one)
                     matched_target_proxies.append(target_proxy)
 
         return matched_target_proxies, matched_certificate
@@ -369,7 +575,6 @@ class LoadBalancingManager(GoogleCloudManager):
             _region = region[region.rfind('/') + 1:]
 
             if not proxies:
-                print('!!!!!!!!!!!!!!!!!')
                 for pool in pools:
                     if target == pool.get('self_link'):
                         front_single = {
@@ -400,11 +605,128 @@ class LoadBalancingManager(GoogleCloudManager):
                         }
 
                         if 'sslCertificates' in proxy_vo:
-                            front_single.update({'certificate': self._get_matched_last_target_in_list(proxy_vo.get('sslCertificates'))})
+                            front_single.update(
+                                {'certificate': self._get_matched_last_target_in_list(proxy_vo.get('sslCertificates'))})
 
                         frontends.append(front_single)
-
         return frontends
+
+    @staticmethod
+    def _get_frontend_display(frontend):
+        frontend_display = ''
+        rule_length = len(frontend)
+
+        if rule_length > 0:
+            regions = list(set([ft.get('region') for ft in frontend if 'region' in ft]))
+            located_at = regions[0] if len(regions) == 1 else 'multi regions' if len(regions) > 1 else ''
+            _located_at = f'within {located_at}' if located_at != '' else ''
+            plural = '' if rule_length == 1 else 's'
+            frontend_display = f'{rule_length} forwarding rule{plural} {_located_at}'
+
+        return frontend_display
+
+    @staticmethod
+    def _get_refer_link(lb, project):
+        base = 'https://console.cloud.google.com/net-services/loadbalancing/details'
+        lb_type = lb.get('lb_type')
+        name = lb.get('name')
+        region = lb.get('region')
+        if lb_type == 'url_map':
+            return base + f'/http/{name}?project={project}'
+        elif lb_type == 'target_pool':
+            return base + f'/network/{region}/{name}?project={project}'
+        else:
+            return base + f'/proxy/{name}?project={project}'
+
+    @staticmethod
+    def _get_proper_region(lb):
+        lb_type = lb.get('lb_type')
+        proper_region = ''
+        if lb_type == 'url_map':
+            backends = lb.get('backends', {})
+            _type = backends.get('type')
+            _backends = backends.get(f'{_type}_backend', [])
+            prop = [backend.get('region') for backend in _backends if backend.get('region', '') != 'global']
+            _prop = list(set(prop))
+            proper_region = 'global' if not _prop else _prop[0]
+        elif lb_type == 'target_pool':
+            proper_region = lb.get('region')
+        else:
+            proper_region = lb.get('region')
+        return proper_region
+
+    @staticmethod
+    def _get_lead_protocol(load_balancer):
+        lead_protocol = ''
+        all_protocols = [d.get('protocols') for d in load_balancer.get('frontends', []) if 'protocols' in d]
+        if len(all_protocols) > 0:
+            lead_protocol = 'HTTP(S)' if 'HTTPS' in all_protocols and 'HTTP' in all_protocols else all_protocols[0]
+        else:
+            all_protocols = [d.get('type').upper() for d in load_balancer.get('target_proxies', []) if 'type' in d]
+            lead_protocol = f'{all_protocols[0]} (Proxy)'
+        return lead_protocol
+
+    @staticmethod
+    def _get_backend_tabs(load_balancers):
+        backends_tab_list = []
+        backends = load_balancers.get('backends', {})
+        backends_type = backends.get('type')
+        object_key = f'{backends_type}_backend'
+
+        if backends_type in ['proxy', 'url_map']:
+            for back_end in backends.get(object_key, []):
+                _region = back_end.get('region')
+                backends_tab_list.append({
+                    'name': back_end.get('name'),
+                    'type': 'Backend Bucket' if back_end.get('type') == 'Backend Bucket' else 'Backend service',
+                    'scope': 'Global' if _region == 'global' else f'Regional ({_region})',
+                    'protocol': back_end.get('end_point_protocol', ''),
+                })
+        else:
+            back_end = backends.get(object_key, {})
+            _region = back_end.get('region')
+            protocol = back_end.get('end_point_protocol', '')
+            backends_tab_list.append({
+                'name': back_end.get('name'),
+                'type': 'Backend Bucket' if back_end.get('type') == 'Backend Bucket' else 'Backend service',
+                'scope': 'Global' if _region == 'global' else f'Regional ({_region})',
+                'protocol': '',
+            })
+
+        return backends_tab_list
+
+    @staticmethod
+    def _get_backend_display(load_balancer):
+        lb_type = load_balancer.get('lb_type')
+        display = ''
+
+        if lb_type == 'target_pool':
+            _pools = len(load_balancer.get('target_pools', []))
+            pools = load_balancer.get('target_pools', [])
+            num_of_instance = 0
+
+            for pool in pools:
+                num_of_instance = num_of_instance + len(pool.get('instances', []))
+
+            pool_plural = '(s)' if _pools > 1 else ''
+            num_plural = 's' if num_of_instance > 1 else ''
+
+            display = f'{_pools} Target pool{pool_plural}' if num_of_instance == 0 else \
+                f'{_pools} Target pool{pool_plural} ({num_of_instance} Instance{num_plural})'
+        else:
+            service = len(load_balancer.get('backend_services', []))
+            bucket = len(load_balancer.get('backend_buckets', []))
+            display = f'{service} backend services & {bucket} backend buckets' if service > 0 and bucket > 0 \
+                else f'{bucket} backend buckets' if bucket > 0 else f'{service} backend service'
+
+        return display
+
+    @staticmethod
+    def _extract_zone(self_link):
+        p_len = len('/zones/')
+        p_key = '/zones/'
+        _zone = self_link[self_link.find(p_key) + p_len:]
+        return _zone[:_zone.find('/')]
 
     @staticmethod
     def _get_matched_certificates(certs, ssl_certificates):
@@ -475,6 +797,12 @@ class LoadBalancingManager(GoogleCloudManager):
         return switching_target if isinstance(switching_target, list) else [switching_target]
 
     @staticmethod
+    def _get_port_ranage_from_str(target_str):
+            port_range = target_str.split('-')
+            switching_target = port_range[0] if len(port_range) > 1 and port_range[0] == port_range[1] else target_str
+            return switching_target
+
+    @staticmethod
     def _get_in_used_by_forwarding_rule(target_proxy, forwarding_rules):
         in_used_by = []
         in_used_by_display = []
@@ -515,6 +843,16 @@ class LoadBalancingManager(GoogleCloudManager):
         return _region[:_region.find('/')]
 
     @staticmethod
+    def _extract_region_from_group(self_link):
+        p_len = 9
+        p_key = self_link.find('/regions/')
+        if p_key == -1:
+            return 'global'
+        else:
+            _region = self_link[p_key + p_len:]
+            return _region[:_region.find('/')]
+
+    @staticmethod
     def _get_proxy_key(proxy_type):
         proxy_key = 'tcp_proxy'
         if proxy_type == 'grpc':
@@ -527,11 +865,16 @@ class LoadBalancingManager(GoogleCloudManager):
             proxy_key = 'ssl_proxy'
         return proxy_key
 
-    @staticmethod
-    def _get_lb_info_from_selected_items(identifier, key, selected_items):
+    def get_lb_info_from_selected_items(self, identifier, key, selected_items):
         matched_lb_vo = []
         for selected_item in selected_items:
             if selected_item.get(key, '') in identifier:
+                region = self._extract_region_from_group(selected_item.get(key, ''))
+                _type = 'Global' if region == 'global' else 'Regional'
+                selected_item.update({
+                    'region': self._extract_region_from_group(selected_item.get(key, '')),
+                    'type': _type
+                })
                 matched_lb_vo.append(selected_item)
         return matched_lb_vo
 
@@ -550,3 +893,87 @@ class LoadBalancingManager(GoogleCloudManager):
             if len(backend_svc.get('healthChecks', [])) > 0:
                 health_check_list.extend(backend_svc.get('healthChecks'))
         return health_check_list
+
+    @staticmethod
+    def _get_autoscaling_display(autoscaling_policy):
+        auto_scaling_display = ''
+
+        if 'cpuUtilization' in autoscaling_policy:
+            cpu_util = autoscaling_policy.get('cpuUtilization', {})
+            target = float(cpu_util.get('utilizationTarget', 0.0)) * 100
+            auto_scaling_display = f'On: Target CPU utilization {target} %'
+
+        elif 'loadBalancingUtilization' in autoscaling_policy:
+            cpu_util = autoscaling_policy.get('loadBalancingUtilization', {})
+            target = float(cpu_util.get('utilizationTarget', 0.0)) * 100
+            auto_scaling_display = f'On: Load balancing utilization {target} %'
+
+        elif 'customMetricUtilizations' in autoscaling_policy:
+            auto_scaling_display = f'On: custom metrics'
+
+        return auto_scaling_display
+
+    @staticmethod
+    def _get_balancing_mode_display(backend):
+        display_msg = 'No configuration'
+        if 'maxUtilization' in backend:
+            rate = float(backend.get('maxUtilization', 0.0)) * 100
+            display_msg = f'Max Backend Utilization: {rate} %'
+
+        elif 'maxRate' in backend:
+            rate = int(backend.get('maxRate', 0))
+            display_msg = f'Max Backend Rate: {rate}'
+
+        elif 'maxRatePerInstance' in backend:
+            rate = float(backend.get('maxRatePerInstance', 0.0))
+            display_msg = f'Max Backend Rate Per Instance: {rate}'
+
+        elif 'maxRatePerEndpoint' in backend:
+            rate = float(backend.get('maxRatePerEndpoint', 0.0))
+            display_msg = f'Max Backend Rate Per Endpoint: {rate}'
+
+        elif 'maxConnections' in backend:
+            rate = int(backend.get('maxConnections', 0))
+            display_msg = f'Max Backend Connection: {rate}'
+
+        elif 'maxConnectionsPerInstance' in backend:
+            rate = int(backend.get('maxConnectionsPerInstance', 0))
+            display_msg = f'Max Backend Connections Per Instance: {rate}'
+
+        elif 'maxConnectionsPerEndpoint' in backend:
+            rate = int(backend.get('maxConnectionsPerEndpoint', 0))
+            display_msg = f'Max Backend Connections Per Endpoint: {rate}'
+
+        return display_msg
+
+    @staticmethod
+    def _get_selected_instance_group(backend, instance_groups, auto_scalers):
+        for instance_group in instance_groups:
+            if backend.get('group') == instance_group.get('instanceGroup'):
+                for auto_scaler in auto_scalers:
+                    if auto_scaler.get('target') == instance_group.get('selfLink'):
+                        auto_policy = auto_scaler.get('autoscalingPolicy', {})
+                        return auto_policy
+
+    @staticmethod
+    def _get_key_name_for_health_check(hk):
+        if 'tcpHealthCheck' in hk:
+            return 'tcpHealthCheck'
+
+        elif 'sslHealthCheck' in hk:
+            return 'tcpHealthCheck'
+
+        elif 'httpHealthCheck' in hk:
+            return 'tcpHealthCheck'
+
+        elif 'httpsHealthCheck' in hk:
+            return 'tcpHealthCheck'
+
+        elif 'http2HealthCheck' in hk:
+            return 'tcpHealthCheck'
+
+        elif 'grpcHealthCheck' in hk:
+            return 'grpcHealthCheck'
+
+        else:
+            return None
