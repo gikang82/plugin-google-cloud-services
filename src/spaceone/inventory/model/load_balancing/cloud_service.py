@@ -151,7 +151,9 @@ lb_backend_meta = TableDynamicLayout.set_fields('Backends', root_path='data.back
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Type', 'type'),
     TextDyField.data_source('Scope', 'scope'),
-    TextDyField.data_source('Protocol', 'protocol'),
+    EnumDyField.data_source('Protocol', 'protocols', default_badge={
+        'primary': ['HTTP', 'HTTPS'], 'indigo.500': ['TCP'], 'coral.600': ['UDP']
+    }),
 ])
 
 lb_frontend_meta = TableDynamicLayout.set_fields('Frontends', root_path='data.frontends', fields=[
