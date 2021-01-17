@@ -409,7 +409,8 @@ class LoadBalancingManager(GoogleCloudManager):
             health_checks = target_pool.get('healthChecks', [])
             target_pool.update({
                 '_region': region,
-                'num_of_instance': len(target_pool.get('instances', []))
+                'num_of_instance': len(target_pool.get('instances', [])),
+                '_health_checks': self._get_matched_last_target_in_list(health_checks)
             })
             target_pool_vo = {
                 'lb_type': 'target_pool',

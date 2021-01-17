@@ -277,6 +277,7 @@ class TargetPools(Model):
     _region = StringType()
     num_of_instance = IntType(default=0)
     health_checks = ListType(StringType(), deserialize_from='healthChecks', default=[])
+    _health_checks = ListType(StringType(), default=[])
     instances = ListType(StringType(), default=[])
     session_affinity = StringType(deserialize_from='sessionAffinity', serialize_when_none=False)
     failover_ratio = FloatType(deserialize_from='failoverRatio', serialize_when_none=False)
