@@ -188,7 +188,7 @@ lb_target_proxies_meta = TableDynamicLayout.set_fields('Target Proxies', root_pa
     TextDyField.data_source('Description', 'target_proxy_display.description'),
     TextDyField.data_source('Type', 'target_proxy_display.type'),
     TextDyField.data_source('Target Resource', 'target_proxy_display.target_resource'),
-    DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
+    DateTimeDyField.data_source('Creation Time', 'target_proxy_display.creation_timestamp')
 ])
 
 lb_health_checks_meta = TableDynamicLayout.set_fields('Health Checks', root_path='data.heath_check_vos.health_checks',

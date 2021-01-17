@@ -17,7 +17,10 @@ cst_load_balancing.tags = {
 cst_load_balancing._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
-        TextDyField.data_source('Protocol', 'data.lead_protocol'),
+        EnumDyField.data_source('Protocol', 'data.lead_protocol', default_badge={
+            'primary': ['HTTP', 'HTTPS', 'HTTP(S)'], 'indigo.500': ['TCP', 'TCP (Proxy)'],
+            'coral.600': ['UDP', 'UDP (Proxy)']
+        }),
         TextDyField.data_source('Region', 'data.region'),
         TextDyField.data_source('Frontends', 'data.frontend_display'),
         TextDyField.data_source('Backends', 'data.backends_display'),
