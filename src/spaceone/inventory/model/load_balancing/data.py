@@ -353,7 +353,7 @@ class Frontend(Model):
 class Managed(Model):
     domain = ListType(StringType(), default=[], serialize_when_none=False)
     status = StringType(serialize_when_none=False)
-    domain_status = DictType(StringType(), deserialize_from='domainStatus')
+    domain_status = ListType(ModelType(Labels), default=[])
 
 
 class SelfManaged(Model):
