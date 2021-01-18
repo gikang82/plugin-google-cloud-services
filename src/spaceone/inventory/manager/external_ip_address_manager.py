@@ -1,4 +1,3 @@
-
 import time
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
@@ -61,7 +60,6 @@ class ExternalIPAddressManager(GoogleCloudManager):
         print(f'** External IP Address Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
-
     def get_external_ip_addresses(self, regional_address, instances_over_region, forwarding_rules):
 
         all_ip_juso_vos = []
@@ -74,7 +72,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
                         simple_region = ip_juso.get('region')
                         users = ip_juso.get('users')
                         ip_juso.update({
-                            'region': simple_region[simple_region.rfind('/')+1:] if simple_region else 'global',
+                            'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
                             'used_by': self._get_parse_users(users) if users else [],
                             'ip_version_display': self._valid_ip_address(ip_juso.get('address')),
                             'network_tier_display': self._get_network_tier_display(ip_juso),
@@ -85,7 +83,8 @@ class ExternalIPAddressManager(GoogleCloudManager):
 
         for forwarding_rule in forwarding_rules:
             forwarding_ip_juso = forwarding_rule.get('IPAddress')
-            if forwarding_rule.get('loadBalancingScheme') == 'EXTERNAL' and forwarding_ip_juso not in all_ip_juso_only_check_dup:
+            if forwarding_rule.get(
+                    'loadBalancingScheme') == 'EXTERNAL' and forwarding_ip_juso not in all_ip_juso_only_check_dup:
                 rule_name = forwarding_rule.get('name')
                 forwarding_rule.update({
                     'is_ephemeral': 'Ephemeral',
@@ -129,8 +128,6 @@ class ExternalIPAddressManager(GoogleCloudManager):
                         all_ip_juso_only_check_dup.append(external_ip_info.get('natIP'))
                         all_ip_juso_vos.append(external_ip)
 
-
-
         return all_ip_juso_vos
 
     @staticmethod
@@ -143,9 +140,11 @@ class ExternalIPAddressManager(GoogleCloudManager):
     @staticmethod
     def _get_region_from_forwarding_rule(forwarding_rule):
         self_link = forwarding_rule.get('selfLink')
-        parsed_link = self_link[self_link.find('projects/')+9:]
-        return 'global' if parsed_link == '' else parsed_link[parsed_link.find('/')+1:parsed_link.find('/forwardingRules')]
-
+        parsed_link = self_link[self_link.find('projects/') + 9:]
+        _parsed_link = self_link[self_link.find('/forwardingRules/') + 9:]
+        return 'global' if parsed_link == '' else \
+            parsed_link[parsed_link.find('regions/') + 8:parsed_link.find('/forwardingRules')] \
+                if parsed_link.find('regions/') > -1 else parsed_link[parsed_link.find('/') + 1:parsed_link.find('/forwardingRules')]
 
     @staticmethod
     def _get_network_tier_display(external_ip_info):
@@ -178,6 +177,3 @@ class ExternalIPAddressManager(GoogleCloudManager):
         region = external_ip.get('region')
         return f'https://console.cloud.google.com/networking/addresses/project={project_id}/zone={zone}/ip_address/{ip_address}' \
             if zone else f'https://console.cloud.google.com/networking/addresses/project={project_id}/region/{region}/ip_address/{ip_address}'
-
-
-

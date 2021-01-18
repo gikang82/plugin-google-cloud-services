@@ -443,7 +443,7 @@ class LoadBalancingManager(GoogleCloudManager):
                 health_checks = backend.get('healthChecks', [])
                 if backend.get('selfLink') == proxy_info.get('service', ''):
                     region = self._extract_region_from_proxy(backend.get('selfLink'), project)
-                    backend.update({'region': region})
+                    backend.update({'region': region, 'type': 'Global' if region == 'global' else region})
                     backend_proxy_vo = {
                         'lb_type': 'target_proxy',
                         'project': project,
@@ -624,10 +624,10 @@ class LoadBalancingManager(GoogleCloudManager):
 
         if rule_length > 0:
             regions = list(set([ft.get('region') for ft in frontend if 'region' in ft]))
-            located_at = regions[0] if len(regions) == 1 else 'multi regions' if len(regions) > 1 else ''
+            located_at = regions[0] if len(regions) == 1 else 'Multi regions' if len(regions) > 1 else ''
             _located_at = f'within {located_at}' if located_at != '' else ''
             plural = '' if rule_length == 1 else 's'
-            frontend_display = f'{rule_length} forwarding rule{plural} {_located_at}'
+            frontend_display = f'{rule_length} Forwarding Rule{plural} {_located_at}'
 
         return frontend_display
 
@@ -722,8 +722,8 @@ class LoadBalancingManager(GoogleCloudManager):
         else:
             service = len(load_balancer.get('backend_services', []))
             bucket = len(load_balancer.get('backend_buckets', []))
-            display = f'{service} backend services & {bucket} backend buckets' if service > 0 and bucket > 0 \
-                else f'{bucket} backend buckets' if bucket > 0 else f'{service} backend service'
+            display = f'{service} Backend Services & {bucket} Backend Buckets' if service > 0 and bucket > 0 \
+                else f'{bucket} Backend Buckets' if bucket > 0 else f'{service} Backend Service'
 
         return display
 
