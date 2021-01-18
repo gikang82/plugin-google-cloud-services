@@ -13,7 +13,13 @@ lb_frontend_in_detaail = SimpleTableDynamicLayout.set_fields('Frontend',
                                                              root_path='data.frontends',
                                                              fields=[
                                                                  TextDyField.data_source('Name', 'name'),
-                                                                 TextDyField.data_source('Protocol', 'protocols'),
+                                                                 EnumDyField.data_source('Protocol', 'protocol',
+                                                                                         default_badge={
+                                                                                             'primary': ['HTTP',
+                                                                                                         'HTTPS'],
+                                                                                             'indigo.500': ['TCP'],
+                                                                                             'coral.600': ['UDP']
+                                                                                         }),
                                                                  ListDyField.data_source('Port', 'port'),
                                                                  TextDyField.data_source('Scope', 'scope'),
                                                                  ListDyField.data_source('Certificate', 'certificate'),
@@ -33,15 +39,20 @@ lb_host_path_in_detail = SimpleTableDynamicLayout.set_fields('Host & Path Rules'
                                                                  TextDyField.data_source('Name', 'backend'),
                                                              ])
 
-lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend (Url Map)',
+lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend(URL Map)',
                                                                    root_path='data.backends.url_map_backend',
                                                                    fields=[
                                                                        TextDyField.data_source('Name', 'name'),
                                                                        TextDyField.data_source('Type', 'type'),
                                                                        TextDyField.data_source('Instance Name',
                                                                                                'instance_name'),
-                                                                       TextDyField.data_source('Cloud CDN',
-                                                                                               'cloud_cdn'),
+                                                                       EnumDyField.data_source('Cloud CDN', 'cloud_cdn',
+                                                                                               default_badge={
+                                                                                                   'indigo.500': [
+                                                                                                       'enabled'],
+                                                                                                   'coral.600': [
+                                                                                                       'disabled']
+                                                                                               }),
                                                                        ListDyField.data_source('Health Check',
                                                                                                'health_check'),
                                                                        EnumDyField.data_source('Scheme', 'scheme',
@@ -51,8 +62,6 @@ lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend (Url
                                                                                                    'coral.600': [
                                                                                                        'INTERNAL']
                                                                                                }),
-                                                                       TextDyField.data_source('Endpoint Protocol',
-                                                                                               'end_point_protocol'),
                                                                        TextDyField.data_source('Endpoint Protocol',
                                                                                                'end_point_protocol'),
                                                                        TextDyField.data_source('Named port',
@@ -71,7 +80,7 @@ lb_backend_url_map_in_detail = SimpleTableDynamicLayout.set_fields('Backend (Url
                                                                                                    'delimiter': '<br>'}),
                                                                    ])
 
-lb_backend_target_pool_item_in_detail = ItemDynamicLayout.set_fields('Backend with Target Pool',
+lb_backend_target_pool_item_in_detail = ItemDynamicLayout.set_fields('Backend(Target Pool)',
                                                                      root_path='data.backends.target_pool_backend',
                                                                      fields=[
                                                                          TextDyField.data_source('Name', 'name'),
@@ -86,7 +95,7 @@ lb_backend_target_pool_item_in_detail = ItemDynamicLayout.set_fields('Backend wi
                                                                                                  'fail_over_display'),
                                                                      ])
 
-lb_backend_target_pool_table_in_detail = SimpleTableDynamicLayout.set_fields('Backend Instances',
+lb_backend_target_pool_table_in_detail = SimpleTableDynamicLayout.set_fields('Backend Instances (Target Pool) ',
                                                                              root_path='data.backends.target_pool_backend.backend_instances',
                                                                              fields=[
                                                                                  TextDyField.data_source('Name',
@@ -108,8 +117,14 @@ lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend (
                                                                           TextDyField.data_source('Type', 'type'),
                                                                           TextDyField.data_source('Instance Name',
                                                                                                   'instance_name'),
-                                                                          TextDyField.data_source('Cloud CDN',
-                                                                                                  'cloud_cdn'),
+                                                                          EnumDyField.data_source('Cloud CDN',
+                                                                                                  'cloud_cdn',
+                                                                                                  default_badge={
+                                                                                                      'indigo.500': [
+                                                                                                          'enabled'],
+                                                                                                      'coral.600': [
+                                                                                                          'disabled']
+                                                                                                  }),
                                                                           ListDyField.data_source('Health Check',
                                                                                                   'health_check'),
                                                                           EnumDyField.data_source('Scheme', 'scheme',
@@ -119,8 +134,6 @@ lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend (
                                                                                                       'coral.600': [
                                                                                                           'INTERNAL']
                                                                                                   }),
-                                                                          TextDyField.data_source('Endpoint Protocol',
-                                                                                                  'end_point_protocol'),
                                                                           TextDyField.data_source('Endpoint Protocol',
                                                                                                   'end_point_protocol'),
                                                                           TextDyField.data_source('Named port',
@@ -139,7 +152,7 @@ lb_details_tab_in_backend_proxy = SimpleTableDynamicLayout.set_fields('Backend (
                                                                                                       'delimiter': '<br>'}),
                                                                       ])
 
-load_balancing_details = ListDynamicLayout.set_layouts('Load Balancer Details', layouts=[lb_frontend_in_detaail,
+load_balancing_details = ListDynamicLayout.set_layouts('Details', layouts=[lb_frontend_in_detaail,
                                                                                          lb_host_path_in_detail,
                                                                                          lb_backend_url_map_in_detail,
                                                                                          lb_details_tab_in_backend_proxy,
@@ -174,7 +187,6 @@ lb_frontend_meta = TableDynamicLayout.set_fields('Frontends', root_path='data.fr
 
 lb_forwarding_rule_meta = TableDynamicLayout.set_fields('Forwarding Rules', root_path='data.forwarding_rules', fields=[
     TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Description', 'description'),
     EnumDyField.data_source('Type', 'type', default_badge={'indigo.500': ['Global'], 'indigo.600': ['Regional']}),
     TextDyField.data_source('Region', 'region'),
     TextDyField.data_source('Address', 'ip_address'),
@@ -182,13 +194,12 @@ lb_forwarding_rule_meta = TableDynamicLayout.set_fields('Forwarding Rules', root
     EnumDyField.data_source('Protocol', 'ip_protocol', default_badge={
         'primary': ['HTTP', 'HTTPS'], 'indigo.500': ['TCP'], 'coral.600': ['UDP']
     }),
+    TextDyField.data_source('Description', 'description'),
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
 ])
 
-
 lb_target_proxies_meta = TableDynamicLayout.set_fields('Target Proxies', root_path='data.target_proxies', fields=[
     TextDyField.data_source('Name', 'target_proxy_display.name'),
-    TextDyField.data_source('Description', 'target_proxy_display.description'),
     EnumDyField.data_source('Type', 'target_proxy_display.type',
                             default_badge={
                                 'primary': ['HTTP Proxy'],
@@ -198,6 +209,7 @@ lb_target_proxies_meta = TableDynamicLayout.set_fields('Target Proxies', root_pa
                                 'green.500': ['GRPC Proxy']
                             }),
     TextDyField.data_source('Target Resource', 'target_proxy_display.target_resource'),
+    TextDyField.data_source('Description', 'target_proxy_display.description'),
     DateTimeDyField.data_source('Creation Time', 'target_proxy_display.creation_timestamp')
 ])
 
@@ -217,19 +229,19 @@ lb_health_checks_meta = TableDynamicLayout.set_fields('Health Checks', root_path
 
 lb_backend_service_meta = TableDynamicLayout.set_fields('Backend Services', root_path='data.backend_services', fields=[
     TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Description', 'description'),
     EnumDyField.data_source('Type', 'type', default_badge={'indigo.500': ['Global'], 'indigo.600': ['Regional']}),
     ListDyField.data_source('Region', 'region'),
+    TextDyField.data_source('Description', 'description'),
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
 ])
 
 lb_certificates_meta = TableDynamicLayout.set_fields('Certificates', root_path='data.certificates', fields=[
     TextDyField.data_source('Name', 'name'),
-    TextDyField.data_source('Description', 'description'),
     ListDyField.data_source('Domain', 'domains'),
     TextDyField.data_source('Expires', 'expire_time'),
     TextDyField.data_source('Type', 'type'),
     TextDyField.data_source('Status', 'managed.status'),
+    TextDyField.data_source('Description', 'description'),
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
 ])
 
