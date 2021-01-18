@@ -175,8 +175,8 @@ lb_frontend_meta = TableDynamicLayout.set_fields('Frontends', root_path='data.fr
 lb_forwarding_rule_meta = TableDynamicLayout.set_fields('Forwarding Rules', root_path='data.forwarding_rules', fields=[
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Description', 'description'),
-    TextDyField.data_source('Type', 'type'),
-    TextDyField.data_source('Type', 'region'),
+    EnumDyField.data_source('Type', 'type', default_badge={'indigo.500': ['Global'], 'indigo.600': ['Regional']}),
+    TextDyField.data_source('Region', 'region'),
     TextDyField.data_source('Address', 'ip_address'),
     TextDyField.data_source('Port', 'port_range'),
     EnumDyField.data_source('Protocol', 'ip_protocol', default_badge={
@@ -185,10 +185,18 @@ lb_forwarding_rule_meta = TableDynamicLayout.set_fields('Forwarding Rules', root
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
 ])
 
+
 lb_target_proxies_meta = TableDynamicLayout.set_fields('Target Proxies', root_path='data.target_proxies', fields=[
     TextDyField.data_source('Name', 'target_proxy_display.name'),
     TextDyField.data_source('Description', 'target_proxy_display.description'),
-    TextDyField.data_source('Type', 'target_proxy_display.type'),
+    EnumDyField.data_source('Type', 'target_proxy_display.type',
+                            default_badge={
+                                'primary': ['HTTP Proxy'],
+                                'indigo.500': ['HTTPS Proxy'],
+                                'coral.600': ['SSL Proxy'],
+                                'peacock.500': ['TCP Proxy'],
+                                'green.500': ['GRPC Proxy']
+                            }),
     TextDyField.data_source('Target Resource', 'target_proxy_display.target_resource'),
     DateTimeDyField.data_source('Creation Time', 'target_proxy_display.creation_timestamp')
 ])
@@ -210,7 +218,7 @@ lb_health_checks_meta = TableDynamicLayout.set_fields('Health Checks', root_path
 lb_backend_service_meta = TableDynamicLayout.set_fields('Backend Services', root_path='data.backend_services', fields=[
     TextDyField.data_source('Name', 'name'),
     TextDyField.data_source('Description', 'description'),
-    TextDyField.data_source('Type', 'type'),
+    EnumDyField.data_source('Type', 'type', default_badge={'indigo.500': ['Global'], 'indigo.600': ['Regional']}),
     ListDyField.data_source('Region', 'region'),
     DateTimeDyField.data_source('Creation Time', 'creation_timestamp')
 ])
