@@ -3,11 +3,11 @@
 ![Google Cloud Services](https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Google_Cloud.svg)
 **Plugin to collect Google Cloud Services**
 
-[plugin-google-cloud-services](https://github.com/spaceone-dev/plugin-google-cloud-services) is a convenient tool to 
-get cloud service data from Google Cloud platform.
+> SpaceONE's [plugin-google-cloud-services](https://github.com/spaceone-dev/plugin-google-cloud-services) is a convenient tool to 
+get cloud service data from Google Cloud platform. 
 
-Find it also at [Dockerhub](https://hub.docker.com/repository/docker/spaceone/google-cloud-servi)
 
+Find us also at [Dockerhub](https://hub.docker.com/repository/docker/spaceone/google-cloud-services)
 > Latest stable version : 1.1.2
 
 Please contact us if you need any further information. 
@@ -19,7 +19,7 @@ Please contact us if you need any further information.
 Registered service account on SpaceONE must have certain permissions to collect cloud service data 
 Please, set authentication privilege for followings:
  
-#### Compute Engine
+#### [Compute Engine](https://cloud.google.com/compute/docs/apis)
 
 - Compute VM(Instance)
     - Scopes
@@ -49,21 +49,10 @@ Please, set authentication privilege for followings:
         - https://www.googleapis.com/auth/cloud-platform
         
     - IAM
-        - compute.zones.list
-        - compute.regions.list
-        - compute.instances.list
+        - compute.instanceGroupManagers.list
         - compute.machineTypes.list
-        - compute.urlMaps.list
-        - compute.backendServices.list
         - compute.disks.list
-        - compute.diskTypes.list
-        - compute.autoscalers.list
-        - compute.images.list
-        - compute.subnetworks.list
-        - compute.regionUrlMaps.list
-        - compute.backendServices.list
-        - compute.targetPools.list
-        - compute.forwardingRules.list
+        - compute.instanceTemplates.list
         
 - Instance Group
     - Scopes
@@ -71,42 +60,23 @@ Please, set authentication privilege for followings:
         - https://www.googleapis.com/auth/cloud-platform
         
     - IAM
-        - compute.zones.list
-        - compute.regions.list
+        - compute.instanceGroups.list
+        - compute.instanceGroupManagers.list
         - compute.instances.list
-        - compute.machineTypes.list
-        - compute.urlMaps.list
-        - compute.backendServices.list
-        - compute.disks.list
-        - compute.diskTypes.list
         - compute.autoscalers.list
-        - compute.images.list
-        - compute.subnetworks.list
-        - compute.regionUrlMaps.list
-        - compute.backendServices.list
-        - compute.targetPools.list
-        - compute.forwardingRules.list        
+        - compute.instanceTemplates.list
+     
 - Machine Images
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
         
     - IAM
-        - compute.zones.list
-        - compute.regions.list
-        - compute.instances.list
+        - compute.machineImages.list
         - compute.machineTypes.list
-        - compute.urlMaps.list
-        - compute.backendServices.list
         - compute.disks.list
-        - compute.diskTypes.list
-        - compute.autoscalers.list
         - compute.images.list
-        - compute.subnetworks.list
-        - compute.regionUrlMaps.list
-        - compute.backendServices.list
-        - compute.targetPools.list
-        - compute.forwardingRules.list  
+    
 - Disk
     - Scopes
         - https://www.googleapis.com/auth/compute
@@ -122,27 +92,36 @@ Please, set authentication privilege for followings:
         - https://www.googleapis.com/auth/cloud-platform
         
     - IAM
-        - compute.zones.list
-        - compute.regions.list
-        - compute.instances.list
-        - compute.machineTypes.list
-        - compute.urlMaps.list
-        - compute.backendServices.list
+        - compute.snapshots.list
+        - compute.resourcePolicies.list
         - compute.disks.list
-        - compute.diskTypes.list
-        - compute.autoscalers.list
-        - compute.images.list
-        - compute.subnetworks.list
-        - compute.regionUrlMaps.list
-        - compute.backendServices.list
-        - compute.targetPools.list
-        - compute.forwardingRules.list  
+     
 
-#### VPC
+#### [VPC](https://cloud.google.com/compute/docs/apis)
 - VPC Network
-
+    - Scopes 
+        - https://www.googleapis.com/auth/compute
+        - https://www.googleapis.com/auth/cloud-platform
+        
+    - IAM
+        - compute.instances.list
+        - compute.forwardingRules.list
+        - compute.networks.list
+        - compute.addresses.list
+        - compute.globalAddresses.list
+        - compute.subnetworks.list
+        - compute.firewalls.list
+        - compute.routes.list
+        
 - Route
-
+    - Scopes 
+        - https://www.googleapis.com/auth/compute
+        - https://www.googleapis.com/auth/cloud-platform
+        
+    - IAM
+        - compute.routes.list
+        - compute.instances.list
+        
 - External IP Address
     - Scopes 
         - https://www.googleapis.com/auth/compute
@@ -154,18 +133,38 @@ Please, set authentication privilege for followings:
         - compute.addresses.list
 
 - Firewall
-- Scopes 
+    - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
         
     - IAM
         - compute.instances.list
-        - compute.forwardingRules.list
-        - compute.addresses.list
-#### Network Service
-- Load Balancing
+        - compute.firewalls.list
 
-#### Cloud SQL
+
+#### [Network Service](https://cloud.google.com/compute/docs/apis)
+- Load Balancing
+    - Scopes 
+        - https://www.googleapis.com/auth/compute
+        - https://www.googleapis.com/auth/cloud-platform
+        
+    - IAM
+        - compute.urlMaps.list
+        - compute.backendBuckets.list
+        - compute.backendServices.list
+        - compute.targetPools.list
+        - compute.forwardingRules.list
+        - compute.targetGrpcProxies.list
+        - compute.targetHttpProxies.list
+        - compute.targetHttpsProxies.list
+        - compute.targetGrpcProxies.list
+        - compute.healthChecks.list
+        - compute.httpHealthChecks.list
+        - compute.httpsHealthChecks.list
+        - compute.autoscalers.list
+        
+
+#### [Cloud SQL](https://cloud.google.com/sql/docs/mysql/apis)
 - Instance
     - Scopes 
         - https://www.googleapis.com/auth/cloud-platform
@@ -177,10 +176,13 @@ Please, set authentication privilege for followings:
         - sqladmin.users.list
         - sqladmin.backup_runs.list
 
-#### Storage
+#### [Storage](https://cloud.google.com/storage/docs/apis)
 - Bucket
-
-
+    - IAM
+        - storage.buckets.get
+        - storage.objects.list
+        - storage.objects.getIamPolicy2,6
+            
 
 
 
