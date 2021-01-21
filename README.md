@@ -23,27 +23,23 @@ Please, set authentication privilege for followings:
 
 * Table of Contents
     * [Compute Engine](#compute-engine)
-        * [Compute VM (Instance)](#compute-vm(instance))
-        * Instance Template
-        * Instance Group
-        * Machine Images
-        * Disk
-        * Snapshot
+        * [Compute VM (Instance)](#compute-vminstance)
+        * [Instance Template](#instance-template)
+        * [Instance Group](#instance-group)
+        * [Machine Images](#machine-images)
+        * [Disk](#disk)
+        * [Snapshot](#snapshot)
     * [VPC](#vpc)
-        * VPC Network
-        * Route
-        * External IP Address
-        * Firewall
+        * [VPC Network](#vpc-network)
+        * [Route](#route)
+        * [External IP Address](#external-ip-address)
+        * [Firewall](#firewall)
     * [Network Service](#network-service)
-        * VPC Network
-        * Route
-        * External IP Address
-        * Firewall
+        * [Load Balancing](#load-balancing)
     * [Cloud SQL](#cloud-sql)
-        * Instance
+        * [Instance](#instance)
     * [Storage](#storage)
-        * Buckets
-    
+        * [Buckets](#Bucket)
     
 
 ---
@@ -94,7 +90,7 @@ Please, set authentication privilege for followings:
         - compute.autoscalers.list
         - compute.instanceTemplates.list
      
-- Machine Images
+- #### Machine Images
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -105,7 +101,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
         - compute.images.list
     
-- Disk
+- #### Disk
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -114,7 +110,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
         - compute.resourcePolicies.list
   
-- Snapshot
+- #### Snapshot
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -126,7 +122,8 @@ Please, set authentication privilege for followings:
      
 
 #### [VPC](https://cloud.google.com/compute/docs/apis)
-- VPC Network
+
+- #### VPC Network
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -141,7 +138,7 @@ Please, set authentication privilege for followings:
         - compute.firewalls.list
         - compute.routes.list
         
-- Route
+- #### Route
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -150,7 +147,7 @@ Please, set authentication privilege for followings:
         - compute.routes.list
         - compute.instances.list
         
-- External IP Address
+- #### External IP Address
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -160,7 +157,7 @@ Please, set authentication privilege for followings:
         - compute.forwardingRules.list
         - compute.addresses.list
 
-- Firewall
+- #### Firewall
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -171,7 +168,7 @@ Please, set authentication privilege for followings:
 
 
 #### [Network Service](https://cloud.google.com/compute/docs/apis)
-- Load Balancing
+- #### Load Balancing
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -193,7 +190,7 @@ Please, set authentication privilege for followings:
         
 
 #### [Cloud SQL](https://cloud.google.com/sql/docs/mysql/apis)
-- Instance
+- #### Instance
     - Scopes 
         - https://www.googleapis.com/auth/cloud-platform
         - https://www.googleapis.com/auth/sqlservice.admin
@@ -205,7 +202,7 @@ Please, set authentication privilege for followings:
         - sqladmin.backup_runs.list
 
 #### [Storage](https://cloud.google.com/storage/docs/apis)
-- Bucket
+- #### Bucket
     - IAM
         - storage.buckets.get
         - storage.objects.list
