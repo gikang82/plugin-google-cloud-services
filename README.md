@@ -18,10 +18,34 @@ Please contact us if you need any further information.
 ## Authentication Overview
 Registered service account on SpaceONE must have certain permissions to collect cloud service data 
 Please, set authentication privilege for followings:
- 
+
+### Contents
+
+* Table of Contents
+    * [Compute Engine](#compute-engine)
+        * [Compute VM (Instance)](#compute-vminstance)
+        * [Instance Template](#instance-template)
+        * [Instance Group](#instance-group)
+        * [Machine Images](#machine-images)
+        * [Disk](#disk)
+        * [Snapshot](#snapshot)
+    * [VPC](#vpc)
+        * [VPC Network](#vpc-network)
+        * [Route](#route)
+        * [External IP Address](#external-ip-address)
+        * [Firewall](#firewall)
+    * [Network Service](#network-service)
+        * [Load Balancing](#load-balancing)
+    * [Cloud SQL](#cloud-sql)
+        * [Instance](#instance)
+    * [Storage](#storage)
+        * [Buckets](#Bucket)
+    
+
+---
 #### [Compute Engine](https://cloud.google.com/compute/docs/apis)
 
-- Compute VM(Instance)
+- ##### Compute VM(Instance)
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -43,7 +67,7 @@ Please, set authentication privilege for followings:
         - compute.targetPools.list
         - compute.forwardingRules.list
     
-- Instance Template
+- ##### Instance Template
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -54,7 +78,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
         - compute.instanceTemplates.list
         
-- Instance Group
+- ##### Instance Group
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -66,7 +90,7 @@ Please, set authentication privilege for followings:
         - compute.autoscalers.list
         - compute.instanceTemplates.list
      
-- Machine Images
+- #### Machine Images
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -77,7 +101,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
         - compute.images.list
     
-- Disk
+- #### Disk
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -86,7 +110,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
         - compute.resourcePolicies.list
   
-- Snapshot
+- #### Snapshot
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -98,7 +122,8 @@ Please, set authentication privilege for followings:
      
 
 #### [VPC](https://cloud.google.com/compute/docs/apis)
-- VPC Network
+
+- #### VPC Network
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -113,7 +138,7 @@ Please, set authentication privilege for followings:
         - compute.firewalls.list
         - compute.routes.list
         
-- Route
+- #### Route
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -122,7 +147,7 @@ Please, set authentication privilege for followings:
         - compute.routes.list
         - compute.instances.list
         
-- External IP Address
+- #### External IP Address
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -132,7 +157,7 @@ Please, set authentication privilege for followings:
         - compute.forwardingRules.list
         - compute.addresses.list
 
-- Firewall
+- #### Firewall
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -143,7 +168,7 @@ Please, set authentication privilege for followings:
 
 
 #### [Network Service](https://cloud.google.com/compute/docs/apis)
-- Load Balancing
+- #### Load Balancing
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -165,7 +190,7 @@ Please, set authentication privilege for followings:
         
 
 #### [Cloud SQL](https://cloud.google.com/sql/docs/mysql/apis)
-- Instance
+- #### Instance
     - Scopes 
         - https://www.googleapis.com/auth/cloud-platform
         - https://www.googleapis.com/auth/sqlservice.admin
@@ -177,7 +202,7 @@ Please, set authentication privilege for followings:
         - sqladmin.backup_runs.list
 
 #### [Storage](https://cloud.google.com/storage/docs/apis)
-- Bucket
+- #### Bucket
     - IAM
         - storage.buckets.get
         - storage.objects.list
