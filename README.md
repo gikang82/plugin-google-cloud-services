@@ -18,10 +18,38 @@ Please contact us if you need any further information.
 ## Authentication Overview
 Registered service account on SpaceONE must have certain permissions to collect cloud service data 
 Please, set authentication privilege for followings:
- 
+
+### Contents
+
+* Table of Contents
+    * [Compute Engine](#compute-engine)
+        * [Compute VM (Instance)](#compute-vm(instance))
+        * Instance Template
+        * Instance Group
+        * Machine Images
+        * Disk
+        * Snapshot
+    * [VPC](#vpc)
+        * VPC Network
+        * Route
+        * External IP Address
+        * Firewall
+    * [Network Service](#network-service)
+        * VPC Network
+        * Route
+        * External IP Address
+        * Firewall
+    * [Cloud SQL](#cloud-sql)
+        * Instance
+    * [Storage](#storage)
+        * Buckets
+    
+    
+
+---
 #### [Compute Engine](https://cloud.google.com/compute/docs/apis)
 
-- Compute VM(Instance)
+- ##### Compute VM(Instance)
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -43,7 +71,7 @@ Please, set authentication privilege for followings:
         - compute.targetPools.list
         - compute.forwardingRules.list
     
-- Instance Template
+- ##### Instance Template
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -54,7 +82,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
         - compute.instanceTemplates.list
         
-- Instance Group
+- ##### Instance Group
     - Scopes
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
