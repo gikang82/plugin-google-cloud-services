@@ -58,7 +58,6 @@ class DiskManager(GoogleCloudManager):
                     'in_used_by': self._get_in_used_by(disk.get('users', [])),
                     'source_image_display': self._get_source_image_display(disk),
                     'disk_type': disk_type,
-                    'labels': self.convert_labels_format(disk.get('labels', {})),
                     'snapshot_schedule': snapshots,
                     'snapshot_schedule_display': self._get_snapshot_schedule(disk),
                     'encryption': self._get_encryption(disk),
