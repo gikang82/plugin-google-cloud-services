@@ -117,8 +117,6 @@ class MachineImage(Model):
     disks = ListType(ModelType(Disk), default=[])
     service_account = ModelType(ServiceAccount, serialize_when_none=False)
     kind = StringType()
-    labels = ListType(ModelType(Labels), default=[])
-    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
     location = StringType()
 

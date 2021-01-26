@@ -90,13 +90,13 @@ class LoadBalancingManager(GoogleCloudManager):
                 load_balancer.update({'target_proxies': matched_target_proxies,
                                       'certificates': matched_certificates})
             ##################################
-            # Set forwarding Rules to LoadBlancer
+            # Set forwarding Rules to Load Balancer
             ##################################
             matched_forwarding_rules = self.get_matched_forwarding_rules(load_balancer, forwarding_rules)
             load_balancer.update({'forwarding_rules': matched_forwarding_rules})
 
             ##################################
-            # Set Health Check to LoadBlancer
+            # Set Health Check to Load Balancer
             ##################################
             if len(health_self_links) > 0:
                 filter_check_list = list(set(health_checks_vo.get('health_check_list', [])))
@@ -119,7 +119,7 @@ class LoadBalancingManager(GoogleCloudManager):
                         'health_checks': matched_health_list
                     })
             ############################
-            # Set Front to LoadBlancer
+            # Set Front to Load Balancer
             ############################
 
             frontends = self.get_front_from_loadbalancer(load_balancer)
@@ -129,7 +129,7 @@ class LoadBalancingManager(GoogleCloudManager):
                                       'frontend_display': frontend_display})
 
             #############################
-            # Set Backend to LoadBlancer
+            # Set Backend to Load Balancer
             #############################
             backend_vo = {}
             if lb_type in ['target_pool']:

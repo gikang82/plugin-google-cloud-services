@@ -47,6 +47,8 @@ class ExternalIPAddressManager(GoogleCloudManager):
             if external_ip_juso.get('selfLink') is None:
                 external_ip_juso.update({'self_link': self._get_external_self_link_when_its_empty(external_ip_juso)})
 
+            # No Labels (exists on console but No option on APIs)
+
             external_ip_juso_data = ExternalIpAddress(external_ip_juso, strict=False)
             external_ip_juso_resource = ExternalIpAddressResource({
                 'region_code': region,
@@ -122,8 +124,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
                             'ip_version_display': self._valid_ip_address(external_ip_info.get('natIP')),
                             'creation_timestamp': instance.get('creationTimestamp'),
                             'users': [instance.get('selfLink')],
-                            'used_by': [f'Vm Instance {instance_name} ({zone})'],
-                            'labels': [],
+                            'used_by': [f'Vm Instance {instance_name} ({zone})']
                         }
                         all_ip_juso_only_check_dup.append(external_ip_info.get('natIP'))
                         all_ip_juso_vos.append(external_ip)

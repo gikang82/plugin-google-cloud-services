@@ -84,7 +84,7 @@ class InstanceGroupManager(GoogleCloudManager):
                         'instances': instances,
                         'instance_counts': len(instances)
                     })
-
+                    # No labels
                     instance_group_data = InstanceGroup(instance_group, strict=False)
                     instance_group_resource = InstanceGroupResource({
                         'data': instance_group_data,

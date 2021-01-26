@@ -183,7 +183,6 @@ class VPCNetwork(Model):
     ip_address_data = ListType(ModelType(IPAddress), default=[])
     firewall_data = ModelType(FirewallConfig, default=[])
     route_data = ModelType(RouteConfig, default=[])
-    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
     def reference(self):

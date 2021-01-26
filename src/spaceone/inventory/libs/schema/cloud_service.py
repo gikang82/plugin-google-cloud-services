@@ -3,6 +3,11 @@ from schematics.types import ListType, StringType, PolyModelType, DictType, Mode
 from .base import BaseMetaData, BaseResponse, MetaDataView, MetaDataViewSubData, ReferenceModel
 
 
+class Labels(Model):
+    key = StringType()
+    value = StringType()
+
+
 class CloudServiceMeta(BaseMetaData):
     @classmethod
     def set(cls):
@@ -19,6 +24,7 @@ class CloudServiceResource(Model):
     provider = StringType(default="google_cloud")
     cloud_service_type = StringType()
     cloud_service_group = StringType()
+    tags = ListType(ModelType(Labels), serialize_when_none=False)
     data = PolyModelType(Model, default=lambda: {})
     reference = ModelType(ReferenceModel)
     region_code = StringType()

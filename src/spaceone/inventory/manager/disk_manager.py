@@ -49,7 +49,7 @@ class DiskManager(GoogleCloudManager):
                 disk_size = float(disk.get('sizeGb'))
                 size = self._get_bytes(int(disk.get('sizeGb')))
                 snapshots = self.get_matched_snapshot(current_region, disk, resource_policies)
-
+                labels = self.convert_labels_format(disk.get('labels', {}))
                 disk.update({
                     'project': secret_data['project_id'],
                     'zone': zone,
@@ -59,7 +59,6 @@ class DiskManager(GoogleCloudManager):
                     'source_image_display': self._get_source_image_display(disk),
                     'disk_type': disk_type,
                     'labels': self.convert_labels_format(disk.get('labels', {})),
-                    'tags': self.convert_labels_format(disk.get('labels', {})),
                     'snapshot_schedule': snapshots,
                     'snapshot_schedule_display': self._get_snapshot_schedule(disk),
                     'encryption': self._get_encryption(disk),
@@ -67,11 +66,13 @@ class DiskManager(GoogleCloudManager):
                     'read_iops': self.get_iops_rate(disk_type, disk_size, 'read'),
                     'write_iops': self.get_iops_rate(disk_type, disk_size, 'write'),
                     'read_throughput': self.get_throughput_rate(disk_type, disk_size),
-                    'write_throughput': self.get_throughput_rate(disk_type, disk_size)
+                    'write_throughput': self.get_throughput_rate(disk_type, disk_size),
+                    'labels': labels
                 })
 
                 disk_data = Disk(disk, strict=False)
                 disk_resource = DiskResource({
+                    'tags': labels,
                     'data': disk_data,
                     'region_code': disk['region'],
                     'reference': ReferenceModel(disk_data.reference())
