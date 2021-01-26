@@ -28,8 +28,6 @@ class ExternalIpAddress(Model):
     ip_version = StringType(choices=('IPV4', 'IPV6'), deserialize_from='ipVersion', serialize_when_none=False)
     ip_version_display = StringType()
     users = ListType(StringType(), default=[])
-    labels = ListType(ModelType(Labels), default=[])
-    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
     def reference(self):

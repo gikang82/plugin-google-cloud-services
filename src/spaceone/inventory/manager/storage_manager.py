@@ -43,7 +43,7 @@ class StorageManager(GoogleCloudManager):
             iam_policy = storage_conn.list_iam_policy(bucket_name)
             st_class = bucket.get('storageClass').lower()
             region = self.get_matching_region(bucket)
-
+            labels = self.convert_labels_format(bucket.get('labels', {}))
             bucket.update({
                 'project': secret_data['project_id'],
                 'encryption': self._get_encryption(bucket),
@@ -61,12 +61,13 @@ class StorageManager(GoogleCloudManager):
                 'default_storage_class': st_class.capitalize(),
                 'access_control': self._get_access_control(bucket),
                 'public_access': self._get_public_access(bucket, iam_policy),
-                'labels': self.convert_labels_format(bucket.get('labels', {})),
-                'tags': self.convert_labels_format(bucket.get('labels', {})),
+                'labels': labels
             })
 
             bucket_data = Storage(bucket, strict=False)
+            # labels -> tags
             bucket_resource = StorageResource({
+                'tags': labels,
                 'region_code': region.get('region_code'),
                 'data': bucket_data,
                 'reference': ReferenceModel(bucket_data.reference())

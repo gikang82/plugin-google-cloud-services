@@ -63,7 +63,6 @@ class Firewall(Model):
     disabled = BooleanType(serialize_when_none=False)
     log_config = ModelType(LogConfig, deserialize_from='logConfig', serialize_when_none=False)
     self_link = StringType(deserialize_from='selfLink')
-    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
     display = ModelType(FirewallDisplay, serialize_when_none=False)
 

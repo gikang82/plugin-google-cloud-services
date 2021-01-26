@@ -52,6 +52,7 @@ class RouteManager(GoogleCloudManager):
                                                                 compute_vms),
             })
 
+            # No Labels
             route_data = Route(route, strict=False)
             route_resource = RouteResource({
                 'region_code': region,

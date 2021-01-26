@@ -208,18 +208,3 @@ class LoadBalancingConnector(GoogleCloudConnector):
             request = self.client.autoscalers().aggregatedList_next(previous_request=request,
                                                                               previous_response=response)
         return auto_scaler_list
-
-
-    def list_buckets(self, **query):
-        query.update({
-            'project': self.project_id,
-            'projection': 'full',
-            'alt': 'json'
-        })
-        result = {}
-        try:
-            result = self.client.buckets().list(**query).execute()
-        except Exception as e:
-            print(e)
-            pass
-        return result.get('items', [])

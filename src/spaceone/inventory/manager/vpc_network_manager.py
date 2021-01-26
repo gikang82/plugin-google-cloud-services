@@ -71,6 +71,7 @@ class VPCNetworkManager(GoogleCloudManager):
                 },
             })
 
+            # No labels
             vpc_data = VPCNetwork(network, strict=False)
             vpc_resource = VPCNetworkResource({
                 'region_code': region.get('region_code'),

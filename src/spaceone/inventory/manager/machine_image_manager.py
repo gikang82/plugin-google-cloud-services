@@ -78,6 +78,7 @@ class MachineImageManager(GoogleCloudManager):
             if len(svc_account) > 0:
                 machine_image.update({'service_account': self._get_service_account(svc_account)})
 
+            # No Labels
             machine_image_data = MachineImage(machine_image, strict=False)
 
             machine_image_resource = MachineImageResource({

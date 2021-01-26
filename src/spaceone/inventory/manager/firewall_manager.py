@@ -69,6 +69,8 @@ class FirewallManager(GoogleCloudManager):
                     'display': display
                 })
 
+                # No Labels on API
+
                 firewall_data = Firewall(firewall, strict=False)
                 firewall_resource = FirewallResource({
                     'region_code': region,

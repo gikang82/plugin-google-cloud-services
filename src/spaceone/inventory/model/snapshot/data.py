@@ -94,7 +94,6 @@ class Snapshot(Model):
     creation_type = StringType(choices=('Manual', 'Scheduled'))
     encryption = StringType(choices=('Google managed', 'Customer managed', 'Customer supplied'))
     labels = ListType(ModelType(Labels), default=[])
-    tags = ListType(ModelType(Labels), default=[])
 
     def reference(self):
         return {
