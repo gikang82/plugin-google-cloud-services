@@ -70,11 +70,13 @@ class RouteManager(GoogleCloudManager):
     def get_matched_instace(self, route, project_id, instances_over_region):
         all_compute_vms = []
         route_network = route.get('network')
+
         for instance in instances_over_region:
             network_interfaces = instance.get('networkInterfaces', [])
             zone = self._get_matched_last_target('zone', instance)
             region = zone[:-2]
             for network_interface in network_interfaces:
+
                 if route_network == network_interface.get('network'):
                     instance_name = instance.get('name')
                     instance = {
@@ -84,12 +86,12 @@ class RouteManager(GoogleCloudManager):
                         'region': region,
                         'address': network_interface.get('networkIP'),
                         'subnetwork': self._get_matched_last_target('subnetwork', network_interface),
-                        'tags': instance.get('tags', {}).get('items', []),
                         'project': project_id,
                         'service_accounts': self._get_service_accounts(instance.get('serviceAccounts', [])),
                         'creation_timestamp': instance.get('creationTimestamp'),
                         'labels': self.convert_labels_format(instance.get('labels', {})),
                         'labels_display': self._get_label_display(instance.get('labels', {})),
+                        'tags': instance.get('tags', {}).get('items', []),
                     }
                     all_compute_vms.append(ComputeVM(instance, strict=False))
         return all_compute_vms
