@@ -46,7 +46,7 @@ class SnapshotManager(GoogleCloudManager):
                 snapshot_schedule_display.append(self._get_last_target(resource_policy))
                 matched_po = self.get_matched_snapshot_schedule(all_region_resource_policies.get(resource_policy))
                 snapshot_schedule.append(SnapShotSchedule(matched_po, strict=False))
-
+            labels = self.convert_labels_format(snapshot.get('labels', {}))
             snapshot.update({
                 'project': secret_data['project_id'],
                 'disk': self.get_disk_info(snapshot),
@@ -54,12 +54,13 @@ class SnapshotManager(GoogleCloudManager):
                 'snapshot_schedule_display': snapshot_schedule_display,
                 'creation_type': 'Scheduled' if snapshot.get('autoCreated') else 'Manual',
                 'encryption': self._get_encryption_info(snapshot),
-                'labels': self.convert_labels_format(snapshot.get('labels', {})),
-                'tags': self.convert_labels_format(snapshot.get('labels', {})),
+                'labels': labels
             })
 
+            # labels -> tags
             snapshot_data = Snapshot(snapshot, strict=False)
             snapshots_resource = SnapshotResource({
+                'tags': labels,
                 'region_code': region.get('region_code'),
                 'data': snapshot_data,
                 'reference': ReferenceModel(snapshot_data.reference())

@@ -107,7 +107,6 @@ class InstanceTemplate(Model):
     network_interfaces = ListType(ModelType(NetworkInterface), default=[])
     service_account = ModelType(ServiceAccount, serialize_when_none=False)
     labels = ListType(ModelType(Labels), default=[])
-    tags = ListType(ModelType(Labels), default=[])
     kind = StringType()
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 

@@ -138,7 +138,6 @@ class Storage(Model):
     object_total_size = FloatType(default=0.0)
     size = FloatType(default=0.0)
     labels = ListType(ModelType(Labels), default=[])
-    tags = ListType(ModelType(Labels), default=[])
     encryption = StringType(choices=('Google-managed', 'Customer-managed'))
     creation_timestamp = DateTimeType(deserialize_from='timeCreated')
     update_timestamp = DateTimeType(deserialize_from='updated')

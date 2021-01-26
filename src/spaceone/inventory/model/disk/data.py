@@ -84,7 +84,6 @@ class Disk(Model):
     snapshot_schedule = ListType(ModelType(SnapShotSchedule), default=[])
     self_link = StringType(deserialize_from='selfLink')
     labels = ListType(ModelType(Labels), default=[])
-    tags = ListType(ModelType(Labels), default=[])
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
     last_attach_timestamp = DateTimeType(deserialize_from='lastAttachTimestamp', serialize_when_none=False)
     last_detach_timestamp = DateTimeType(deserialize_from='lastDetachTimestamp', serialize_when_none=False)

@@ -43,6 +43,7 @@ class CloudSQLManager(GoogleCloudManager):
                 'users': [User(user, strict=False) for user in users],
             })
 
+            # No labels!!
             instance_data = Instance(instance, strict=False)
             instance_resource = InstanceResource({
                 'data': instance_data,

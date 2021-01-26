@@ -54,6 +54,7 @@ class InstanceTemplateManager(GoogleCloudManager):
             in_used_by, matched_instance_group = self.match_instance_group(inst_template,
                                                                            instance_groups_over_zones)
             disks = self.get_disks(properties)
+            labels = self.convert_labels_format(inst_template.get('labels', {}))
             inst_template.update({
                 'project': secret_data['project_id'],
                 'in_used_by': in_used_by,
@@ -67,8 +68,7 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'instance_groups': matched_instance_group,
                 'network_interfaces': self.get_network_interface(properties),
                 'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
-                'labels': self.convert_labels_format(inst_template.get('labels', {})),
-                'tags': self.convert_labels_format(inst_template.get('labels', {}))
+                'labels': labels
             })
 
             svc_account = properties.get('serviceAccounts', [])
@@ -76,9 +76,10 @@ class InstanceTemplateManager(GoogleCloudManager):
                 inst_template.update({'service_account': self._get_service_account(svc_account)})
 
             instance_template_data = InstanceTemplate(inst_template, strict=False)
-
+            # labels -> tags
             default_region = 'global'
             instance_template_resource = InstanceTemplateResource({
+                'tags': labels,
                 'data': instance_template_data,
                 'reference': ReferenceModel(instance_template_data.reference()),
                 'region_code': default_region
