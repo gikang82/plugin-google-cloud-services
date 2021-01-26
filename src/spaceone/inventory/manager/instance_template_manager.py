@@ -4,6 +4,7 @@ from spaceone.inventory.model.instance_template.data import *
 from spaceone.inventory.model.instance_template.cloud_service import *
 from spaceone.inventory.connector.instance_template import InstanceTemplateConnector
 from spaceone.inventory.model.instance_template.cloud_service_type import CLOUD_SERVICE_TYPES
+from pprint import pprint
 import time
 
 class InstanceTemplateManager(GoogleCloudManager):
@@ -54,7 +55,8 @@ class InstanceTemplateManager(GoogleCloudManager):
             in_used_by, matched_instance_group = self.match_instance_group(inst_template,
                                                                            instance_groups_over_zones)
             disks = self.get_disks(properties)
-            labels = self.convert_labels_format(inst_template.get('labels', {}))
+            labels = self.convert_labels_format(properties.get('labels', {}))
+
             inst_template.update({
                 'project': secret_data['project_id'],
                 'in_used_by': in_used_by,
@@ -64,11 +66,11 @@ class InstanceTemplateManager(GoogleCloudManager):
                 'scheduling': self._get_scheduling(properties),
                 'disk_display': self._get_disk_type_display(disks, 'disk_type'),
                 'image': self._get_disk_type_display(disks, 'source_image_display'),
-                'disks': disks,
                 'instance_groups': matched_instance_group,
                 'network_interfaces': self.get_network_interface(properties),
                 'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
-                'labels': labels
+                'labels': labels,
+                'disks': disks
             })
 
             svc_account = properties.get('serviceAccounts', [])

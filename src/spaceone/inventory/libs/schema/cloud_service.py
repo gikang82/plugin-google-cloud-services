@@ -24,10 +24,10 @@ class CloudServiceResource(Model):
     provider = StringType(default="google_cloud")
     cloud_service_type = StringType()
     cloud_service_group = StringType()
-    tags = ListType(ModelType(Labels), serialize_when_none=False)
     data = PolyModelType(Model, default=lambda: {})
     reference = ModelType(ReferenceModel)
     region_code = StringType()
+    tags = ListType(ModelType(Labels), serialize_when_none=False)
     _metadata = PolyModelType(CloudServiceMeta, serialize_when_none=False, serialized_name='metadata')
 
 
