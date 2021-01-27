@@ -10,3 +10,4 @@ from spaceone.inventory.manager.external_ip_address_manager import ExternalIPAdd
 from spaceone.inventory.manager.firewall_manager import FirewallManager
 from spaceone.inventory.manager.route_manager import RouteManager
 from spaceone.inventory.manager.load_balancing_manager import LoadBalancingManager
+from spaceone.inventory.manager.big_query_manager import BigQueryManager
