@@ -151,7 +151,7 @@ class BigQueryManager(GoogleCloudManager):
 
     @staticmethod
     def get_visible_on_console(dataset_id):
-        return True if dataset_id.startswith('_') else False
+        return False if dataset_id.startswith('_') else True
 
     @staticmethod
     def _get_table_list_with_schema(big_conn: BigQueryConnector, bq_dt_tables):
