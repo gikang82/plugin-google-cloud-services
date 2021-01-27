@@ -147,3 +147,12 @@ class GoogleCloudManager(BaseManager):
         p = math.pow(1024, i)
         s = round(size_bytes / p, 2)
         return "%s %s" % (s, size_name[i])
+
+    @staticmethod
+    def convertMillis(millis):
+        s = millis / 1000
+        m, s = divmod(s, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+
+        return d, h, m, s

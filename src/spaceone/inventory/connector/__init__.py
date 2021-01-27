@@ -11,3 +11,4 @@ from spaceone.inventory.connector.external_ip_address import ExternalIPAddressCo
 from spaceone.inventory.connector.firewall import FirewallConnector
 from spaceone.inventory.connector.route import RouteConnector
 from spaceone.inventory.connector.load_balancing import LoadBalancingConnector
+from spaceone.inventory.connector.big_query import BigQueryConnector

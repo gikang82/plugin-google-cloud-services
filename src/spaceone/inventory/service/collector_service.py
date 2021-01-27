@@ -19,6 +19,7 @@ class CollectorService(BaseService):
         super().__init__(metadata)
         # set google cloud service manager
         self.execute_managers = [
+            'BigQueryManager',
             'CloudSQLManager',
             'InstanceGroupManager',
             'InstanceTemplateManager',
@@ -31,6 +32,7 @@ class CollectorService(BaseService):
             'FirewallManager',
             'RouteManager',
             'LoadBalancingManager'
+
         ]
 
     @check_required(['options'])

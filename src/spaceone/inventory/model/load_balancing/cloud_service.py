@@ -13,7 +13,7 @@ lb_frontend_in_detaail = SimpleTableDynamicLayout.set_fields('Frontend',
                                                              root_path='data.frontends',
                                                              fields=[
                                                                  TextDyField.data_source('Name', 'name'),
-                                                                 EnumDyField.data_source('Protocol', 'protocol',
+                                                                 EnumDyField.data_source('Protocol', 'protocols',
                                                                                          default_badge={
                                                                                              'primary': ['HTTP',
                                                                                                          'HTTPS'],
