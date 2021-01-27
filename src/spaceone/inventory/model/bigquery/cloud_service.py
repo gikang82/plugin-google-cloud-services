@@ -62,7 +62,7 @@ workspace_table_schema_meta = TableDynamicLayout.set_fields('Table Schema', root
     TextDyField.data_source('Column Mode', 'mode'),
 ])
 
-workspace_jobs_meta = ItemDynamicLayout.set_fields('Jobs', root_path='data.jobs', fields=[
+workspace_jobs_meta = TableDynamicLayout.set_fields('Jobs', root_path='data.jobs', fields=[
     TextDyField.data_source('Job ID', 'job_reference.job_id'),
     TextDyField.data_source('Job Type', 'configuration.job_type'),
     TextDyField.data_source('Query', 'configuration.query.query'),
