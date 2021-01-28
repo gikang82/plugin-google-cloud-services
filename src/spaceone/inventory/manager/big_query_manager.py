@@ -203,7 +203,7 @@ class BigQueryManager(GoogleCloudManager):
 
                     _query = conf.get('query', {})
                     query = _query.get('query', '')
-                    query_display = f'{query[:200]} ...'
+                    query_display = f'{query[:200]} ...' if len(query) > 200 else query
 
                     _query.update({'query_display': query_display})
                     conf.update({'query': _query})
