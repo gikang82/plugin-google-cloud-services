@@ -32,7 +32,6 @@ class CollectorService(BaseService):
             'FirewallManager',
             'RouteManager',
             'LoadBalancingManager'
-
         ]
 
     @check_required(['options'])

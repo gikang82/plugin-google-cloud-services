@@ -128,7 +128,7 @@ class JobConfiguration(Model):
     query = ModelType(JobConfigurationQuery, serialize_when_none=False)
     dry_run = BooleanType(deserialize_from='dryRun', serialize_when_none=False)
     job_timeout_ms = StringType(deserialize_from='jobTimeoutMs', serialize_when_none=False)
-    #labels = ListType(ModelType(Labels), default=[])
+    labels = ListType(ModelType(Labels), default=[])
 
 
 class JobStatus(Model):
@@ -148,9 +148,10 @@ class Job(Model):
     status = ModelType(JobStatus)
     user_email = StringType()
 
+
 class Table(Model):
-    id = StringType()
-    kind = StringType()
+    id = StringType(deserialize_from='id')
+    kind = StringType(deserialize_from='kind')
     table_reference = ModelType(TableReference, deserialize_from='tableReference', serialize_when_none=False)
     friendly_name = StringType(serialize_when_none=False)
     type = StringType(serialize_when_none=False)

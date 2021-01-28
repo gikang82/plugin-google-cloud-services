@@ -94,6 +94,9 @@ class BigQueryManager(GoogleCloudManager):
             if exp_table_ms:
                 bq_dataset.update({'default_table_expiration_ms_display': self.get_ms_display(exp_table_ms)})
 
+            print('1234123412')
+            pprint(update_bq_dt_tables)
+
             labels = self.convert_labels_format(bq_dataset.get('labels', {}))
             bq_dataset.update({
                 'name': data_set_id,
@@ -175,17 +178,17 @@ class BigQueryManager(GoogleCloudManager):
                 if lastModifiedTime:
                     table_single.update({'lastModifiedTime': datetime.fromtimestamp(int(lastModifiedTime) / 1000)})
 
-                fields = table_single.get('schema', {}).get('fields', [])
-                table_single.update({'schema': fields})
+                _table_schemas = table_single.get('schema', {})
+                if _table_schemas != {}:
+                    fields = _table_schemas.get('fields', [])
+                    table_single.update({'schema': fields})
+                    update_bq_dt_tables.append(table_single)
 
-                update_bq_dt_tables.append(table_single)
-
-                for single_schema in fields:
-                    single_schema.update({'table_id': table_ref.get('tableId')})
-                    table_schemas.append(single_schema)
+                    for single_schema in fields:
+                        single_schema.update({'table_id': table_ref.get('tableId')})
+                        table_schemas.append(single_schema)
 
         return update_bq_dt_tables, table_schemas
-
 
     def _get_matching_jobs(self, tables, jobs):
         matched_jobs = []
@@ -194,7 +197,11 @@ class BigQueryManager(GoogleCloudManager):
             for job in jobs:
                 stat = job.get('statistics', {})
                 conf = job.get('configuration', {})
-                #conf.update({'labels': self.convert_labels_format(conf.get('labels', {}))})
+                conf_labels = conf.get('labels', {})
+
+                if conf_labels != {} and isinstance(conf_labels, dict):
+                    conf.update({'labels': self.convert_labels_format(conf_labels)})
+
                 refer_tables = stat.get('query', {}).get('referencedTables', [])
                 if table_reference in refer_tables:
                     creationTime = datetime.fromtimestamp(int(stat.get('creationTime')) / 1000)
@@ -212,9 +219,6 @@ class BigQueryManager(GoogleCloudManager):
                         'startTime': startTime,
                         'endTime': endTime
                     })
-
-
-
 
                     job.update({'statistics': stat,
                                 'configuration': conf
