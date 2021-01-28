@@ -128,7 +128,7 @@ class JobConfiguration(Model):
     query = ModelType(JobConfigurationQuery, serialize_when_none=False)
     dry_run = BooleanType(deserialize_from='dryRun', serialize_when_none=False)
     job_timeout_ms = StringType(deserialize_from='jobTimeoutMs', serialize_when_none=False)
-    labels = ListType(ModelType(Labels), default=[])
+    #labels = ListType(ModelType(Labels), default=[])
 
 
 class JobStatus(Model):

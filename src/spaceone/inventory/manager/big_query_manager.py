@@ -186,17 +186,17 @@ class BigQueryManager(GoogleCloudManager):
 
         return update_bq_dt_tables, table_schemas
 
-    @staticmethod
-    def _get_matching_jobs(tables, jobs):
+
+    def _get_matching_jobs(self, tables, jobs):
         matched_jobs = []
         for table in tables:
             table_reference = table.get('tableReference', {})
             for job in jobs:
                 stat = job.get('statistics', {})
                 conf = job.get('configuration', {})
+                #conf.update({'labels': self.convert_labels_format(conf.get('labels', {}))})
                 refer_tables = stat.get('query', {}).get('referencedTables', [])
                 if table_reference in refer_tables:
-
                     creationTime = datetime.fromtimestamp(int(stat.get('creationTime')) / 1000)
                     startTime = datetime.fromtimestamp(int(stat.get('startTime')) / 1000)
                     endTime = datetime.fromtimestamp(int(stat.get('endTime')) / 1000)
@@ -212,6 +212,10 @@ class BigQueryManager(GoogleCloudManager):
                         'startTime': startTime,
                         'endTime': endTime
                     })
+
+
+
+
                     job.update({'statistics': stat,
                                 'configuration': conf
                                 })
