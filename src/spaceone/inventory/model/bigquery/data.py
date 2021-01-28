@@ -108,6 +108,7 @@ class JobStatistics(Model):
 
 class JobConfigurationQuery(Model):
     query = StringType(serialize_when_none=False)
+    query_display = StringType(serialize_when_none=False)
     destinationTable = ModelType(TableReference, serialize_when_none=False, deserialize_from='destinationTable')
     priority = StringType(deserialize_from='preserveNulls', serialize_when_none=False)
     preserve_nulls = BooleanType(deserialize_from='preserveNulls', serialize_when_none=False)
@@ -179,6 +180,7 @@ class ProjectModel(Model):
 class Access(Model):
     role = StringType(deserialize_from='role', serialize_when_none=False)
     special_group = StringType(deserialize_from='specialGroup', serialize_when_none=False)
+    user_by_email = StringType(deserialize_from='userByEmail', serialize_when_none=False)
 
 
 class BigQueryWorkSpace(Model):
