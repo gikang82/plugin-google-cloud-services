@@ -72,5 +72,10 @@ class BigQueryConnector(GoogleCloudConnector):
         query.update({'projectId': self.project_id,
                       'datasetId': dataset_id,
                       'tableId': table_id})
-        response = self.client.tables().get(**query).execute()
+        response = {}
+        try:
+            response = self.client.tables().get(**query).execute()
+        except Exception as e:
+            print(e)
+            pass
         return response
