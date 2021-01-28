@@ -29,7 +29,8 @@ access_table_meta = SimpleTableDynamicLayout.set_fields('Access',
                                                         root_path='data.access',
                                                         fields=[
                                                             TextDyField.data_source('Role', 'role'),
-                                                            TextDyField.data_source('Special Group', 'special_group')
+                                                            TextDyField.data_source('Special Group', 'special_group'),
+                                                            TextDyField.data_source('User by E-mail', 'user_by_email')
                                                         ])
 
 workspace_dataset_meta = ListDynamicLayout.set_layouts('Dataset Details', layouts=[dataset_details_meta,
@@ -65,7 +66,7 @@ workspace_table_schema_meta = TableDynamicLayout.set_fields('Table Schema', root
 workspace_jobs_meta = TableDynamicLayout.set_fields('Jobs', root_path='data.jobs', fields=[
     TextDyField.data_source('Job ID', 'job_reference.job_id'),
     TextDyField.data_source('Job Type', 'configuration.job_type'),
-    TextDyField.data_source('Query', 'configuration.query.query'),
+    TextDyField.data_source('Query', 'configuration.query.query_display'),
     TextDyField.data_source('State', 'state'),
     DateTimeDyField.data_source('Creation Time', 'statistics.creation_time'),
     DateTimeDyField.data_source('Start Time', 'statistics.start_time'),
