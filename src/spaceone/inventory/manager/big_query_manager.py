@@ -193,17 +193,28 @@ class BigQueryManager(GoogleCloudManager):
             table_reference = table.get('tableReference', {})
             for job in jobs:
                 stat = job.get('statistics', {})
+                conf = job.get('configuration', {})
                 refer_tables = stat.get('query', {}).get('referencedTables', [])
                 if table_reference in refer_tables:
+
                     creationTime = datetime.fromtimestamp(int(stat.get('creationTime')) / 1000)
                     startTime = datetime.fromtimestamp(int(stat.get('startTime')) / 1000)
                     endTime = datetime.fromtimestamp(int(stat.get('endTime')) / 1000)
+
+                    _query = conf.get('query', {})
+                    query = _query.get('query', '')
+                    query_display = f'{query[:200]} ...'
+
+                    _query.update({'query_display': query_display})
+                    conf.update({'query': _query})
                     stat.update({
                         'creationTime': creationTime,
                         'startTime': startTime,
                         'endTime': endTime
                     })
-                    job.update({'statistics': stat})
+                    job.update({'statistics': stat,
+                                'configuration': conf
+                                })
                     matched_jobs.append(Job(job, strict=False))
 
         return matched_jobs
