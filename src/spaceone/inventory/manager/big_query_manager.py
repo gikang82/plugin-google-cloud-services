@@ -94,9 +94,6 @@ class BigQueryManager(GoogleCloudManager):
             if exp_table_ms:
                 bq_dataset.update({'default_table_expiration_ms_display': self.get_ms_display(exp_table_ms)})
 
-            print('1234123412')
-            pprint(update_bq_dt_tables)
-
             labels = self.convert_labels_format(bq_dataset.get('labels', {}))
             bq_dataset.update({
                 'name': data_set_id,
