@@ -212,10 +212,10 @@ class InstanceGroupManagers(Model):
 class Scheduler(Model):
     type = StringType()
     instance_group_type = StringType()
-    max_size = IntType(serialize_when_none=False)
-    min_size = IntType(serialize_when_none=False)
-    recommend_size = IntType(serialize_when_none=False)
     mode = StringType(serialize_when_none=False)
+    origin_max_size = IntType(serialize_when_none=False)
+    origin_min_size = IntType(serialize_when_none=False)
+    recommend_size = IntType(serialize_when_none=False)
 
 
 class InstanceGroup(Model):
@@ -230,7 +230,7 @@ class InstanceGroup(Model):
     self_link = StringType(deserialize_from='selfLink')
     size = IntType()
     region = StringType(serialize_when_none=False)
-    scheduler_meta = ModelType(Scheduler)
+    power_scheduler = ModelType(Scheduler)
     subnetwork = StringType()
     project = StringType()
     instance_counts = IntType(default=0)
