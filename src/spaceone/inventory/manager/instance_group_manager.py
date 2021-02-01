@@ -4,6 +4,7 @@ from spaceone.inventory.connector.instance_group import InstanceGroupConnector
 from spaceone.inventory.model.instance_group.data import *
 from spaceone.inventory.model.instance_group.cloud_service import *
 from spaceone.inventory.model.instance_group.cloud_service_type import CLOUD_SERVICE_TYPES
+from pprint import pprint
 import time
 
 class InstanceGroupManager(GoogleCloudManager):
@@ -42,9 +43,7 @@ class InstanceGroupManager(GoogleCloudManager):
                 autoscalers = instance_group_conn.list_autoscalers(zone)
 
                 for instance_group in instance_groups:
-                    scheduler = {'type': 'zone',
-                                 'zone': zone,
-                                 'name': instance_group.get('name')}
+                    scheduler = {'type': 'zone'}
 
                     instance_group.update({
                         'project': secret_data['project_id']
@@ -69,9 +68,7 @@ class InstanceGroupManager(GoogleCloudManager):
                         })
 
                         if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
-                            autoscaling_policy = self._get_auto_policy_for_scheduler(match_auto_scaler)
-
-                            scheduler.update({ 'autoscaling_policy': autoscaling_policy})
+                            autoscaling_policy = self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
 
                             instance_group.update({
                                 'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
@@ -95,6 +92,9 @@ class InstanceGroupManager(GoogleCloudManager):
                     region = self.generate_region_from_zone_self_link(instance_group['zone'])
 
                     instances = instance_group_conn.list_instances(zone, instance_group['name'])
+                    # print('zone')
+                    # self_link = instance_group.get('selfLink')
+                    # print(f'self_link: {self_link}')
                     instance_group.update({
                         'scheduler_meta': scheduler,
                         'instances': instances,
@@ -121,9 +121,7 @@ class InstanceGroupManager(GoogleCloudManager):
                 autoscalers = instance_group_conn.list_region_autoscalers(region)
 
                 for instance_group in instance_groups:
-                    scheduler = {'type': 'region',
-                                 'region': region,
-                                 'name': instance_group.get('name')}
+                    scheduler = {'type': 'region'}
                     instance_group.update({
                         'project': secret_data['project_id'],
                     })
@@ -149,7 +147,7 @@ class InstanceGroupManager(GoogleCloudManager):
 
                         if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
 
-                            autoscaling_policy = self._get_auto_policy_for_scheduler(match_auto_scaler)
+                            autoscaling_policy = self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
 
                             scheduler.update({'autoscaling_policy': autoscaling_policy})
 
@@ -173,7 +171,9 @@ class InstanceGroupManager(GoogleCloudManager):
                         scheduler.update({'instance_group_type': ig_type})
 
                     instances = instance_group_conn.list_region_instances(region, instance_group['name'])
-
+                    # print('region')
+                    # self_link = instance_group.get('selfLink')
+                    # print(f'self_link: {self_link}')
                     instance_group.update({
                         'scheduler_meta': scheduler,
                         'instances': instances,
@@ -186,6 +186,9 @@ class InstanceGroupManager(GoogleCloudManager):
                         'region_code': region,
                         'reference': ReferenceModel(instance_group_data.reference())
                     })
+
+
+
 
                     self.set_region_code(region)
                     collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
@@ -282,12 +285,13 @@ class InstanceGroupManager(GoogleCloudManager):
             return ''
 
     @staticmethod
-    def _get_auto_policy_for_scheduler(matched_scheduler):
+    def _get_auto_policy_for_scheduler(scheduler, matched_scheduler):
         auto_policy = matched_scheduler.get('autoscalingPolicy', {})
 
-        return {
-            'recommend_size': matched_scheduler.get('recommendedSize', 1),
-            'min_replica': auto_policy.get('minNumReplicas'),
-            'max_replica': auto_policy.get('maxNumReplicas'),
-            'mode': auto_policy.get('mode')
-        }
+        if auto_policy != {}:
+            scheduler.update({
+                'recommend_size': matched_scheduler.get('recommendedSize', 1),
+                'min_replica': auto_policy.get('minNumReplicas'),
+                'max_replica': auto_policy.get('maxNumReplicas'),
+                'mode': auto_policy.get('mode')
+            })
