@@ -68,7 +68,7 @@ class InstanceGroupManager(GoogleCloudManager):
                         })
 
                         if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
-                            autoscaling_policy = self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
+                            self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
 
                             instance_group.update({
                                 'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
@@ -147,9 +147,7 @@ class InstanceGroupManager(GoogleCloudManager):
 
                         if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
 
-                            autoscaling_policy = self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
-
-                            scheduler.update({'autoscaling_policy': autoscaling_policy})
+                            self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
 
                             instance_group.update({
                                 'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
@@ -291,7 +289,7 @@ class InstanceGroupManager(GoogleCloudManager):
         if auto_policy != {}:
             scheduler.update({
                 'recommend_size': matched_scheduler.get('recommendedSize', 1),
-                'min_replica': auto_policy.get('minNumReplicas'),
-                'max_replica': auto_policy.get('maxNumReplicas'),
+                'min_size': auto_policy.get('minNumReplicas'),
+                'max_size': auto_policy.get('maxNumReplicas'),
                 'mode': auto_policy.get('mode')
             })

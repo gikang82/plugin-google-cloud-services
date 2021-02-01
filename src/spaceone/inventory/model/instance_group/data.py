@@ -212,8 +212,8 @@ class InstanceGroupManagers(Model):
 class Scheduler(Model):
     type = StringType()
     instance_group_type = StringType()
-    max_replica = IntType(serialize_when_none=False)
-    min_replica = IntType(serialize_when_none=False)
+    max_size = IntType(serialize_when_none=False)
+    min_size = IntType(serialize_when_none=False)
     recommend_size = IntType(serialize_when_none=False)
     mode = StringType(serialize_when_none=False)
 
