@@ -96,7 +96,7 @@ class InstanceGroupManager(GoogleCloudManager):
                     # self_link = instance_group.get('selfLink')
                     # print(f'self_link: {self_link}')
                     instance_group.update({
-                        'scheduler_meta': scheduler,
+                        'power_scheduler': scheduler,
                         'instances': instances,
                         'instance_counts': len(instances)
                     })
@@ -173,7 +173,7 @@ class InstanceGroupManager(GoogleCloudManager):
                     # self_link = instance_group.get('selfLink')
                     # print(f'self_link: {self_link}')
                     instance_group.update({
-                        'scheduler_meta': scheduler,
+                        'power_scheduler': scheduler,
                         'instances': instances,
                         'instance_counts': len(instances)
                     })
@@ -289,7 +289,7 @@ class InstanceGroupManager(GoogleCloudManager):
         if auto_policy != {}:
             scheduler.update({
                 'recommend_size': matched_scheduler.get('recommendedSize', 1),
-                'min_size': auto_policy.get('minNumReplicas'),
-                'max_size': auto_policy.get('maxNumReplicas'),
+                'origin_min_size': auto_policy.get('minNumReplicas'),
+                'origin_max_size': auto_policy.get('maxNumReplicas'),
                 'mode': auto_policy.get('mode')
             })
