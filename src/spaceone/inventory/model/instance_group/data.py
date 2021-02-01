@@ -209,20 +209,13 @@ class InstanceGroupManagers(Model):
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
 
-class AutoscalingPolicy(Model):
-    max_replica = IntType()
-    min_replica = IntType()
-    recommend_size = IntType()
-    mode = StringType()
-
-
 class Scheduler(Model):
-    name = StringType()
-    instance_group_type = StringType()
-    region = StringType(serialize_when_none=False)
-    zone = StringType(serialize_when_none=False)
     type = StringType()
-    autoscaling_policy = ModelType(AutoscalingPolicy, serialize_when_none=False)
+    instance_group_type = StringType()
+    max_replica = IntType(serialize_when_none=False)
+    min_replica = IntType(serialize_when_none=False)
+    recommend_size = IntType(serialize_when_none=False)
+    mode = StringType(serialize_when_none=False)
 
 
 class InstanceGroup(Model):
