@@ -209,6 +209,22 @@ class InstanceGroupManagers(Model):
     creation_timestamp = DateTimeType(deserialize_from='creationTimestamp')
 
 
+class AutoscalingPolicy(Model):
+    max_replica = IntType()
+    min_replica = IntType()
+    recommend_size = IntType()
+    mode = StringType()
+
+
+class Scheduler(Model):
+    name = StringType()
+    instance_group_type = StringType()
+    region = StringType(serialize_when_none=False)
+    zone = StringType(serialize_when_none=False)
+    type = StringType()
+    autoscaling_policy = ModelType(AutoscalingPolicy, serialize_when_none=False)
+
+
 class InstanceGroup(Model):
     id = StringType()
     kind = StringType()
@@ -221,6 +237,7 @@ class InstanceGroup(Model):
     self_link = StringType(deserialize_from='selfLink')
     size = IntType()
     region = StringType(serialize_when_none=False)
+    scheduler_meta = ModelType(Scheduler)
     subnetwork = StringType()
     project = StringType()
     instance_counts = IntType(default=0)
