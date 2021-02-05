@@ -43,7 +43,7 @@ cst_bucket._metadata = CloudServiceTypeMeta.set_meta(
         SearchField.set(name='Name', key='data.name'),
         SearchField.set(name='Location', key='data.location.location'),
         SearchField.set(name='Object Counts', key='data.object_count', data_type='integer'),
-        SearchField.set(name='Object Total Size', key='data.object_total_size', data_type='integer'),
+        SearchField.set(name='Object Total Size (Bytes)', key='data.object_total_size', data_type='integer'),
         SearchField.set(name='Creation Time', key='data.creation_timestamp', data_type='datetime'),
         SearchField.set(name='Update Time', key='data.update_timestamp', data_type='datetime'),
     ]
