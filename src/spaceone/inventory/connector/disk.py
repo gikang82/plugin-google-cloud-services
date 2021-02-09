@@ -14,14 +14,38 @@ class DiskConnector(GoogleCloudConnector):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def list_disks(self, zone, **query):
-        query.update({'zone': zone})
-        query = self.generate_query(**query)
-        result = self.client.disks().list(**query).execute()
-        return result.get('items', [])
+    def list_disks(self, **query):
+        disk_list = []
+        query.update({'project': self.project_id})
+        request = self.client.disks().aggregatedList(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for key, _disk in response['items'].items():
+                    if 'disks' in _disk:
+                        disk_list.extend(_disk.get('disks'))
+                request = self.client.disks().aggregatedList_next(previous_request=request,
+                                                                  previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
 
-    def list_resource_policies(self, region, **query):
-        query.update({'region': region})
-        query = self.generate_query(**query)
-        result = self.client.resourcePolicies().list(**query).execute()
-        return result.get('items', [])
+        return disk_list
+
+    def list_resource_policies(self, **query):
+        resource_policy_list = []
+        query.update({'project': self.project_id})
+        request = self.client.resourcePolicies().aggregatedList(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for key, _resource_policy in response['items'].items():
+                    if 'resourcePolicies' in _resource_policy:
+                        resource_policy_list.extend(_resource_policy.get('resourcePolicies'))
+                request = self.client.resourcePolicies().aggregatedList_next(previous_request=request,
+                                                                             previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
+
+        return resource_policy_list

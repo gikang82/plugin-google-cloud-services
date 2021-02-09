@@ -17,9 +17,7 @@ class ExternalIPAddressConnector(GoogleCloudConnector):
 
     def list_instance_for_networks(self, **query):
         instance_list = []
-        query.update({'project': self.project_id,
-                      'includeAllScopes': False,
-                      'maxResults': 500})
+        query.update({'project': self.project_id, 'includeAllScopes': False, 'maxResults': 500})
 
         request = self.client.instances().aggregatedList(**query)
         while request is not None:
@@ -32,9 +30,7 @@ class ExternalIPAddressConnector(GoogleCloudConnector):
 
     def list_forwarding_rule(self, **query):
         forwarding_rule_list = []
-        query.update({'project': self.project_id,
-                      'includeAllScopes': False,
-                      'maxResults': 500})
+        query.update({'project': self.project_id, 'includeAllScopes': False, 'maxResults': 500})
 
         request = self.client.forwardingRules().aggregatedList(**query)
         while request is not None:

@@ -30,30 +30,15 @@ class InstanceTemplateManager(GoogleCloudManager):
 
         # Get Instance Templates
         instance_templates = instance_template_conn.list_instance_templates()
-        instance_groups_over_zones = []
-        machine_types = []
-        disk_types = []
+        instance_groups = instance_template_conn.list_instance_group_managers()
+        machine_types = instance_template_conn.list_machine_types()
         collected_cloud_services = []
-
-        if instance_templates:
-            for zone in params.get('zones', []):
-                instance_group_managers = instance_template_conn.list_instance_group_managers(zone)
-                instance_groups_over_zones.extend(instance_group_managers)
-
-                if not machine_types:
-                    list_machine_types = instance_template_conn.list_machine_types(zone)
-                    machine_types.extend(list_machine_types)
-
-                if not disk_types:
-                    list_disk_types = instance_template_conn.list_disks(zone)
-                    disk_types.extend(list_disk_types)
 
         for inst_template in instance_templates:
             properties = inst_template.get('properties', {})
             tags = properties.get('tags', {})
 
-            in_used_by, matched_instance_group = self.match_instance_group(inst_template,
-                                                                           instance_groups_over_zones)
+            in_used_by, matched_instance_group = self.match_instance_group(inst_template, instance_groups)
             disks = self.get_disks(properties)
             labels = self.convert_labels_format(properties.get('labels', {}))
 

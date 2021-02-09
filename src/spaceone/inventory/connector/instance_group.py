@@ -3,68 +3,99 @@ import logging
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.error import *
 
-
 __all__ = ['InstanceGroupConnector']
 _LOGGER = logging.getLogger(__name__)
 
 
 class InstanceGroupConnector(GoogleCloudConnector):
-
     google_client_service = 'compute'
     version = 'v1'
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def list_instance_groups(self, zone, **query):
-        query.update({'zone': zone})
-        query = self.generate_query(**query)
-        result = self.client.instanceGroups().list(**query).execute()
-        return result.get('items', [])
+    def list_instances(self, instance_group, loc, loc_type, **query):
+        query.update({'project': self.project_id,
+                      'instanceGroup': instance_group,
+                      loc_type: loc
+                      })
+        try:
+            request = self.client.instanceGroups().listInstances(**query) if loc_type == 'zone' \
+                else self.client.regionInstanceGroups().listInstances(**query)
+            response = request.execute()
+            return response.get('items', [])
+        except Exception as e:
+            print(e)
+            return []
 
-    def list_region_instance_groups(self, region, **query):
-        query.update({'region': region})
-        query = self.generate_query(**query)
-        result = self.client.regionInstanceGroups().list(**query).execute()
-        return result.get('items', [])
-
-    def list_instance_group_managers(self, zone, **query):
-        query.update({'zone': zone})
-        query = self.generate_query(**query)
-        result = self.client.instanceGroupManagers().list(**query).execute()
-        return result.get('items', [])
-
-    def list_region_instance_group_managers(self, region, **query):
-        query.update({'region': region})
-        query = self.generate_query(**query)
-        result = self.client.regionInstanceGroupManagers().list(**query).execute()
-        return result.get('items', [])
-
-    def list_instances(self, zone, instance_group, **query):
-        query.update({'zone': zone, 'instanceGroup': instance_group})
-        query = self.generate_query(**query)
-        result = self.client.instanceGroups().listInstances(**query).execute()
-        return result.get('items', [])
-
-    def list_region_instances(self, region, instance_group, **query):
-        query.update({'region': region, 'instanceGroup': instance_group})
-        query = self.generate_query(**query)
-        result = self.client.regionInstanceGroups().listInstances(**query).execute()
-        return result.get('items', [])
-
-    def list_autoscalers(self, zone, **query):
-        query.update({'zone': zone})
-        query = self.generate_query(**query)
-        result = self.client.autoscalers().list(**query).execute()
-        return result.get('items', [])
-
-    def list_region_autoscalers(self, region, **query):
-        query.update({'region': region})
-        query = self.generate_query(**query)
-        result = self.client.regionAutoscalers().list(**query).execute()
-        return result.get('items', [])
 
     def list_instance_templates(self, **query):
-        query = self.generate_query(**query)
-        result = self.client.instanceTemplates().list(**query).execute()
-        return result.get('items', [])
+        instance_template_list = []
+        query.update({'project': self.project_id})
+        request = self.client.instanceTemplates().list(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for template in response.get('items', []):
+                    instance_template_list.append(template)
+                request = self.client.instanceTemplates().list_next(previous_request=request,
+                                                                    previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
+
+        return instance_template_list
+
+    def list_instance_groups(self, **query):
+        instance_group_list = []
+        query.update({'project': self.project_id})
+        request = self.client.instanceGroups().aggregatedList(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for key, _instance_group_list in response['items'].items():
+                    if 'instanceGroups' in _instance_group_list:
+                        instance_group_list.extend(_instance_group_list.get('instanceGroups'))
+                request = self.client.instanceGroups().aggregatedList_next(previous_request=request,
+                                                                           previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
+        return instance_group_list
+
+    def list_instance_group_managers(self, **query):
+        instance_group_manager_list = []
+        query.update({'project': self.project_id})
+        request = self.client.instanceGroupManagers().aggregatedList(**query)
+
+        while request is not None:
+            try:
+                response = request.execute()
+                for key, _instance_group_manager_list in response['items'].items():
+                    if 'instanceGroupManagers' in _instance_group_manager_list:
+                        instance_group_manager_list.extend(_instance_group_manager_list.get('instanceGroupManagers'))
+
+                request = self.client.instanceGroupManagers().aggregatedList_next(previous_request=request,
+                                                                                  previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
+        return instance_group_manager_list
+
+    def list_autoscalers(self, **query):
+        autoscaler_list = []
+        query.update({'project': self.project_id})
+        request = self.client.autoscalers().aggregatedList(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for key, _autoscaler_list in response['items'].items():
+                    if 'autoscalers' in _autoscaler_list:
+                        autoscaler_list.extend(_autoscaler_list.get('autoscalers'))
+                request = self.client.autoscalers().aggregatedList_next(previous_request=request,
+                                                                        previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
+
+        return autoscaler_list
