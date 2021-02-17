@@ -17,39 +17,65 @@ class CloudSQLConnector(GoogleCloudConnector):
         super().__init__(**kwargs)
 
     def list_instances(self, **query):
-        query = self.generate_query(**query)
-        result = self.client.instances().list(**query).execute()
-        return result.get('items', [])
+        instance_list = []
+        query.update({'project': self.project_id})
+        request = self.client.instances().list(**query)
+        try:
+            while request is not None:
+                response = request.execute()
+                for instance in response.get('items', []):
+                    instance_list.append(instance)
+                request = self.client.instances().list_next(previous_request=request, previous_response=response)
+        except Exception as e:
+            print(f'Error occurred at CloudSQLConnector: instances().list(**query) \n {e}')
+            pass
+        return instance_list
 
     def list_databases(self, instance_name, **query):
-        query.update({'instance': instance_name})
-        query = self.generate_query(**query)
-        result = {}
+        database_list = []
+        query.update({'project': self.project_id,
+                      'instance': instance_name})
+
+        request = self.client.databases().list(**query)
         try:
-            result = self.client.databases().list(**query).execute()
+            while request is not None:
+                response = request.execute()
+                for database in response.get('items', []):
+                    database_list.append(database)
+                request = self.client.instances().list_next(previous_request=request, previous_response=response)
         except Exception as e:
-            print(e)
+            print(f'Error occurred at CloudSQLConnector: databases().list(**query) : skipped \n {e}')
             pass
-        return result.get('items', [])
+        return database_list
 
     def list_users(self, instance_name, **query):
-        query.update({'instance': instance_name})
-        query = self.generate_query(**query)
-        result = {}
+        user_list = []
+        query.update({'project': self.project_id, 'instance': instance_name})
+        request = self.client.users().list(**query)
         try:
-            result = self.client.users().list(**query).execute()
+            while request is not None:
+                response = request.execute()
+                for database in response.get('items', []):
+                    user_list.append(database)
+                request = self.client.users().list_next(previous_request=request, previous_response=response)
+
         except Exception as e:
-            print(e)
+            print(f'Error occurred at users().list(**query) : skipped \n {e}')
             pass
-        return result.get('items', [])
+        return user_list
 
     def list_backup_runs(self, instance_name, **query):
-        query.update({'instance': instance_name})
-        query = self.generate_query(**query)
-        result = {}
+        backup_runs_list = []
+        query.update({'project': self.project_id, 'instance': instance_name})
+        request = self.client.backup_runs().list(**query)
         try:
-            result = self.client.backup_runs().list(**query).execute()
+            while request is not None:
+                response = request.execute()
+                for backup in response.get('items', []):
+                    backup_runs_list.append(backup)
+                request = self.client.users().list_next(previous_request=request, previous_response=response)
+
         except Exception as e:
-            print(e)
+            print(f'Error occurred at CloudSQLConnector: backup_runs().list(**query) : skipped \n {e}')
             pass
-        return result.get('items', [])
+        return backup_runs_list
