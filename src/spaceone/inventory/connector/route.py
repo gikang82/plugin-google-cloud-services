@@ -17,9 +17,21 @@ class RouteConnector(GoogleCloudConnector):
         super().__init__(**kwargs)
 
     def list_routes(self, **query):
+        route_list = []
         query.update({'project': self.project_id})
-        result = self.client.routes().list(**query).execute()
-        return result.get('items', [])
+        request = self.client.routes().list(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for template in response.get('items', []):
+                    route_list.append(template)
+                request = self.client.routes().list_next(previous_request=request,
+                                                         previous_response=response)
+            except Exception as e:
+                print(e)
+                pass
+
+        return route_list
 
     def list_instance(self, **query):
         instance_list = []
@@ -33,5 +45,6 @@ class RouteConnector(GoogleCloudConnector):
             for name, instances_scoped_list in response['items'].items():
                 if 'instances' in instances_scoped_list:
                     instance_list.extend(instances_scoped_list.get('instances'))
-            request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
+            request = self.client.instances().aggregatedList_next(previous_request=request,
+                                                                  previous_response=response)
         return instance_list

@@ -28,171 +28,100 @@ class InstanceGroupManager(GoogleCloudManager):
         secret_data = params['secret_data']
         instance_group_conn: InstanceGroupConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Get Instance Templates
+        # Get all Resources
+        instance_groups = instance_group_conn.list_instance_groups()
+        instance_group_managers = instance_group_conn.list_instance_group_managers()
+        autoscalers = instance_group_conn.list_autoscalers()
         instance_templates = instance_group_conn.list_instance_templates()
 
         collected_cloud_services = []
 
-        # Collect Zonal Instance Groups
-        for zone in params.get('zones', []):
-            if instance_groups := instance_group_conn.list_instance_groups(zone):
-                # Get Instance Group Managers
-                instance_group_managers = instance_group_conn.list_instance_group_managers(zone)
+        for instance_group in instance_groups:
 
-                # Get Auto Scalers
-                autoscalers = instance_group_conn.list_autoscalers(zone)
+            instance_group.update({
+                'project': secret_data['project_id']
+            })
 
-                for instance_group in instance_groups:
-                    scheduler = {'type': 'zone'}
+            scheduler = {'type': 'zone'} if 'zone' in instance_group else {'type': 'region'}
+
+            if match_instance_group_manager := \
+                    self.match_instance_group_manager(instance_group_managers, instance_group.get('selfLink')):
+
+                instance_group_type = self.get_instance_group_type(match_instance_group_manager)
+                scheduler.update({'instance_group_type': instance_group_type})
+
+                # Managed
+                match_instance_group_manager.update({
+                    'statefulPolicy': {
+                        'preservedState': {'disks': self._get_stateful_policy(match_instance_group_manager)}}
+                })
+
+                instance_group.update({
+                    'instance_group_type': instance_group_type,
+                    'instance_group_manager': InstanceGroupManagers(match_instance_group_manager, strict=False)
+                })
+
+                if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
+                    self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
 
                     instance_group.update({
-                        'project': secret_data['project_id']
+                        'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
+                        'autoscaling_display':
+                            self._get_autoscaling_display(match_auto_scaler.get('autoscalingPolicy', {}))
                     })
 
-                    if match_instance_group_manager := \
-                            self.match_instance_group_manager(instance_group_managers, instance_group['selfLink']):
+                match_instance_template = \
+                    self.match_instance_template(instance_templates,
+                                                 match_instance_group_manager['instanceTemplate'])
 
-                        # Managed
-                        match_instance_group_manager.update({
-                            'statefulPolicy': {
-                                'preservedState': {'disks': self._get_stateful_policy(match_instance_group_manager)}}
-                        })
+                if match_instance_template:
+                    instance_group.update({'template': InstanceTemplate(match_instance_template, strict=False)})
 
-                        instance_group_type = self.get_instance_group_type(match_instance_group_manager)
+            else:
+                # Unmanaged
+                instance_group.update({'instance_group_type': 'UNMANAGED'})
+                scheduler.update({'instance_group_type': 'UNMANAGED'})
 
-                        scheduler.update({'instance_group_type': instance_group_type})
+            loc_type, location = self.get_instance_group_loc(instance_group)
+            region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
 
-                        instance_group.update({
-                            'instance_group_type': instance_group_type,
-                            'instance_group_manager': InstanceGroupManagers(match_instance_group_manager, strict=False)
-                        })
-
-                        if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
-                            self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
-
-                            instance_group.update({
-                                'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
-                                'autoscaling_display':
-                                    self._get_autoscaling_display(match_auto_scaler.get('autoscalingPolicy', {}))
-                            })
-
-                        match_instance_template = \
-                            self.match_instance_template(instance_templates,
-                                                         match_instance_group_manager['instanceTemplate'])
-
-                        if match_instance_template:
-                            instance_group.update({'template': InstanceTemplate(match_instance_template, strict=False)})
-
-                    else:
-                        # Unmanaged
-                        ig_type = 'UNMANAGED'
-                        instance_group.update({'instance_group_type': ig_type})
-                        scheduler.update({'instance_group_type': ig_type})
-
-                    region = self.generate_region_from_zone_self_link(instance_group['zone'])
-
-                    instances = instance_group_conn.list_instances(zone, instance_group['name'])
-                    # print('zone')
-                    # self_link = instance_group.get('selfLink')
-                    # print(f'self_link: {self_link}')
-                    instance_group.update({
-                        'power_scheduler': scheduler,
-                        'instances': instances,
-                        'instance_counts': len(instances)
-                    })
-                    # No labels
-                    instance_group_data = InstanceGroup(instance_group, strict=False)
-                    instance_group_resource = InstanceGroupResource({
-                        'data': instance_group_data,
-                        'region_code': region,
-                        'reference': ReferenceModel(instance_group_data.reference())
-                    })
-
-                    self.set_region_code(region)
-                    collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
-
-        # Collect Regional(Multi) Instance Groups
-        for region in params.get('regions', []):
-            if instance_groups := instance_group_conn.list_region_instance_groups(region):
-                # Get Instance Group Managers
-                instance_group_managers = instance_group_conn.list_region_instance_group_managers(region)
-
-                # Get Auto Scalers
-                autoscalers = instance_group_conn.list_region_autoscalers(region)
-
-                for instance_group in instance_groups:
-                    scheduler = {'type': 'region'}
-                    instance_group.update({
-                        'project': secret_data['project_id'],
-                    })
-
-                    if match_instance_group_manager := \
-                            self.match_instance_group_manager(instance_group_managers, instance_group['selfLink']):
-
-                        # Managed
-                        match_instance_group_manager.update({
-                            'statefulPolicy': {
-                                'preservedState': {'disks': self._get_stateful_policy(match_instance_group_manager)}}
-                        })
-                        # Instance Group type
-                        instance_group_type = self.get_instance_group_type(match_instance_group_manager)
-
-                        scheduler.update({'instance_group_type': instance_group_type})
-
-                        instance_group.update({
-                            'instance_group_type': instance_group_type,
-                            'instance_group_manager': InstanceGroupManagers(match_instance_group_manager, strict=False)
-                        })
+            instances = instance_group_conn.list_instances(instance_group.get('name'), location,  loc_type)
 
 
-                        if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
+            # print('zone')
+            # self_link = instance_group.get('selfLink')
+            # print(f'self_link: {self_link}')
+            instance_group.update({
+                'power_scheduler': scheduler,
+                'instances': self.get_instances(instances),
+                'instance_counts': len(instances)
+            })
+            # No labels
+            instance_group_data = InstanceGroup(instance_group, strict=False)
+            instance_group_resource = InstanceGroupResource({
+                'data': instance_group_data,
+                'region_code': region,
+                'reference': ReferenceModel(instance_group_data.reference())
+            })
 
-                            self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
-
-                            instance_group.update({
-                                'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
-                                'autoscaling_display':
-                                    self._get_autoscaling_display(match_auto_scaler.get('autoscalingPolicy', {}))
-                            })
-
-                        match_instance_template = \
-                            self.match_instance_template(instance_templates,
-                                                         match_instance_group_manager['instanceTemplate'])
-
-                        if match_instance_template:
-                            instance_group.update({'template': InstanceTemplate(match_instance_template, strict=False)})
-
-                    else:
-                        # Unmanaged
-                        ig_type = 'UNMANAGED'
-                        instance_group.update({'instance_group_type': ig_type})
-                        scheduler.update({'instance_group_type': ig_type})
-
-                    instances = instance_group_conn.list_region_instances(region, instance_group['name'])
-                    # print('region')
-                    # self_link = instance_group.get('selfLink')
-                    # print(f'self_link: {self_link}')
-                    instance_group.update({
-                        'power_scheduler': scheduler,
-                        'instances': instances,
-                        'instance_counts': len(instances)
-                    })
-
-                    instance_group_data = InstanceGroup(instance_group, strict=False)
-                    instance_group_resource = InstanceGroupResource({
-                        'data': instance_group_data,
-                        'region_code': region,
-                        'reference': ReferenceModel(instance_group_data.reference())
-                    })
-
-
-
-
-                    self.set_region_code(region)
-                    collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
+            self.set_region_code(region)
+            collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
 
         print(f'** Instance Group Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
+
+    def get_instance_group_loc(self, instance_group):
+        inst_type = 'zone' if 'zone' in instance_group else 'region'
+        loc = self._get_last_target(instance_group, inst_type)
+        return inst_type, loc
+
+    def get_instances(self, instances):
+        _instances = []
+        for instance in instances:
+            instance.update({'name': self._get_last_target(instance, 'instance')})
+            _instances.append(instance)
+
+        return _instances
 
     @staticmethod
     def match_instance_template(instance_templates, instance_template_self_link):
@@ -281,6 +210,11 @@ class InstanceGroupManager(GoogleCloudManager):
             return '/m'
         else:
             return ''
+
+    @staticmethod
+    def _get_last_target(target_vo, key):
+        a = target_vo.get(key, '')
+        return a[a.rfind('/')+1:]
 
     @staticmethod
     def _get_auto_policy_for_scheduler(scheduler, matched_scheduler):

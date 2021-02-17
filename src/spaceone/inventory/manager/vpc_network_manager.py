@@ -87,23 +87,23 @@ class VPCNetworkManager(GoogleCloudManager):
 
     def get_internal_ip_address_in_use(self, network, regional_address):
         all_Internal_addresses = []
-        for region in regional_address.keys():
-            if 'addresses' in regional_address.get(region):
-                for ip_address in regional_address.get(region).get('addresses'):
-                    ip_type = ip_address.get('addressType', '')
-                    subnetwork = ip_address.get('subnetwork', '')
-                    if ip_type == 'INTERNAL' and subnetwork in network.get('subnetworks', []):
-                        simple_region = ip_address.get('region')
-                        users = ip_address.get('users')
+        for ip_address in regional_address:
+            ip_type = ip_address.get('addressType', '')
+            subnetwork = ip_address.get('subnetwork', '')
 
-                        ip_address.update({
-                            'subnet_name': network.get('name'),
-                            'ip_version_display': self._valid_ip_address(ip_address.get('address')),
-                            'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
-                            'used_by': self._get_parse_users(users) if users else ['None'],
-                            'is_ephemeral': 'Static'
-                        })
-                        all_Internal_addresses.append(IPAddress(ip_address, strict=False))
+            if ip_type == 'INTERNAL' and subnetwork in network.get('subnetworks', []):
+                simple_region = ip_address.get('region')
+                users = ip_address.get('users')
+                ip_address.update({
+                    'subnet_name': network.get('name'),
+                    'ip_version_display': self._valid_ip_address(ip_address.get('address')),
+                    'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
+                    'used_by': self._get_parse_users(users) if users else ['None'],
+                    'is_ephemeral': 'Static'
+                })
+
+                all_Internal_addresses.append(IPAddress(ip_address, strict=False))
+
         return all_Internal_addresses
 
     def get_peering(self, network):
@@ -189,20 +189,19 @@ class VPCNetworkManager(GoogleCloudManager):
         return a[a.find('zones') + 6:a.find('/instances')]
 
     @staticmethod
-    def _get_matched_subnets(network, subnet_dict):
-        subnets_vos = []
-        for region in subnet_dict:
-            for subnet in subnet_dict.get(region, []):
-                if network == subnet.get('network', ''):
-                    log_config = subnet.get('logConfig', {})
-                    subnet_region = region[region.rfind('/') + 1:]
-                    subnet.update({
-                        'region': subnet_region,
-                        'google_access': 'On' if subnet.get('privateIpGoogleAccess') else 'Off',
-                        'flow_log': 'On' if log_config.get('enable') else 'Off'
-                    })
-                    subnets_vos.append(subnet)
-        return subnets_vos
+    def _get_matched_subnets(network, subnets):
+        matched_subnet = []
+        for subnet in subnets:
+            if network == subnet.get('network', ''):
+                log_config = subnet.get('logConfig', {})
+                r_ref = subnet.get('region')
+                subnet.update({
+                    'region': r_ref[r_ref.rfind('/') + 1:],
+                    'google_access': 'On' if subnet.get('privateIpGoogleAccess') else 'Off',
+                    'flow_log': 'On' if log_config.get('enable') else 'Off'
+                })
+                matched_subnet.append(subnet)
+        return matched_subnet
 
     @staticmethod
     def _get_matched_firewalls(network, firewalls):

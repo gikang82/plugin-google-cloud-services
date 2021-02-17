@@ -29,96 +29,76 @@ class BigQueryManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        project_id = secret_data['project_id']
-        big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
 
-        data_sets = big_query_conn.list_dataset()
-        projects = big_query_conn.list_projects()
-        jobs = big_query_conn.list_job()
+        try:
+            secret_data = params['secret_data']
+            project_id = secret_data['project_id']
+            big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
 
-        '''
-        class BigQuery(Model):
-        # id = StringType()
-        # name = StringType()
-        #project = StringType()
-        #region = StringType()
-        #dataset_reference = ModelType(DatasetReference, deserialize_from='datasetReference', serialize_when_none=False)
-        #friendly_name = StringType(deserialize_from='friendlyName', serialize_when_none=False)
-        
-        #tables = ListType(ModelType(Table), default=[])
-        #table_schemas = ListType(ModelType(TableSchemaRef), default=[])
-        
-        jobs = ListType(ModelType(Job), default=[])
-        
-        #projects = ListType(ModelType(Project), default=[])
-        #access = ListType(ModelType(Access), default=[])
-        #labels = ListType(ModelType(Labels), default=[])
-        #self_link = StringType()
-        #etags = StringType()
-        #location = StringType()
-        #visible_on_console = BooleanType()
-        #default_partition_expiration_ms = DateTimeType(deserialize_from='defaultPartitionExpirationMs')
-        #default_table_expiration_ms = DateTimeType(deserialize_from='defaultTableExpirationMs')
-        #creation_time = DateTimeType(deserialize_from='creationTime')
-        #last_modified_time = DateTimeType(deserialize_from='lastModifiedTime')
-        '''
+            data_sets = big_query_conn.list_dataset()
+            projects = big_query_conn.list_projects()
+            jobs = big_query_conn.list_job()
 
-        for data_set in data_sets:
-            data_refer = data_set.get('datasetReference', {})
-            data_set_id = data_refer.get('datasetId')
-            dataset_project_id = data_refer.get('projectId')
+            for data_set in data_sets:
+                data_refer = data_set.get('datasetReference', {})
+                data_set_id = data_refer.get('datasetId')
+                dataset_project_id = data_refer.get('projectId')
 
-            bq_dataset = big_query_conn.get_dataset(data_set_id)
-            bq_dt_tables = big_query_conn.list_tables(data_set_id)
-            update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
-            matched_projects = self._get_matching_project(dataset_project_id, projects)
-            matched_jobs = self._get_matching_jobs(update_bq_dt_tables, jobs)
+                bq_dataset = big_query_conn.get_dataset(data_set_id)
+                bq_dt_tables = big_query_conn.list_tables(data_set_id)
+                update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
+                matched_projects = self._get_matching_project(dataset_project_id, projects)
+                matched_jobs = self._get_matching_jobs(update_bq_dt_tables, jobs)
 
-            creation_time = bq_dataset.get('creationTime')
-            if creation_time:
-                bq_dataset.update({'creationTime': datetime.fromtimestamp(int(creation_time) / 1000)})
+                creation_time = bq_dataset.get('creationTime')
+                if creation_time:
+                    bq_dataset.update({'creationTime': datetime.fromtimestamp(int(creation_time) / 1000)})
 
-            last_modified_time = bq_dataset.get('lastModifiedTime')
-            if last_modified_time:
-                bq_dataset.update({'lastModifiedTime': datetime.fromtimestamp(int(last_modified_time) / 1000)})
+                last_modified_time = bq_dataset.get('lastModifiedTime')
+                if last_modified_time:
+                    bq_dataset.update({'lastModifiedTime': datetime.fromtimestamp(int(last_modified_time) / 1000)})
 
-            region = self.get_region(bq_dataset.get('location', ''))
+                region = self.get_region(bq_dataset.get('location', ''))
 
-            exp_partition_ms = bq_dataset.get('defaultPartitionExpirationMs')
-            exp_table_ms = bq_dataset.get('defaultTableExpirationMs')
+                exp_partition_ms = bq_dataset.get('defaultPartitionExpirationMs')
+                exp_table_ms = bq_dataset.get('defaultTableExpirationMs')
 
-            if exp_partition_ms:
-                bq_dataset.update({'default_partition_expiration_ms_display': self.get_ms_display(exp_partition_ms)})
+                if exp_partition_ms:
+                    bq_dataset.update({'default_partition_expiration_ms_display': self.get_ms_display(exp_partition_ms)})
 
-            if exp_table_ms:
-                bq_dataset.update({'default_table_expiration_ms_display': self.get_ms_display(exp_table_ms)})
+                if exp_table_ms:
+                    bq_dataset.update({'default_table_expiration_ms_display': self.get_ms_display(exp_table_ms)})
 
-            labels = self.convert_labels_format(bq_dataset.get('labels', {}))
-            bq_dataset.update({
-                'name': data_set_id,
-                'project': project_id,
-                'tables': update_bq_dt_tables,
-                'table_schemas': table_schemas,
-                'region': region,
-                'visible_on_console': self.get_visible_on_console(data_set_id),
-                'jobs': matched_jobs,
-                'matching_projects': matched_projects,
-                'labels': labels
-            })
+                labels = self.convert_labels_format(bq_dataset.get('labels', {}))
+                bq_dataset.update({
+                    'name': data_set_id,
+                    'project': project_id,
+                    'tables': update_bq_dt_tables,
+                    'table_schemas': table_schemas,
+                    'region': region,
+                    'visible_on_console': self.get_visible_on_console(data_set_id),
+                    'jobs': matched_jobs,
+                    'matching_projects': matched_projects,
+                    'labels': labels
+                })
 
-            big_query_data = BigQueryWorkSpace(bq_dataset, strict=False)
-            big_query_work_space_resource = SQLWorkSpaceResource({
-                'tags': labels,
-                'data': big_query_data,
-                'region_code': region,
-                'reference': ReferenceModel(big_query_data.reference())
-            })
+                big_query_data = BigQueryWorkSpace(bq_dataset, strict=False)
+                big_query_work_space_resource = SQLWorkSpaceResource({
+                    'tags': labels,
+                    'data': big_query_data,
+                    'region_code': region,
+                    'reference': ReferenceModel(big_query_data.reference())
+                })
 
-            self.set_region_code(region)
-            collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
+                self.set_region_code(region)
+                collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
 
-        print(f'** Big Query Finished {time.time() - start_time} Seconds **')
+            print(f'** Big Query Finished {time.time() - start_time} Seconds **')
+
+        except Exception as e:
+            print(e)
+            pass
+
         return collected_cloud_services
 
     def get_region(self, location):

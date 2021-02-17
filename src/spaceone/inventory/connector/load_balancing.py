@@ -169,7 +169,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
             response = request.execute()
             for backend_bucket in response.get('items', []):
                 http_health_list.append(backend_bucket)
-            request = self.client.httpHealthChecks().list_next(previous_request=request, previous_response=response)
+            request = self.client.httpHealthChecks().list_next(previous_request=request,
+                                                               previous_response=response)
         return http_health_list
 
     def list_https_health_checks(self, **query):
@@ -180,7 +181,8 @@ class LoadBalancingConnector(GoogleCloudConnector):
             response = request.execute()
             for backend_bucket in response.get('items', []):
                 https_health_list.append(backend_bucket)
-            request = self.client.httpsHealthChecks().list_next(previous_request=request, previous_response=response)
+            request = self.client.httpsHealthChecks().list_next(previous_request=request,
+                                                                previous_response=response)
         return https_health_list
 
     def list_instance_groups(self, **query):
@@ -206,5 +208,5 @@ class LoadBalancingConnector(GoogleCloudConnector):
                 if 'autoscalers' in as_list:
                     auto_scaler_list.extend(as_list.get('autoscalers'))
             request = self.client.autoscalers().aggregatedList_next(previous_request=request,
-                                                                              previous_response=response)
+                                                                    previous_response=response)
         return auto_scaler_list
