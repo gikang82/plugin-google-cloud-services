@@ -17,9 +17,19 @@ class FirewallConnector(GoogleCloudConnector):
         super().__init__(**kwargs)
 
     def list_firewall(self, **query):
+        firewalls_list = []
         query.update({'project': self.project_id})
-        result = self.client.firewalls().list(**query).execute()
-        return result.get('items', [])
+        request = self.client.firewalls().list(**query)
+        try:
+            while request is not None:
+                response = request.execute()
+                for backend_bucket in response.get('items', []):
+                    firewalls_list.append(backend_bucket)
+                request = self.client.firewalls().list_next(previous_request=request, previous_response=response)
+        except Exception as e:
+            print(f'Error occurred at FirewallConnector: firewalls().list(**query) : skipped \n {e}')
+            pass
+        return firewalls_list
 
     def list_instance_for_networks(self, **query):
         instance_list = []
@@ -28,10 +38,14 @@ class FirewallConnector(GoogleCloudConnector):
                       'maxResults': 500})
 
         request = self.client.instances().aggregatedList(**query)
-        while request is not None:
-            response = request.execute()
-            for name, instances_scoped_list in response['items'].items():
-                if 'instances' in instances_scoped_list:
-                    instance_list.extend(instances_scoped_list.get('instances'))
-            request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
+        try:
+            while request is not None:
+                response = request.execute()
+                for name, instances_scoped_list in response['items'].items():
+                    if 'instances' in instances_scoped_list:
+                        instance_list.extend(instances_scoped_list.get('instances'))
+                request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
+        except Exception as e:
+            print(f'Error occurred at FirewallConnector: instances().aggregatedList(**query) : skipped \n {e}')
+            pass
         return instance_list

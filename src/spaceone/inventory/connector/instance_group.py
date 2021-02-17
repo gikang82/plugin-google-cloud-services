@@ -33,16 +33,16 @@ class InstanceGroupConnector(GoogleCloudConnector):
         instance_template_list = []
         query.update({'project': self.project_id})
         request = self.client.instanceTemplates().list(**query)
-        while request is not None:
-            try:
+        try:
+            while request is not None:
                 response = request.execute()
                 for template in response.get('items', []):
                     instance_template_list.append(template)
                 request = self.client.instanceTemplates().list_next(previous_request=request,
                                                                     previous_response=response)
-            except Exception as e:
-                print(e)
-                pass
+        except Exception as e:
+            print(e)
+            pass
 
         return instance_template_list
 
@@ -50,52 +50,50 @@ class InstanceGroupConnector(GoogleCloudConnector):
         instance_group_list = []
         query.update({'project': self.project_id})
         request = self.client.instanceGroups().aggregatedList(**query)
-        while request is not None:
-            try:
+        try:
+            while request is not None:
                 response = request.execute()
                 for key, _instance_group_list in response['items'].items():
                     if 'instanceGroups' in _instance_group_list:
                         instance_group_list.extend(_instance_group_list.get('instanceGroups'))
                 request = self.client.instanceGroups().aggregatedList_next(previous_request=request,
                                                                            previous_response=response)
-            except Exception as e:
-                print(e)
-                pass
+        except Exception as e:
+            print(e)
+            pass
         return instance_group_list
 
     def list_instance_group_managers(self, **query):
         instance_group_manager_list = []
         query.update({'project': self.project_id})
         request = self.client.instanceGroupManagers().aggregatedList(**query)
-
-        while request is not None:
-            try:
+        try:
+            while request is not None:
                 response = request.execute()
                 for key, _instance_group_manager_list in response['items'].items():
                     if 'instanceGroupManagers' in _instance_group_manager_list:
                         instance_group_manager_list.extend(_instance_group_manager_list.get('instanceGroupManagers'))
-
                 request = self.client.instanceGroupManagers().aggregatedList_next(previous_request=request,
                                                                                   previous_response=response)
-            except Exception as e:
-                print(e)
-                pass
+        except Exception as e:
+            print(e)
+            pass
         return instance_group_manager_list
 
     def list_autoscalers(self, **query):
         autoscaler_list = []
         query.update({'project': self.project_id})
         request = self.client.autoscalers().aggregatedList(**query)
-        while request is not None:
-            try:
+        try:
+            while request is not None:
                 response = request.execute()
                 for key, _autoscaler_list in response['items'].items():
                     if 'autoscalers' in _autoscaler_list:
                         autoscaler_list.extend(_autoscaler_list.get('autoscalers'))
                 request = self.client.autoscalers().aggregatedList_next(previous_request=request,
                                                                         previous_response=response)
-            except Exception as e:
-                print(e)
-                pass
+        except Exception as e:
+            print(e)
+            pass
 
         return autoscaler_list

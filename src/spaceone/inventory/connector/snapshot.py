@@ -47,6 +47,6 @@ class SnapshotConnector(GoogleCloudConnector):
         return disk_with_schedule
 
     @staticmethod
-    def _get_zone(zone:str):
+    def _get_zone(zone: str):
         a = zone
         return a[a.rfind('zones/')+6:]

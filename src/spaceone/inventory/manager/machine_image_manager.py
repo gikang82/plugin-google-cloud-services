@@ -4,6 +4,7 @@ from spaceone.inventory.model.machine_image.data import *
 from spaceone.inventory.model.machine_image.cloud_service import *
 from spaceone.inventory.connector.machine_image import MachineImageConnector
 from spaceone.inventory.model.machine_image.cloud_service_type import CLOUD_SERVICE_TYPES
+from pprint import pprint
 import time
 
 

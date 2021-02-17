@@ -45,5 +45,6 @@ class RouteConnector(GoogleCloudConnector):
             for name, instances_scoped_list in response['items'].items():
                 if 'instances' in instances_scoped_list:
                     instance_list.extend(instances_scoped_list.get('instances'))
-            request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
+            request = self.client.instances().aggregatedList_next(previous_request=request,
+                                                                  previous_response=response)
         return instance_list
