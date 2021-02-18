@@ -74,13 +74,14 @@ autohealing_layout = TableDynamicLayout.set_fields('AutoHealing', root_path='dat
 ])
 
 instance_layout = TableDynamicLayout.set_fields('Instance', root_path='data.instances', fields=[
-    TextDyField.data_source('Instance', 'instance'),
+    TextDyField.data_source('Name', 'name'),
     EnumDyField.data_source('Status', 'status', default_state={
         'safe': ['RUNNING'],
         'warning': ['STAGING', 'PROVISIONING', 'REPAIRING', 'STOPPING', 'SUSPENDING'],
         'disable': ['TERMINATED'],
         'alert': ['SUSPENDED']
     }),
+    TextDyField.data_source('Self Link', 'instance'),
     ListDyField.data_source('Ports (Name)', 'name_ports',
                             default_badge={'type': 'outline', 'sub_key': 'name', 'delimiter': '<br>'}),
     ListDyField.data_source('Ports', 'name_ports',

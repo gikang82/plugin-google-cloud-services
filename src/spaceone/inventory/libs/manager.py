@@ -57,13 +57,6 @@ class GoogleCloudManager(BaseManager):
         # Collect Cloud Service Type
         resources.extend(self.collect_cloud_service_type())
 
-        # Add zone lists in params
-        regions, zones = self.list_regions_zones(params['secret_data'])
-        params.update({
-            'regions': regions,
-            'zones': zones
-        })
-
         # Collect Cloud Service
         resources.extend(self.collect_cloud_service(params))
 
@@ -71,26 +64,6 @@ class GoogleCloudManager(BaseManager):
         resources.extend(self.collect_region())
 
         return resources
-
-    def list_regions_zones(self, secret_data):
-        result_regions = []
-        result_zones = []
-
-        query = {}
-
-        if secret_data.get('region_name'):
-            region_self_link = f'https://www.googleapis.com/compute/v1/projects/{secret_data["project_id"]}/regions/{secret_data.get("region_name")}'
-            query.update({'filter': f'region="{region_self_link}"'})
-        connector: GoogleCloudConnector = self.locator.get_connector('GoogleCloudConnector', secret_data=secret_data)
-        zones = connector.list_zones(**query)
-
-        for zone in zones:
-            result_zones.append(zone.get('name'))
-
-            if region := zone.get('region'):
-                result_regions.append(region.split('/')[-1])
-
-        return list(set(result_regions)), result_zones
 
     def collect_region(self):
         results = []

@@ -1,6 +1,7 @@
 import time
 import logging
 import concurrent.futures
+from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.core.service import *
 
@@ -78,10 +79,13 @@ class CollectorService(BaseService):
 
         print("[ EXECUTOR START: Google Cloud Service ]")
 
+        self._set_regions_zones(params.get('secret_data'), params)
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
             future_executors = []
             for execute_manager in self.execute_managers:
-                print(f'@@@ {execute_manager} @@@')
+                print(f'\n@@@ {execute_manager} @@@')
+
                 _manager = self.locator.get_manager(execute_manager)
                 future_executors.append(executor.submit(_manager.collect_resources, params))
 
@@ -90,3 +94,23 @@ class CollectorService(BaseService):
                     yield result.to_primitive()
 
         print(f'TOTAL TIME : {time.time() - start_time} Seconds')
+
+    def _set_regions_zones(self, secret_data, params):
+        result_regions = []
+        result_zones = []
+        query = {}
+        try:
+            connector: GoogleCloudConnector = self.locator.get_connector('GoogleCloudConnector', secret_data=secret_data)
+            zones = connector.list_zones(**query)
+
+            for zone in zones:
+                result_zones.append(zone.get('name'))
+
+                if region := zone.get('region'):
+                    result_regions.append(region.split('/')[-1])
+
+            params.update({'region': list(set(result_regions)), 'zone': result_zones})
+
+        except Exception as e:
+            print(e)
+            pass

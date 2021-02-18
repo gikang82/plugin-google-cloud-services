@@ -91,6 +91,7 @@ class NamedPort(Model):
 
 
 class Instance(Model):
+    name = StringType()
     instance = StringType()
     status = StringType(choices=('PROVISIONING', 'STAGING', 'RUNNING', 'STOPPING', 'SUSPENDING',
                                  'SUSPENDED', 'REPAIRING', 'TERMINATED'))

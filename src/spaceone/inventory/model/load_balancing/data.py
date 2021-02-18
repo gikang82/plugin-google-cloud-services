@@ -50,7 +50,7 @@ class AutoScalerPolicy(Model):
     loadbalancing_utilization = ModelType(LoadBalancingUtilization,
                                           deserialize_from='loadBalancingUtilization',
                                           serialize_when_none=False)
-    mode = StringType()
+    mode = StringType(deserialize_from='mode')
 
 
 class TargetTCPProxy(Model):

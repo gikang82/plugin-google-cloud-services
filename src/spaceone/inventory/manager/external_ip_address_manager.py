@@ -67,21 +67,19 @@ class ExternalIPAddressManager(GoogleCloudManager):
         all_ip_juso_vos = []
         all_ip_juso_only_check_dup = []
 
-        for region in regional_address.keys():
-            if 'addresses' in regional_address.get(region):
-                for ip_juso in regional_address.get(region).get('addresses'):
-                    if 'EXTERNAL' == ip_juso.get('addressType'):
-                        simple_region = ip_juso.get('region')
-                        users = ip_juso.get('users')
-                        ip_juso.update({
-                            'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
-                            'used_by': self._get_parse_users(users) if users else [],
-                            'ip_version_display': self._valid_ip_address(ip_juso.get('address')),
-                            'network_tier_display': self._get_network_tier_display(ip_juso),
-                            'is_ephemeral': 'Static'
-                        })
-                        all_ip_juso_only_check_dup.append(ip_juso.get('address'))
-                        all_ip_juso_vos.append(ip_juso)
+        for ip_juso in regional_address:
+            if 'EXTERNAL' == ip_juso.get('addressType'):
+                simple_region = ip_juso.get('region')
+                users = ip_juso.get('users')
+                ip_juso.update({
+                    'region': simple_region[simple_region.rfind('/') + 1:] if simple_region else 'global',
+                    'used_by': self._get_parse_users(users) if users else [],
+                    'ip_version_display': self._valid_ip_address(ip_juso.get('address')),
+                    'network_tier_display': self._get_network_tier_display(ip_juso),
+                    'is_ephemeral': 'Static'
+                })
+                all_ip_juso_only_check_dup.append(ip_juso.get('address'))
+                all_ip_juso_vos.append(ip_juso)
 
         for forwarding_rule in forwarding_rules:
             forwarding_ip_juso = forwarding_rule.get('IPAddress')
