@@ -8,7 +8,7 @@ get cloud service data from Google Cloud platform.
 
 
 Find us also at [Dockerhub](https://hub.docker.com/repository/docker/spaceone/google-cloud-services)
-> Latest stable version : 1.1.3
+> Latest stable version : 1.1.8
 
 Please contact us if you need any further information. (<support@spaceone.dev>)
 
