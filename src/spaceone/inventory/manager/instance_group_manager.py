@@ -84,13 +84,13 @@ class InstanceGroupManager(GoogleCloudManager):
 
             loc_type, location = self.get_instance_group_loc(instance_group)
             region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
-
             instances = instance_group_conn.list_instances(instance_group.get('name'), location,  loc_type)
 
+            display_loc = { 'region': location, 'zone': ''} if loc_type == 'region' \
+                else {'region': location[:-2], 'zone': location}
 
-            # print('zone')
-            # self_link = instance_group.get('selfLink')
-            # print(f'self_link: {self_link}')
+            instance_group.update({'display_location': display_loc})
+
             instance_group.update({
                 'power_scheduler': scheduler,
                 'instances': self.get_instances(instances),

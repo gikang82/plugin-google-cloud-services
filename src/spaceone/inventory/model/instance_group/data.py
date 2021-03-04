@@ -219,6 +219,10 @@ class Scheduler(Model):
     recommend_size = IntType(serialize_when_none=False)
 
 
+class DisplayLocation(Model):
+    region = StringType(default="")
+    zone = StringType(default="")
+
 class InstanceGroup(Model):
     id = StringType()
     kind = StringType()
@@ -227,6 +231,7 @@ class InstanceGroup(Model):
     description = StringType(default="")
     network = StringType()
     fingerprint = StringType()
+    display_location = ModelType(DisplayLocation, serialize_when_none=False)
     zone = StringType(serialize_when_none=False)
     self_link = StringType(deserialize_from='selfLink')
     size = IntType()
