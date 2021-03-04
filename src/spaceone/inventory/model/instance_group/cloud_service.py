@@ -22,6 +22,9 @@ instance_group_item = ItemDynamicLayout.set_fields('Instance Group', fields=[
     TextDyField.data_source('Subnet', 'data.subnetwork'),
     TextDyField.data_source('Description', 'data.description'),
     TextDyField.data_source('Instance Counts', 'data.instance_counts'),
+    TextDyField.data_source('Min Replicas', 'data.auto_scaler.autoscaling_policy.min_num_replicas'),
+    TextDyField.data_source('Max Replicas', 'data.auto_scaler.autoscaling_policy.max_num_replicas'),
+    TextDyField.data_source('Recommended Size', 'data.auto_scaler.recommended_size'),
     TextDyField.data_source('Self Link', 'data.self_link'),
     DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
 ])
