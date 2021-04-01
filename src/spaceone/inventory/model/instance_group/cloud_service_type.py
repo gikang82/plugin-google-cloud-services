@@ -18,13 +18,22 @@ cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
         TextDyField.data_source('Instances', 'data.instance_counts'),
         EnumDyField.data_source('Type', 'data.instance_group_type',
                                 default_outline_badge=['STATELESS', 'STATEFUL', 'UNMANAGED']),
+        TextDyField.data_source('Min Replicas', 'data.auto_scaler.autoscaling_policy.min_num_replicas'),
+        TextDyField.data_source('Max Replicas', 'data.auto_scaler.autoscaling_policy.max_num_replicas'),
+        TextDyField.data_source('Recommended Size', 'data.auto_scaler.recommended_size'),
         TextDyField.data_source('Template', 'data.template.name'),
+        EnumDyField.data_source('Autoscaling Mode', 'data.auto_scaler.autoscaling_policy.mode', default_badge={
+            'indigo.500': ['ON'], 'coral.600': ['OFF']
+        }),
         TextDyField.data_source('Autoscaling', 'data.autoscaling_display'),
         DateTimeDyField.data_source('Creation Time', 'data.creation_timestamp'),
     ],
     search=[
         SearchField.set(name='Name', key='data.name'),
         SearchField.set(name='Instance Counts', key='data.name', data_type='integer'),
+        SearchField.set(name='Minimum Number of Replicas', key='data.auto_scaler.autoscaling_policy.min_num_replicas', data_type='integer'),
+        SearchField.set(name='Maximum Number of Replicas', key='data.auto_scaler.autoscaling_policy.max_num_replicas', data_type='integer'),
+        SearchField.set(name='Recommended Size', key='data.auto_scaler.recommended_size', data_type='integer'),
         SearchField.set(name='Template', key='data.template.name'),
         SearchField.set(name='Region', key='region_code'),
         SearchField.set(name='Zone', key='data.zone'),
