@@ -43,12 +43,11 @@ class BigQueryManager(GoogleCloudManager):
                 data_refer = data_set.get('datasetReference', {})
                 data_set_id = data_refer.get('datasetId')
                 dataset_project_id = data_refer.get('projectId')
-
                 bq_dataset = big_query_conn.get_dataset(data_set_id)
                 bq_dt_tables = big_query_conn.list_tables(data_set_id)
                 update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
                 matched_projects = self._get_matching_project(dataset_project_id, projects)
-                matched_jobs = self._get_matching_jobs(update_bq_dt_tables, jobs)
+                matched_jobs = self._get_matching_jobs(data_set, update_bq_dt_tables, jobs)
 
                 creation_time = bq_dataset.get('creationTime')
                 if creation_time:
@@ -138,6 +137,10 @@ class BigQueryManager(GoogleCloudManager):
         update_bq_dt_tables = []
         table_schemas = []
 
+        print('### bq_dt_tables ###')
+        pprint(bq_dt_tables)
+
+
         for bq_dt_table in bq_dt_tables:
             table_ref = bq_dt_table.get('tableReference')
             table_single = big_conn.get_tables(table_ref.get('datasetId'), table_ref.get('tableId'))
@@ -167,39 +170,75 @@ class BigQueryManager(GoogleCloudManager):
 
         return update_bq_dt_tables, table_schemas
 
-    def _get_matching_jobs(self, tables, jobs):
+    def _get_matching_jobs(self, dataset, tables, jobs):
         matched_jobs = []
-        for table in tables:
-            table_reference = table.get('tableReference', {})
-            for job in jobs:
-                stat = job.get('statistics', {})
-                conf = job.get('configuration', {})
-                conf_labels = conf.get('labels', {})
+        data_refer = dataset.get('datasetReference', {})
+        dataset_id = data_refer.get('datasetId')
+        project_id = data_refer.get('projectId')
 
+        for job in jobs:
+
+            stat = job.get('statistics', {})
+            conf = job.get('configuration', {})
+            conf_labels = conf.get('labels', {})
+
+            _query = conf.get('query', {})
+            destination = _query.get('destinationTable', {})
+            if destination.get('datasetId','') == dataset_id and destination.get('projectId','') == project_id:
                 if conf_labels != {} and isinstance(conf_labels, dict):
                     conf.update({'labels': self.convert_labels_format(conf_labels)})
 
-                refer_tables = stat.get('query', {}).get('referencedTables', [])
-                if table_reference in refer_tables:
-                    creationTime = datetime.fromtimestamp(int(stat.get('creationTime')) / 1000)
-                    startTime = datetime.fromtimestamp(int(stat.get('startTime')) / 1000)
-                    endTime = datetime.fromtimestamp(int(stat.get('endTime')) / 1000)
+                creationTime = datetime.fromtimestamp(int(stat.get('creationTime')) / 1000)
+                startTime = datetime.fromtimestamp(int(stat.get('startTime')) / 1000)
+                endTime = datetime.fromtimestamp(int(stat.get('endTime')) / 1000)
 
-                    _query = conf.get('query', {})
-                    query = _query.get('query', '')
-                    query_display = f'{query[:200]} ...' if len(query) > 200 else query
+                query = _query.get('query', '')
+                query_display = f'{query[:200]} ...' if len(query) > 200 else query
 
-                    _query.update({'query_display': query_display})
-                    conf.update({'query': _query})
-                    stat.update({
-                        'creationTime': creationTime,
-                        'startTime': startTime,
-                        'endTime': endTime
-                    })
-
-                    job.update({'statistics': stat,
-                                'configuration': conf
-                                })
-                    matched_jobs.append(Job(job, strict=False))
+                _query.update({'query_display': query_display})
+                conf.update({'query': _query})
+                stat.update({
+                    'creationTime': creationTime,
+                    'startTime': startTime,
+                    'endTime': endTime
+                })
+                job.update({'statistics': stat,
+                            'configuration': conf
+                            })
+                matched_jobs.append(Job(job, strict=False))
+        # else:
+        #     for table in tables:
+        #         table_reference = table.get('tableReference', {})
+        #         for job in jobs:
+        #             stat = job.get('statistics', {})
+        #             conf = job.get('configuration', {})
+        #             conf_labels = conf.get('labels', {})
+        #
+        #             if conf_labels != {} and isinstance(conf_labels, dict):
+        #                 conf.update({'labels': self.convert_labels_format(conf_labels)})
+        #
+        #             refer_tables = stat.get('query', {}).get('referencedTables', [])
+        #             if table_reference in refer_tables:
+        #                 creationTime = datetime.fromtimestamp(int(stat.get('creationTime')) / 1000)
+        #                 startTime = datetime.fromtimestamp(int(stat.get('startTime')) / 1000)
+        #                 endTime = datetime.fromtimestamp(int(stat.get('endTime')) / 1000)
+        #
+        #                 _query = conf.get('query', {})
+        #                 query = _query.get('query', '')
+        #                 query_display = f'{query[:200]} ...' if len(query) > 200 else query
+        #
+        #                 _query.update({'query_display': query_display})
+        #                 conf.update({'query': _query})
+        #                 stat.update({
+        #                     'creationTime': creationTime,
+        #                     'startTime': startTime,
+        #                     'endTime': endTime
+        #                 })
+        #
+        #                 job.update({'statistics': stat,
+        #                             'configuration': conf
+        #                             })
+        #
+        #                 matched_jobs.append(Job(job, strict=False))
 
         return matched_jobs
