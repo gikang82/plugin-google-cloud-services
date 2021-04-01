@@ -85,7 +85,7 @@ class BigQueryConnector(GoogleCloudConnector):
                 response = request.execute()
                 for table in response.get('tables', []):
                     table_list.append(table)
-                request = self.client.projects().list_next(previous_request=request, previous_response=response)
+                request = self.client.tables().list_next(previous_request=request, previous_response=response)
         except Exception as e:
             print(f'Error occurred at BigQueryConnector: tables().list(**query) : skipped \n {e}')
             pass
