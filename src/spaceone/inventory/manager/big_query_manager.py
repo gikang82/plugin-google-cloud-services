@@ -137,10 +137,6 @@ class BigQueryManager(GoogleCloudManager):
         update_bq_dt_tables = []
         table_schemas = []
 
-        print('### bq_dt_tables ###')
-        pprint(bq_dt_tables)
-
-
         for bq_dt_table in bq_dt_tables:
             table_ref = bq_dt_table.get('tableReference')
             table_single = big_conn.get_tables(table_ref.get('datasetId'), table_ref.get('tableId'))

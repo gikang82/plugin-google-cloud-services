@@ -37,45 +37,48 @@ class CloudSQLConnector(GoogleCloudConnector):
                       'instance': instance_name})
 
         request = self.client.databases().list(**query)
-        try:
-            while request is not None:
+        while request is not None:
+            try:
                 response = request.execute()
                 for database in response.get('items', []):
                     database_list.append(database)
                 request = self.client.instances().list_next(previous_request=request, previous_response=response)
-        except Exception as e:
-            print(f'Error occurred at CloudSQLConnector: databases().list(**query) : skipped \n {e}')
-            pass
+            except Exception as e:
+                request = None
+                print(f'Error occurred at CloudSQLConnector: databases().list(**query) : skipped \n {e}')
+
         return database_list
 
     def list_users(self, instance_name, **query):
         user_list = []
         query.update({'project': self.project_id, 'instance': instance_name})
         request = self.client.users().list(**query)
-        try:
-            while request is not None:
+        while request is not None:
+            try:
                 response = request.execute()
                 for database in response.get('items', []):
                     user_list.append(database)
                 request = self.client.users().list_next(previous_request=request, previous_response=response)
 
-        except Exception as e:
-            print(f'Error occurred at users().list(**query) : skipped \n {e}')
-            pass
+            except Exception as e:
+                request = None
+                print(f'Error occurred at users().list(**query) : skipped \n {e}')
+
         return user_list
 
     def list_backup_runs(self, instance_name, **query):
         backup_runs_list = []
         query.update({'project': self.project_id, 'instance': instance_name})
         request = self.client.backup_runs().list(**query)
-        try:
-            while request is not None:
+
+        while request is not None:
+            try:
                 response = request.execute()
                 for backup in response.get('items', []):
                     backup_runs_list.append(backup)
                 request = self.client.users().list_next(previous_request=request, previous_response=response)
+            except Exception as e:
+                request = None
+                print(f'Error occurred at CloudSQLConnector: backup_runs().list(**query) : skipped \n {e}')
 
-        except Exception as e:
-            print(f'Error occurred at CloudSQLConnector: backup_runs().list(**query) : skipped \n {e}')
-            pass
         return backup_runs_list

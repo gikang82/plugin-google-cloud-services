@@ -18,15 +18,16 @@ class StorageConnector(GoogleCloudConnector):
         bucket_list = []
         query.update({'project': self.project_id, 'projection': 'full', 'alt': 'json'})
         request = self.client.buckets().list(**query)
-        try:
-            while request is not None:
+        while request is not None:
+            try:
                 response = request.execute()
                 for template in response.get('items', []):
                     bucket_list.append(template)
                 request = self.client.buckets().list_next(previous_request=request, previous_response=response)
-        except Exception as e:
-            print(f'Error occurred at buckets().list(**query) : skipped \n {e}')
-            pass
+            except Exception as e:
+                request = None
+                print(f'Error occurred at buckets().list(**query) : skipped \n {e}')
+
 
         return bucket_list
 
@@ -45,14 +46,15 @@ class StorageConnector(GoogleCloudConnector):
         objects_list = []
         query.update({"bucket": bucket_name})
         request = self.client.objects().list(**query)
-        try:
-            while request is not None:
+        while request is not None:
+            try:
                 response = request.execute()
                 for template in response.get('items', []):
                     objects_list.append(template)
                 request = self.client.objects().list_next(previous_request=request, previous_response=response)
-        except Exception as e:
-            print(f'Error occurred at objects().list(**query) : skipped \n : {e}')
-            print(e)
+
+            except Exception as e:
+                request = None
+                print(f'Error occurred at objects().list(**query) : skipped \n : {e}')
 
         return objects_list
