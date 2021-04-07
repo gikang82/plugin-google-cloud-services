@@ -72,7 +72,7 @@ class InstanceGroupManager(GoogleCloudManager):
 
                 match_instance_template = \
                     self.match_instance_template(instance_templates,
-                                                 None)
+                                                 match_instance_group_manager.get('instanceTemplate'))
 
                 if match_instance_template:
                     instance_group.update({'template': InstanceTemplate(match_instance_template, strict=False)})
