@@ -56,7 +56,6 @@ class CloudSQLConnector(GoogleCloudConnector):
             response = self.client.users().list(**query).execute()
             user_list = response.get('items', [])
         except Exception as e:
-            request = None
             print(f'Error occurred at users().list(**query) : skipped \n {e}')
 
         return user_list
