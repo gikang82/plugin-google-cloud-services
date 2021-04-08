@@ -41,7 +41,6 @@ class Database(Model):
 class ServerCACert(Model):
     kind = StringType()
     cert_serial_number = StringType(deserialize_from="certSerialNumber")
-    cert = StringType()
     common_name = StringType(deserialize_from="commonName")
     sha1_fingerprint = StringType(deserialize_from="sha1Fingerprint")
     instance = StringType()

@@ -80,8 +80,6 @@ class CollectorService(BaseService):
 
         print("[ EXECUTOR START: Google Cloud Service ]")
 
-        self._set_regions_zones(params.get('secret_data'), params)
-
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
             future_executors = []
             for execute_manager in self.execute_managers:
@@ -114,7 +112,5 @@ class CollectorService(BaseService):
                     result_regions.append(region.split('/')[-1])
 
             params.update({'region': list(set(result_regions)), 'zone': result_zones})
-
         except Exception as e:
             print(e)
-            pass
