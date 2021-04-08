@@ -2,7 +2,7 @@ import logging
 
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.error import *
-
+from pprint import pprint
 
 __all__ = ['CloudSQLConnector']
 _LOGGER = logging.getLogger(__name__)
@@ -52,17 +52,12 @@ class CloudSQLConnector(GoogleCloudConnector):
     def list_users(self, instance_name, **query):
         user_list = []
         query.update({'project': self.project_id, 'instance': instance_name})
-        request = self.client.users().list(**query)
-        while request is not None:
-            try:
-                response = request.execute()
-                for database in response.get('items', []):
-                    user_list.append(database)
-                request = self.client.users().list_next(previous_request=request, previous_response=response)
-
-            except Exception as e:
-                request = None
-                print(f'Error occurred at users().list(**query) : skipped \n {e}')
+        try:
+            response = self.client.users().list(**query).execute()
+            user_list = response.get('items', [])
+        except Exception as e:
+            request = None
+            print(f'Error occurred at users().list(**query) : skipped \n {e}')
 
         return user_list
 
