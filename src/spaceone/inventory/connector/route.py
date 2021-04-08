@@ -28,8 +28,8 @@ class RouteConnector(GoogleCloudConnector):
                 request = self.client.routes().list_next(previous_request=request,
                                                          previous_response=response)
             except Exception as e:
-                print(e)
-                pass
+                request = None
+                print(f'Error at RouteConnector routes().list: {e}')
 
         return route_list
 
@@ -41,10 +41,15 @@ class RouteConnector(GoogleCloudConnector):
 
         request = self.client.instances().aggregatedList(**query)
         while request is not None:
-            response = request.execute()
-            for name, instances_scoped_list in response['items'].items():
-                if 'instances' in instances_scoped_list:
-                    instance_list.extend(instances_scoped_list.get('instances'))
-            request = self.client.instances().aggregatedList_next(previous_request=request,
-                                                                  previous_response=response)
+            try:
+                response = request.execute()
+                for name, instances_scoped_list in response['items'].items():
+                    if 'instances' in instances_scoped_list:
+                        instance_list.extend(instances_scoped_list.get('instances'))
+                request = self.client.instances().aggregatedList_next(previous_request=request,
+                                                                      previous_response=response)
+            except Exception as e:
+                request = None
+                print(f'Error at RouteConnector instances().aggregatedList: {e}')
+
         return instance_list

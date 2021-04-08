@@ -15,9 +15,19 @@ class SnapshotConnector(GoogleCloudConnector):
         super().__init__(**kwargs)
 
     def list_snapshot(self, **query):
+        snapshot_list = []
         query = self.generate_query(**query)
-        result = self.client.snapshots().list(**query).execute()
-        return result.get('items', [])
+        request = self.client.snapshots().list(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for snapshot in response.get('items', []):
+                    snapshot_list.append(snapshot)
+                request = self.client.snapshots().list_next(previous_request=request, previous_response=response)
+            except Exception as e:
+                request = None
+                print(f'Error occurred at instanceTemplates().list: {e}')
+        return snapshot_list
 
     def list_resource_policies(self, **query):
         resource_policies = {}
@@ -31,19 +41,28 @@ class SnapshotConnector(GoogleCloudConnector):
         return resource_policies
 
     def list_all_disks_for_snapshots(self, **query):
+        disks = []
         disk_with_schedule = {}
         query = self.generate_query(**query)
-        result = self.client.disks().aggregatedList(**query).execute()
-        all_results = result.get('items', {})
-        for zone in all_results.keys():
-            if 'disks' in all_results.get(zone):
-                for disk in all_results.get(zone).get('disks', []):
-                    if 'resourcePolicies' in disk:
-                        zone_name_only = self._get_zone(disk.get('zone'))
-                        disk_name = disk.get('name')
-                        disk_with_schedule.update({
-                            f'{disk_name}-{zone_name_only}': disk.get('resourcePolicies')
-                        })
+        request = self.client.disks().aggregatedList(**query)
+        while request is not None:
+            try:
+                response = request.execute()
+                for name, disks_scoped_list in response['items'].items():
+                    if 'disks' in disks_scoped_list:
+                        disks.extend(disks_scoped_list.get('disks'))
+                request = self.client.disks().aggregatedList_next(previous_request=request,
+                                                                  previous_response=response)
+            except Exception as e:
+                request = None
+                print(f'Error occurred at ExternalIPAddressConnector: disks().aggregatedList(**query) : skipped \n {e}')
+
+        for disk in disks:
+            if 'resourcePolicies' in disk:
+                zone_name_only = self._get_zone(disk.get('zone'))
+                disk_name = disk.get('name')
+                disk_with_schedule.update({f'{disk_name}-{zone_name_only}': disk.get('resourcePolicies')})
+
         return disk_with_schedule
 
     @staticmethod

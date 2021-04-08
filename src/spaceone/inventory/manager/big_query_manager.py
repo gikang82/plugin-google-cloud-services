@@ -1,11 +1,9 @@
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.bigquery.data import *
 from spaceone.inventory.model.bigquery.cloud_service import *
 from spaceone.inventory.connector.big_query import BigQueryConnector
 from spaceone.inventory.model.bigquery.cloud_service_type import CLOUD_SERVICE_TYPES
 from datetime import datetime
-from pprint import pprint
 import time
 
 
