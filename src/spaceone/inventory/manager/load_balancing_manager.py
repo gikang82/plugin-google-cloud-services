@@ -665,16 +665,12 @@ class LoadBalancingManager(GoogleCloudManager):
     def _get_lead_protocol(load_balancer):
         lead_protocol = ''
         all_protocols = [d.get('protocols') for d in load_balancer.get('frontends', []) if 'protocols' in d]
+
         if len(all_protocols) > 0:
             lead_protocol = 'HTTP(S)' if 'HTTPS' in all_protocols and 'HTTP' in all_protocols else all_protocols[0]
         else:
             all_protocols = [d.get('type').upper() for d in load_balancer.get('target_proxies', []) if 'type' in d]
-            if len(all_protocols) > 0:
-                lead_protocol = f'{all_protocols[0]} (Proxy)'
-            else:
-                print('Exceptional lb_info:')
-                pprint(load_balancer)
-                print()
+            lead_protocol = f'{all_protocols[0]} (Proxy)' if len(all_protocols) > 0 else 'TCP/UDP'
 
         return lead_protocol
 

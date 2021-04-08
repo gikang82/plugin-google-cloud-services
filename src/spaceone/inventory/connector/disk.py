@@ -18,17 +18,18 @@ class DiskConnector(GoogleCloudConnector):
         disk_list = []
         query.update({'project': self.project_id})
         request = self.client.disks().aggregatedList(**query)
-        try:
-            while request is not None:
+
+        while request is not None:
+            try:
                 response = request.execute()
                 for key, _disk in response['items'].items():
                     if 'disks' in _disk:
                         disk_list.extend(_disk.get('disks'))
                 request = self.client.disks().aggregatedList_next(previous_request=request,
                                                                   previous_response=response)
-        except Exception as e:
-            print(f'Error occurred at DiskConnector: disks().aggregatedList(**query) : skipped \n {e}')
-            pass
+            except Exception as e:
+                request = None
+                print(f'Error occurred at DiskConnector: disks().aggregatedList(**query) : skipped \n {e}')
 
         return disk_list
 
@@ -36,8 +37,8 @@ class DiskConnector(GoogleCloudConnector):
         resource_policy_vo = {}
         query.update({'project': self.project_id})
         request = self.client.resourcePolicies().aggregatedList(**query)
-        try:
-            while request is not None:
+        while request is not None:
+            try:
                 response = request.execute()
                 for key, _disk in response['items'].items():
                     if 'resourcePolicies' in _disk:
@@ -47,8 +48,8 @@ class DiskConnector(GoogleCloudConnector):
                         })
                 request = self.client.resourcePolicies().aggregatedList_next(previous_request=request,
                                                                              previous_response=response)
-        except Exception as e:
-            print(f'Error occurred at DiskConnector: resourcePolicies().aggregatedList(**query) : skipped \n {e}')
-            pass
+            except Exception as e:
+                request = None
+                print(f'Error occurred at DiskConnector: resourcePolicies().aggregatedList(**query) : skipped \n {e}')
 
         return resource_policy_vo
