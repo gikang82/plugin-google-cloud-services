@@ -360,8 +360,6 @@ class LoadBalancingManager(GoogleCloudManager):
                 if proxy_type in ['ssl', 'tcp']:
                     proxy_list_relate_to_load_balancer.append(proxy_vo)
                 proxy_list.append(proxy_vo)
-                #     proxy_list_relate_to_load_balancer.append(TargetProxy(proxy_vo, strict=False))
-                # proxy_list.append(TargetProxy(proxy_vo, strict=False))
 
         return proxy_list, proxy_list_relate_to_load_balancer
 
@@ -460,6 +458,8 @@ class LoadBalancingManager(GoogleCloudManager):
                         'target_proxies': [ssl_tcp_proxy],
                         'backend_services': [backend]
                     }
+
+
 
                     backend_proxies.append(backend_proxy_vo)
         return backend_proxies
@@ -669,7 +669,13 @@ class LoadBalancingManager(GoogleCloudManager):
             lead_protocol = 'HTTP(S)' if 'HTTPS' in all_protocols and 'HTTP' in all_protocols else all_protocols[0]
         else:
             all_protocols = [d.get('type').upper() for d in load_balancer.get('target_proxies', []) if 'type' in d]
-            lead_protocol = f'{all_protocols[0]} (Proxy)'
+            if len(all_protocols) > 0:
+                lead_protocol = f'{all_protocols[0]} (Proxy)'
+            else:
+                print('Exceptional lb_info:')
+                pprint(load_balancer)
+                print()
+
         return lead_protocol
 
     @staticmethod
