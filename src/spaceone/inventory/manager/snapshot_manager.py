@@ -96,7 +96,7 @@ class SnapshotManager(GoogleCloudManager):
             'source_disk_display': self._get_display_name(snapshot.get('sourceDisk', ''), 'disks/', 6),
             'source_disk_id': snapshot.get('sourceDiskId', ''),
             'disk_size': float(size),
-            'storage_bytes': int(st_byte),
+            'storage_bytes': int(st_byte)
         }
 
     def get_matched_snapshot_schedule(self, policy):
