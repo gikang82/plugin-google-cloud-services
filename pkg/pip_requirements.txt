@@ -2,3 +2,4 @@ spaceone-core
 spaceone-api
 schematics
 google-api-python-client
+MarkupSafe>=2.0.0rc2
