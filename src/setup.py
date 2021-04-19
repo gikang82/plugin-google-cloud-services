@@ -35,8 +35,7 @@ setup(
         'spaceone-api',
         'spaceone-tester',
         'schematics',
-        'google-api-python-client',
-        'MarkupSafe>=2.0.0rc2'
+        'google-api-python-client'
     ],
     zip_safe=False,
 )
