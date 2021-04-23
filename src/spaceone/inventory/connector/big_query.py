@@ -55,8 +55,8 @@ class BigQueryConnector(GoogleCloudConnector):
         while request is not None:
             try:
                 response = request.execute()
-                for dataset in response.get('jobs', []):
-                    job_list.append(dataset)
+                for job in response.get('jobs', []):
+                    job_list.append(job)
                 request = self.client.jobs().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
@@ -81,8 +81,10 @@ class BigQueryConnector(GoogleCloudConnector):
 
     def list_tables(self, dataset_id, **query):
         table_list = []
+
         query.update({'projectId': self.project_id,
                       'datasetId': dataset_id})
+
         request = self.client.tables().list(**query)
         while request is not None:
             try:
