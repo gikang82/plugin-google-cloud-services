@@ -35,7 +35,11 @@ class BigQueryManager(GoogleCloudManager):
 
             data_sets = big_query_conn.list_dataset()
             projects = big_query_conn.list_projects()
-            jobs = big_query_conn.list_job()
+
+            # comment out jobs for temporarily
+            # jobs = big_query_conn.list_job()
+
+            jobs = []
 
             for data_set in data_sets:
                 data_refer = data_set.get('datasetReference', {})
