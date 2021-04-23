@@ -73,8 +73,14 @@ class MaintenanceWindow(Model):
     day = IntType()
 
 
+class AuthorizedNetworks(Model):
+    value = StringType()
+    name = StringType()
+    kind = StringType()
+
+
 class IPConfiguration(Model):
-    authorized_networks = ListType(StringType, deserialize_from="authorizedNetworks")
+    authorized_networks = ListType(ModelType(AuthorizedNetworks), deserialize_from="authorizedNetworks")
     ipv4_enabled = BooleanType()
 
 
