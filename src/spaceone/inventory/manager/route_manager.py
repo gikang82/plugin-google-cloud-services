@@ -44,7 +44,6 @@ class RouteManager(GoogleCloudManager):
             }
 
             route.update({
-
                 'display': display,
                 'project': secret_data['project_id'],
                 'applicable_instance': self.get_matched_instace(route,
@@ -53,8 +52,10 @@ class RouteManager(GoogleCloudManager):
             })
 
             # No Labels
+            _name = route_data.get('name', '')
             route_data = Route(route, strict=False)
             route_resource = RouteResource({
+                'name': _name,
                 'region_code': region,
                 'data': route_data,
                 'reference': ReferenceModel(route_data.reference())

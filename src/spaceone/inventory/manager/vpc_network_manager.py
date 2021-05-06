@@ -1,6 +1,4 @@
-import re
 import time
-from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.vpc_network.data import *
@@ -72,8 +70,10 @@ class VPCNetworkManager(GoogleCloudManager):
             })
 
             # No labels
+            _name = network.get('name', '')
             vpc_data = VPCNetwork(network, strict=False)
             vpc_resource = VPCNetworkResource({
+                'name': _name,
                 'region_code': region.get('region_code'),
                 'data': vpc_data,
                 'reference': ReferenceModel(vpc_data.reference())

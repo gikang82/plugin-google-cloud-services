@@ -15,7 +15,7 @@ cst_machine_image.tags = {
 cst_machine_image._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Name', 'data.name'),
-        TextDyField.data_source('Source Instance', 'data.machine.machine_display'),
+        TextDyField.data_source('Source Instance', 'data.machine.source_image_from'),
         TextDyField.data_source('Machine Type', 'data.machine.machine_type'),
         ListDyField.data_source('Storage location', 'data.storage_locations',
                                 default_badge={'type': 'outline', 'delimiter': '<br>'}),
@@ -24,7 +24,7 @@ cst_machine_image._metadata = CloudServiceTypeMeta.set_meta(
     search=[
         SearchField.set(name='ID', key='data.id'),
         SearchField.set(name='Name', key='data.name'),
-        SearchField.set(name='Machine Type', key='data.machine.machine_type'),
+        SearchField.set(name='Source Image', key='data.machine.source_image_from'),
         SearchField.set(name='Disk Type', key='data.disks.tags.disk_type'),
         SearchField.set(name='Core', key='data.machine.core'),
         SearchField.set(name='Memory', key='data.machine.memory'),

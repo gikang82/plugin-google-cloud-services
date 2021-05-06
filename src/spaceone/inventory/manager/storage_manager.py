@@ -63,10 +63,11 @@ class StorageManager(GoogleCloudManager):
                 'public_access': self._get_public_access(bucket, iam_policy),
                 'labels': labels
             })
-
+            _name = bucket.get('name', '')
             bucket_data = Storage(bucket, strict=False)
             # labels -> tags
             bucket_resource = StorageResource({
+                'name': _name,
                 'tags': labels,
                 'region_code': region.get('region_code'),
                 'data': bucket_data,

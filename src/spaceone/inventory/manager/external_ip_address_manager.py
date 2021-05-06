@@ -48,10 +48,11 @@ class ExternalIPAddressManager(GoogleCloudManager):
                 external_ip_juso.update({'self_link': self._get_external_self_link_when_its_empty(external_ip_juso)})
 
             # No Labels (exists on console but No option on APIs)
-
+            _name = external_ip_juso.get('name', '')
             external_ip_juso_data = ExternalIpAddress(external_ip_juso, strict=False)
             external_ip_juso_resource = ExternalIpAddressResource({
                 'region_code': region,
+                'name': _name,
                 'data': external_ip_juso_data,
                 'reference': ReferenceModel(external_ip_juso_data.reference())
             })

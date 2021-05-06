@@ -182,9 +182,11 @@ class LoadBalancingManager(GoogleCloudManager):
                 'region': region
             })
             refer_link = self._get_refer_link(load_balancer, project_id)
+            _name = load_balancer.get('name', '')
             load_balance_data = LoadBalancing(load_balancer, strict=False)
 
             lb_resource = LoadBalancingResource({
+                'name': _name,
                 'region_code': region,
                 'data': load_balance_data,
                 'reference': ReferenceModel(load_balance_data.reference(refer_link))
