@@ -95,6 +95,7 @@ instance_layout = TableDynamicLayout.set_fields('Instance', root_path='data.inst
 instance_group_meta = CloudServiceMeta.set_layouts([instance_group_layout, instance_layout,
                                                     autoscaling_layout, autohealing_layout])
 
+
 class ComputeEngineResource(CloudServiceResource):
     cloud_service_group = StringType(default='ComputeEngine')
 

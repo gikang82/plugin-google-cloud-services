@@ -86,6 +86,7 @@ class BigQueryManager(GoogleCloudManager):
                 big_query_data = BigQueryWorkSpace(bq_dataset, strict=False)
                 big_query_work_space_resource = SQLWorkSpaceResource({
                     'tags': labels,
+                    'name': project_id,
                     'data': big_query_data,
                     'region_code': region,
                     'reference': ReferenceModel(big_query_data.reference())

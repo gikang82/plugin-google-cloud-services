@@ -56,13 +56,14 @@ class SnapshotManager(GoogleCloudManager):
                 'encryption': self._get_encryption_info(snapshot),
                 'labels': labels
             })
-
+            _name = snapshot_data.get('name', '')
             # labels -> tags
             snapshot_data = Snapshot(snapshot, strict=False)
             snapshots_resource = SnapshotResource({
-                'tags': labels,
+                'name': _name,
                 'region_code': region.get('region_code'),
                 'data': snapshot_data,
+                'tags': labels,
                 'reference': ReferenceModel(snapshot_data.reference())
             })
 

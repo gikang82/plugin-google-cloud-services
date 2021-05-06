@@ -71,6 +71,7 @@ class MachineType(Model):
     machine_type = StringType()
     machine_display = StringType(serialize_when_none=False)
     machine_detail = StringType(serialize_when_none=False)
+    source_image_from = StringType(serialize_when_none=False)
     core = IntType(default=0)
     memory = FloatType(default=0.0)
 

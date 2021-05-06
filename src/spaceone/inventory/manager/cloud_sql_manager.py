@@ -48,6 +48,7 @@ class CloudSQLManager(GoogleCloudManager):
             instance_resource = InstanceResource({
                 'data': instance_data,
                 'region_code': instance['region'],
+                'name': instance_name,
                 'reference': ReferenceModel(instance_data.reference())
             })
 
