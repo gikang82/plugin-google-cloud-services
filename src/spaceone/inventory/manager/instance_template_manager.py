@@ -61,11 +61,13 @@ class InstanceTemplateManager(GoogleCloudManager):
             svc_account = properties.get('serviceAccounts', [])
             if len(svc_account) > 0:
                 inst_template.update({'service_account': self._get_service_account(svc_account)})
-
+            _name = inst_template.get('name', '')
             instance_template_data = InstanceTemplate(inst_template, strict=False)
             # labels -> tags
             default_region = 'global'
+
             instance_template_resource = InstanceTemplateResource({
+                'name': _name,
                 'tags': labels,
                 'data': instance_template_data,
                 'reference': ReferenceModel(instance_template_data.reference()),

@@ -7,6 +7,7 @@ from spaceone.inventory.model.instance_group.cloud_service_type import CLOUD_SER
 from pprint import pprint
 import time
 
+
 class InstanceGroupManager(GoogleCloudManager):
     connector_name = 'InstanceGroupConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
@@ -84,9 +85,9 @@ class InstanceGroupManager(GoogleCloudManager):
 
             loc_type, location = self.get_instance_group_loc(instance_group)
             region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
-            instances = instance_group_conn.list_instances(instance_group.get('name'), location,  loc_type)
+            instances = instance_group_conn.list_instances(instance_group.get('name'), location, loc_type)
 
-            display_loc = { 'region': location, 'zone': ''} if loc_type == 'region' \
+            display_loc = {'region': location, 'zone': ''} if loc_type == 'region' \
                 else {'region': location[:-2], 'zone': location}
 
             instance_group.update({'display_location': display_loc})
@@ -97,8 +98,10 @@ class InstanceGroupManager(GoogleCloudManager):
                 'instance_counts': len(instances)
             })
             # No labels
+            _name = instance_group.get('name', '')
             instance_group_data = InstanceGroup(instance_group, strict=False)
             instance_group_resource = InstanceGroupResource({
+                'name': _name,
                 'data': instance_group_data,
                 'region_code': region,
                 'reference': ReferenceModel(instance_group_data.reference())
@@ -214,7 +217,7 @@ class InstanceGroupManager(GoogleCloudManager):
     @staticmethod
     def _get_last_target(target_vo, key):
         a = target_vo.get(key, '')
-        return a[a.rfind('/')+1:]
+        return a[a.rfind('/') + 1:]
 
     @staticmethod
     def _get_auto_policy_for_scheduler(scheduler, matched_scheduler):

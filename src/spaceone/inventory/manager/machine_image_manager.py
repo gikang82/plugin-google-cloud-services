@@ -77,10 +77,12 @@ class MachineImageManager(GoogleCloudManager):
             if len(svc_account) > 0:
                 machine_image.update({'service_account': self._get_service_account(svc_account)})
 
+            _name = machine_image.get('name', '')
             # No Labels
             machine_image_data = MachineImage(machine_image, strict=False)
 
             machine_image_resource = MachineImageResource({
+                'name': _name,
                 'data': machine_image_data,
                 'reference': ReferenceModel(machine_image_data.reference()),
                 'region_code': region.get('region_code')
@@ -235,6 +237,8 @@ class MachineImageManager(GoogleCloudManager):
         machine = None
         machine_type = instance.get('machineType', '')
         machine_vo = {'machine_type': machine_type}
+        disks = instance.get('disks', [])
+        source_disk = disks[0] if len(disks) > 0 else {}
         if machine_type != '':
             for item in machine_types:
                 if item.get('name') == machine_type:
@@ -249,8 +253,15 @@ class MachineImageManager(GoogleCloudManager):
                 'machine_display': f'{machine_type} : {core} vCPUs {display_memory} GB RAM',
                 'machine_detail': machine.get('description'),
                 'core': core,
-                'memory': memory
+                'memory': memory,
+
             })
+        # source_image_from
+        sdn = source_disk.get('source', '')
+        machine_vo.update({
+            'source_image_from': sdn[sdn.rfind('/')+1:]
+        })
+
         return machine_vo
 
     @staticmethod

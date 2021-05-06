@@ -70,9 +70,10 @@ class FirewallManager(GoogleCloudManager):
                 })
 
                 # No Labels on API
-
+                _name = firewall.get('data', '')
                 firewall_data = Firewall(firewall, strict=False)
                 firewall_resource = FirewallResource({
+                    'name': _name,
                     'region_code': region,
                     'data': firewall_data,
                     'reference': ReferenceModel(firewall_data.reference())

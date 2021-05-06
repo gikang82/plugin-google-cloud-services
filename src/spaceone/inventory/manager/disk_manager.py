@@ -37,6 +37,7 @@ class DiskManager(GoogleCloudManager):
             disk_size = float(disk.get('sizeGb'))
             zone = self._get_last_target(disk.get('zone'))
             region = zone[:-2]
+            name = disk.get('name')
 
             labels = self.convert_labels_format(disk.get('labels', {}))
             disk.update({
@@ -59,6 +60,7 @@ class DiskManager(GoogleCloudManager):
 
             disk_data = Disk(disk, strict=False)
             disk_resource = DiskResource({
+                'name': name,
                 'tags': labels,
                 'data': disk_data,
                 'region_code': disk['region'],
