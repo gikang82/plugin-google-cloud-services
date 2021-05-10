@@ -36,8 +36,9 @@ class CloudSQLManager(GoogleCloudManager):
 
             # Get Users
             users = cloud_sql_conn.list_users(instance_name)
-
+            stackdriver = self.get_stackdriver(instance_name)
             instance.update({
+                'stackdriver': stackdriver,
                 'display_state': self._get_display_state(instance),
                 'databases': [Database(database, strict=False) for database in databases],
                 'users': [User(user, strict=False) for user in users],
@@ -57,6 +58,16 @@ class CloudSQLManager(GoogleCloudManager):
 
         print(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
+
+    @staticmethod
+    def get_stackdriver(name):
+        return {
+            'type': 'cloudsql_instance_database',
+            'filters': [{
+                'key': 'metric.labels.instance_name',
+                'value': name
+            }]
+        }
 
     @staticmethod
     def _get_display_state(instance):

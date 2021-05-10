@@ -7,6 +7,19 @@ class SQLServerUserDetail(Model):
     server_roles = ListType(StringType, deserialize_from='serverRoles')
 
 
+class StackDriverFilters(Model):
+    key = StringType()
+    value = StringType()
+
+
+class StackDriver(Model):
+    class Option:
+        serialize_when_none = False
+
+    type = StringType()
+    filters = ListType(ModelType(StackDriverFilters), default=[])
+
+
 class User(Model):
     kind = StringType()
     etag = StringType()
@@ -120,6 +133,7 @@ class Instance(Model):
     display_state = StringType(choices=('RUNNING', 'STOPPED', 'UNKNOWN', 'ON-DEMAND'))
     state = StringType(choices=('SQL_INSTANCE_STATE_UNSPECIFIED', 'RUNNABLE', 'SUSPENDED', 'PENDING_DELETE',
                                 'PENDING_CREATE', 'MAINTENANCE', 'FAILED'))
+    stackdriver = ModelType(StackDriver)
     region = StringType()
     gce_zone = StringType(deserialize_from="gceZone")
     database_version = StringType(deserialize_from="databaseVersion")

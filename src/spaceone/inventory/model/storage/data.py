@@ -2,6 +2,19 @@ from schematics import Model
 from schematics.types import ModelType, ListType, StringType, IntType, DateTimeType, BooleanType, FloatType, DictType, UnionType, MultiType
 
 
+class StackDriverFilters(Model):
+    key = StringType()
+    value = StringType()
+
+
+class StackDriver(Model):
+    class Option:
+        serialize_when_none = False
+
+    type = StringType()
+    filters = ListType(ModelType(StackDriverFilters), default=[])
+
+
 class Labels(Model):
     key = StringType()
     value = StringType()
@@ -118,6 +131,7 @@ class Storage(Model):
     id = StringType()
     name = StringType()
     project = StringType()
+    stackdriver = ModelType(StackDriver)
     links = ModelType(Link)
     acl = ListType(ModelType(BucketAccessControls), default=[], deserialize_from='acl')
     default_event_based_hold = StringType(choices=('Enabled', 'Disabled'))

@@ -4,7 +4,7 @@ from spaceone.inventory.connector.instance_group import InstanceGroupConnector
 from spaceone.inventory.model.instance_group.data import *
 from spaceone.inventory.model.instance_group.cloud_service import *
 from spaceone.inventory.model.instance_group.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
+
 import time
 
 
