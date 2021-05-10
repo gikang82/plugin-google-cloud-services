@@ -1,4 +1,3 @@
-import re
 import time
 from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
@@ -44,6 +43,7 @@ class StorageManager(GoogleCloudManager):
             st_class = bucket.get('storageClass').lower()
             region = self.get_matching_region(bucket)
             labels = self.convert_labels_format(bucket.get('labels', {}))
+            stackdriver = self.get_stackdriver(bucket_name)
             bucket.update({
                 'project': secret_data['project_id'],
                 'encryption': self._get_encryption(bucket),
@@ -51,6 +51,7 @@ class StorageManager(GoogleCloudManager):
                 'retention_policy_display': self._get_retention_policy_display(bucket),
                 'links': self._get_config_link(bucket),
                 'size': size,
+                'stackdriver': stackdriver,
                 'default_event_based_hold': 'Enabled' if bucket.get('defaultEventBasedHold') else 'Disabled',
                 'iam_policy': iam_policy,
                 'iam_policy_binding': self._get_iam_policy_binding(iam_policy),
@@ -273,6 +274,7 @@ class StorageManager(GoogleCloudManager):
             'lifecycle_rule_display': display,
             'rule': life_cycle_rule
         }
+
     @staticmethod
     def _get_iam_policy_binding(iam_policy):
         iam_policy_binding = []
@@ -288,6 +290,16 @@ class StorageManager(GoogleCloudManager):
                     })
 
         return iam_policy_binding
+
+    @staticmethod
+    def get_stackdriver(name):
+        return {
+            'type': 'cloudsql_instance_database',
+            'filters': [{
+                'key': 'metric.labels.instance_name',
+                'value': name
+            }]
+        }
 
     @staticmethod
     def _get_retention_policy_display(bucket):
