@@ -38,7 +38,7 @@ class CloudSQLManager(GoogleCloudManager):
             users = cloud_sql_conn.list_users(instance_name)
             stackdriver = self.get_stackdriver(instance_name)
             instance.update({
-                #'stackdriver': stackdriver,
+                'stackdriver': stackdriver,
                 'display_state': self._get_display_state(instance),
                 'databases': [Database(database, strict=False) for database in databases],
                 'users': [User(user, strict=False) for user in users],
