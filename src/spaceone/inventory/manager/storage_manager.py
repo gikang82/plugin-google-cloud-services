@@ -296,7 +296,7 @@ class StorageManager(GoogleCloudManager):
         return {
             'type': 'storage.googleapis.com',
             'filters': [{
-                'key': 'resource.labels.name',
+                'key': 'resource.labels.bucket_name',
                 'value': name
             }]
         }
