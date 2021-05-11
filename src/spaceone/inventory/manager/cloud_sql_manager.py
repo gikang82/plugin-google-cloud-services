@@ -63,6 +63,7 @@ class CloudSQLManager(GoogleCloudManager):
     def get_stackdriver(name):
         return {
             'type': 'cloudsql.googleapis.com',
+            'identifier': 'database_id',
             'filters': [{
                 'key': 'resource.label.database_id',
                 'value': name
