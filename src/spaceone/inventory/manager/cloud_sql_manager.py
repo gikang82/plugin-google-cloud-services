@@ -64,7 +64,7 @@ class CloudSQLManager(GoogleCloudManager):
         return {
             'type': 'cloudsql.googleapis.com',
             'filters': [{
-                'key': 'resource.labels.name',
+                'key': 'resource.label.database_id',
                 'value': name
             }]
         }
