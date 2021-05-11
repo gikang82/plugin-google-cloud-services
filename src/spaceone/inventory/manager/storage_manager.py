@@ -51,7 +51,7 @@ class StorageManager(GoogleCloudManager):
                 'retention_policy_display': self._get_retention_policy_display(bucket),
                 'links': self._get_config_link(bucket),
                 'size': size,
-                'stackdriver': stackdriver,
+                #'stackdriver': stackdriver,
                 'default_event_based_hold': 'Enabled' if bucket.get('defaultEventBasedHold') else 'Disabled',
                 'iam_policy': iam_policy,
                 'iam_policy_binding': self._get_iam_policy_binding(iam_policy),
@@ -294,9 +294,9 @@ class StorageManager(GoogleCloudManager):
     @staticmethod
     def get_stackdriver(name):
         return {
-            'type': 'cloudsql_instance_database',
+            'type': 'storage.googleapis.com',
             'filters': [{
-                'key': 'metric.labels.instance_name',
+                'key': 'metric.labels.database',
                 'value': name
             }]
         }

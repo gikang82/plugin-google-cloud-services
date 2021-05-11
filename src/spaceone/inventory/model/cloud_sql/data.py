@@ -133,7 +133,7 @@ class Instance(Model):
     display_state = StringType(choices=('RUNNING', 'STOPPED', 'UNKNOWN', 'ON-DEMAND'))
     state = StringType(choices=('SQL_INSTANCE_STATE_UNSPECIFIED', 'RUNNABLE', 'SUSPENDED', 'PENDING_DELETE',
                                 'PENDING_CREATE', 'MAINTENANCE', 'FAILED'))
-    stackdriver = ModelType(StackDriver)
+    stackdriver = ModelType(StackDriver, serialize_when_none=False)
     region = StringType()
     gce_zone = StringType(deserialize_from="gceZone")
     database_version = StringType(deserialize_from="databaseVersion")

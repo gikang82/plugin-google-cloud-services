@@ -131,7 +131,7 @@ class Storage(Model):
     id = StringType()
     name = StringType()
     project = StringType()
-    stackdriver = ModelType(StackDriver)
+    stackdriver = ModelType(StackDriver, serialize_when_none=False)
     links = ModelType(Link)
     acl = ListType(ModelType(BucketAccessControls), default=[], deserialize_from='acl')
     default_event_based_hold = StringType(choices=('Enabled', 'Disabled'))
