@@ -17,6 +17,7 @@ class StackDriver(Model):
         serialize_when_none = False
 
     type = StringType()
+    identifier = StringType()
     filters = ListType(ModelType(StackDriverFilters), default=[])
 
 

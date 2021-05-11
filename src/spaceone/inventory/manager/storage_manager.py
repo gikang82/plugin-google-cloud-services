@@ -295,6 +295,7 @@ class StorageManager(GoogleCloudManager):
     def get_stackdriver(name):
         return {
             'type': 'storage.googleapis.com',
+            'identifier': 'bucket_name',
             'filters': [{
                 'key': 'resource.labels.bucket_name',
                 'value': name
