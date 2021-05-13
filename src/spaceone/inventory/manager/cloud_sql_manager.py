@@ -30,13 +30,13 @@ class CloudSQLManager(GoogleCloudManager):
         collected_cloud_services = []
         for instance in cloud_sql_conn.list_instances():
             instance_name = instance['name']
-
+            project = instance.get('project', '')
             # Get Databases
             databases = cloud_sql_conn.list_databases(instance_name)
 
             # Get Users
             users = cloud_sql_conn.list_users(instance_name)
-            stackdriver = self.get_stackdriver(instance_name)
+            stackdriver = self.get_stackdriver(project, instance_name)
             instance.update({
                 'stackdriver': stackdriver,
                 'display_state': self._get_display_state(instance),
@@ -60,13 +60,13 @@ class CloudSQLManager(GoogleCloudManager):
         return collected_cloud_services
 
     @staticmethod
-    def get_stackdriver(name):
+    def get_stackdriver(project, name):
         return {
             'type': 'cloudsql.googleapis.com',
             'identifier': 'database_id',
             'filters': [{
                 'key': 'resource.label.database_id',
-                'value': name
+                'value': f'{project}:{name}' if project != '' else f'{name}'
             }]
         }
 
