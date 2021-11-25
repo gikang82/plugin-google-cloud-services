@@ -26,7 +26,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                     previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at urlMaps().aggregatedList: {e}')
+                _LOGGER.error(f'Error at urlMaps().aggregatedList: {e}')
 
         return url_map_list
 
@@ -44,7 +44,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                             previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at backendServices().aggregatedList: {e}')
+                _LOGGER.error(f'Error at backendServices().aggregatedList: {e}')
 
         return backend_svc_list
 
@@ -62,7 +62,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                         previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at targetPools().aggregatedList: {e}')
+                _LOGGER.error(f'Error at targetPools().aggregatedList: {e}')
 
         return target_pool_list
 
@@ -80,7 +80,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                             previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at forwardingRules().aggregatedList: {e}')
+                _LOGGER.error(f'Error at forwardingRules().aggregatedList: {e}')
 
         return forwarding_rule_list
 
@@ -96,7 +96,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                 request = self.client.targetTcpProxies().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at targetTcpProxies().aggregatedList: {e}')
+                _LOGGER.error(f'Error at targetTcpProxies().aggregatedList: {e}')
 
         return tcp_proxy_list
 
@@ -112,7 +112,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                 request = self.client.targetSslProxies().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at targetSslProxies().list: {e}')
+                _LOGGER.error(f'Error at targetSslProxies().list: {e}')
         return ssl_proxy_list
 
     def list_grpc_proxies(self, **query):
@@ -127,7 +127,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                 request = self.client.targetGrpcProxies().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at targetGrpcProxies().list: {e}')
+                _LOGGER.error(f'Error at targetGrpcProxies().list: {e}')
         return grpc_proxy_list
 
     def list_back_end_buckets(self, **query):
@@ -142,7 +142,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                 request = self.client.backendBuckets().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at backendBuckets().list: {e}')
+                _LOGGER.error(f'Error at backendBuckets().list: {e}')
         return bucket_bucket_list
 
     def list_target_http_proxies(self, **query):
@@ -159,7 +159,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                               previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at targetHttpProxies().aggregatedList: {e}')
+                _LOGGER.error(f'Error at targetHttpProxies().aggregatedList: {e}')
 
         return http_proxy_list
 
@@ -177,7 +177,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                                previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at targetHttpsProxies().aggregatedList: {e}')
+                _LOGGER.error(f'Error at targetHttpsProxies().aggregatedList: {e}')
 
         return https_proxy_list
 
@@ -195,7 +195,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                             previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at sslCertificates().aggregatedList: {e}')
+                _LOGGER.error(f'Error at sslCertificates().aggregatedList: {e}')
 
         return ssl_certificate_list
 
@@ -213,7 +213,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                          previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at healthChecks().aggregatedList: {e}')
+                _LOGGER.error(f'Error at healthChecks().aggregatedList: {e}')
         return health_check_list
 
     def list_http_health_checks(self, **query):
@@ -229,7 +229,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                    previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at httpHealthChecks().list: {e}')
+                _LOGGER.error(f'Error at httpHealthChecks().list: {e}')
 
         return http_health_list
 
@@ -246,7 +246,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                     previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at httpsHealthChecks().list: {e}')
+                _LOGGER.error(f'Error at httpsHealthChecks().list: {e}')
 
         return https_health_list
 
@@ -264,7 +264,7 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                                   previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at instanceGroupManagers().aggregatedList: {e}')
+                _LOGGER.error(f'Error at instanceGroupManagers().aggregatedList: {e}')
 
         return instance_group_list
 
@@ -282,6 +282,6 @@ class LoadBalancingConnector(GoogleCloudConnector):
                                                                         previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at autoscalers().aggregatedList: {e}')
+                _LOGGER.error(f'Error at autoscalers().aggregatedList: {e}')
 
         return auto_scaler_list

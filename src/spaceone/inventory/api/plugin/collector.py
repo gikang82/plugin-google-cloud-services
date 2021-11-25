@@ -1,9 +1,12 @@
+import logging
+import traceback
+
 from spaceone.api.inventory.plugin import collector_pb2_grpc, collector_pb2
 from spaceone.core.pygrpc import BaseAPI
 from spaceone.core.pygrpc.message_type import *
 from spaceone.inventory.service import CollectorService
-import traceback
 
+_LOGGER = logging.getLogger(__name__)
 
 class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
     pb2 = collector_pb2
@@ -27,8 +30,12 @@ class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
 
     def collect(self, request, context):
         params, metadata = self.parse_request(request, context)
+        _LOGGER.debug(f'Start collecting process param => {params}')
+        _LOGGER.debug(f'Metadata => {metadata}')
+
         collector_svc: CollectorService = self.locator.get_service('CollectorService', metadata)
 
+        # Collector main process
         with collector_svc:
             try:
                 for resource in collector_svc.list_resources(params):
@@ -43,6 +50,6 @@ class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
                     yield self.locator.get_info('ResourceInfo', res)
 
             except Exception as e:
-                print(traceback.format_exc())
-                print(f'[ERROR: ResourceInfo]: {e}')
+                _LOGGER.debug(traceback.format_exc())
+                _LOGGER.error(f'[ERROR: ResourceInfo]: {e}')
 

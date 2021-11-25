@@ -3,7 +3,6 @@ import logging
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.model.bigquery.data import *
 from spaceone.inventory.error import *
-from pprint import pprint
 
 __all__ = ['BigQueryConnector']
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ class BigQueryConnector(GoogleCloudConnector):
 
             except Exception as e:
                 request = None
-                print(f'Error occurred at BigQueryConnector: datasets().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at BigQueryConnector: datasets().list(**query) : skipped \n {e}')
 
         return dataset_list
 
@@ -41,8 +40,7 @@ class BigQueryConnector(GoogleCloudConnector):
         try:
             response = self.client.datasets().get(**query).execute()
         except Exception as e:
-            print(f'Error occurred at BigQueryConnector: datasets().get(**query) : skipped \n {e}')
-
+            _LOGGER.error(f'Error occurred at BigQueryConnector: datasets().get(**query) : skipped \n {e}')
 
         return response
 
@@ -60,7 +58,7 @@ class BigQueryConnector(GoogleCloudConnector):
                 request = self.client.jobs().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at jobs().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at jobs().list(**query) : skipped \n {e}')
         return job_list
 
     def list_projects(self, **query):
@@ -75,7 +73,7 @@ class BigQueryConnector(GoogleCloudConnector):
                 request = self.client.projects().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at BigQueryConnector: projects().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at BigQueryConnector: projects().list(**query) : skipped \n {e}')
 
         return project_list
 
@@ -94,7 +92,7 @@ class BigQueryConnector(GoogleCloudConnector):
                 request = self.client.tables().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at BigQueryConnector: tables().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at BigQueryConnector: tables().list(**query) : skipped \n {e}')
 
         return table_list
 
@@ -106,6 +104,6 @@ class BigQueryConnector(GoogleCloudConnector):
         try:
             response = self.client.tables().get(**query).execute()
         except Exception as e:
-            print(e)
+            _LOGGER.error(e)
 
         return response

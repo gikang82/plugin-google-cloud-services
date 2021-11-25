@@ -29,7 +29,7 @@ class DiskConnector(GoogleCloudConnector):
                                                                   previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at DiskConnector: disks().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at DiskConnector: disks().aggregatedList(**query) : skipped \n {e}')
 
         return disk_list
 
@@ -50,6 +50,6 @@ class DiskConnector(GoogleCloudConnector):
                                                                              previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at DiskConnector: resourcePolicies().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at DiskConnector: resourcePolicies().aggregatedList(**query) : skipped \n {e}')
 
         return resource_policy_vo

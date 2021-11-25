@@ -1,12 +1,13 @@
 import google.oauth2.service_account
 import googleapiclient
 import googleapiclient.discovery
+import logging
 
 from spaceone.core.error import *
 from spaceone.core.connector import BaseConnector
-from pprint import pprint
-DEFAULT_SCHEMA = 'google_oauth_client_id'
 
+DEFAULT_SCHEMA = 'google_oauth_client_id'
+_LOGGER = logging.getLogger(__name__)
 
 class GoogleCloudConnector(BaseConnector):
     google_client_service = 'compute'
@@ -37,7 +38,7 @@ class GoogleCloudConnector(BaseConnector):
                                                           credentials=credentials)
 
         except Exception as e:
-            print()
+            _LOGGER.error(f'Unknown error occured \n {e}')
             raise ERROR_UNKNOWN(message=e)
 
     def verify(self, **kwargs):

@@ -3,7 +3,6 @@ import logging
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.model.vpc_network.data import *
 from spaceone.inventory.error import *
-from pprint import pprint
 
 __all__ = ['RouteConnector']
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ class RouteConnector(GoogleCloudConnector):
                                                          previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at RouteConnector routes().list: {e}')
+                _LOGGER.error(f'Error at RouteConnector routes().list: {e}')
 
         return route_list
 
@@ -50,6 +49,6 @@ class RouteConnector(GoogleCloudConnector):
                                                                       previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at RouteConnector instances().aggregatedList: {e}')
+                _LOGGER.error(f'Error at RouteConnector instances().aggregatedList: {e}')
 
         return instance_list

@@ -1,3 +1,6 @@
+import logging
+import time
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.disk.data import *
@@ -5,14 +8,15 @@ from spaceone.inventory.model.disk.cloud_service import *
 from spaceone.inventory.connector.disk import DiskConnector
 from spaceone.inventory.model.disk.cloud_service_type import CLOUD_SERVICE_TYPES
 from datetime import datetime
-import time
+
+_LOGGER = logging.getLogger(__name__)
 
 class DiskManager(GoogleCloudManager):
     connector_name = 'DiskConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Disk START **")
+        _LOGGER.debug(f'** Disk START **')
         start_time = time.time()
         """
         Args:
@@ -69,8 +73,9 @@ class DiskManager(GoogleCloudManager):
 
             self.set_region_code(disk['region'])
             collected_cloud_services.append(DiskResponse({'resource': disk_resource}))
+            _LOGGER.debug(f'collected_cloud_services => {collected_cloud_services[0].to_primitive()}')
 
-        print(f'** Disk Finished {time.time() - start_time} Seconds **')
+        _LOGGER.error(f'** Disk Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_iops_rate(self, disk_type, disk_size, flag):

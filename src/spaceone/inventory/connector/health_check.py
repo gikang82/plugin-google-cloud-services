@@ -15,18 +15,22 @@ class HealthCheckConnector(GoogleCloudConnector):
         super().__init__(**kwargs)
 
     def list_health_checks(self, **query):
-        machine_image_list = []
+        health_checks_list = []
         query.update({'project': self.project_id})
-        request = self.client.machineImages().list(**query)
+        _LOGGER.debug(f'start query health check resources : {self.project_id}')
+        request = self.client.healthChecks().aggregatedList(**query)
         while request is not None:
             try:
                 response = request.execute()
-                for image in response.get('items', []):
-                    machine_image_list.append(image)
-                request = self.client.machineImages().list_next(previous_request=request, previous_response=response)
+                _LOGGER.debug(f'healthChecks().aggregatedList : {response}')
+                for key, _health_check_list in response['items'].items():
+                    if 'healthChecks' in _health_check_list:
+                        health_checks_list.extend(_health_check_list.get('healthChecks'))
+                request = self.client.healthChecks().aggregatedList_next(previous_request=request, previous_response=response)
+
             except Exception as e:
                 request = None
-                print(f'Error at machineImages().aggregatedList: {e}')
-
-        return machine_image_list
+                _LOGGER.error(f'Error at healthChecks().aggregatedList: {e}')
+        _LOGGER.debug(f'list_health_checks results : {health_checks_list}')
+        return health_checks_list
 

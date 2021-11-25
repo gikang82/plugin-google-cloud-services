@@ -1,19 +1,21 @@
+import time
+import logging
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.machine_image.data import *
 from spaceone.inventory.model.machine_image.cloud_service import *
 from spaceone.inventory.connector.machine_image import MachineImageConnector
 from spaceone.inventory.model.machine_image.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
-import time
 
+_LOGGER = logging.getLogger(__name__)
 
 class MachineImageManager(GoogleCloudManager):
     connector_name = 'MachineImageConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Machine Image START **")
+        _LOGGER.debug(f'** Machine Image START **')
         start_time = time.time()
         """
         Args:
@@ -90,7 +92,7 @@ class MachineImageManager(GoogleCloudManager):
             self.set_region_code(region.get('region_code'))
             collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
 
-        print(f'** Machine Image Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Machine Image Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_disks(self, instance, boot_image):

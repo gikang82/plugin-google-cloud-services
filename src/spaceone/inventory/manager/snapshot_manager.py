@@ -1,5 +1,6 @@
-import re
 import time
+import logging
+
 from datetime import datetime
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
@@ -8,13 +9,14 @@ from spaceone.inventory.model.snapshot.cloud_service import *
 from spaceone.inventory.connector.snapshot import SnapshotConnector
 from spaceone.inventory.model.snapshot.cloud_service_type import CLOUD_SERVICE_TYPES
 
+_LOGGER = logging.getLogger(__name__)
 
 class SnapshotManager(GoogleCloudManager):
     connector_name = 'SnapshotConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Snapshot START **")
+        _LOGGER.debug(f'** Snapshot START **')
         start_time = time.time()
         """
         Args:
@@ -70,7 +72,7 @@ class SnapshotManager(GoogleCloudManager):
             self.set_region_code(region.get('region_code'))
             collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
 
-        print(f'** SnapShot Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** SnapShot Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_matching_region(self, svc_location):

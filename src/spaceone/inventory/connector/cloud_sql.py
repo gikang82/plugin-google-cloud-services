@@ -2,7 +2,6 @@ import logging
 
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.error import *
-from pprint import pprint
 
 __all__ = ['CloudSQLConnector']
 _LOGGER = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ class CloudSQLConnector(GoogleCloudConnector):
                     instance_list.append(instance)
                 request = self.client.instances().list_next(previous_request=request, previous_response=response)
         except Exception as e:
-            print(f'Error occurred at CloudSQLConnector: instances().list(**query) \n {e}')
+            _LOGGER.error(f'Error occurred at CloudSQLConnector: instances().list(**query) \n {e}')
             pass
         return instance_list
 
@@ -45,7 +44,7 @@ class CloudSQLConnector(GoogleCloudConnector):
                 request = self.client.instances().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at CloudSQLConnector: databases().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at CloudSQLConnector: databases().list(**query) : skipped \n {e}')
 
         return database_list
 
@@ -56,7 +55,7 @@ class CloudSQLConnector(GoogleCloudConnector):
             response = self.client.users().list(**query).execute()
             user_list = response.get('items', [])
         except Exception as e:
-            print(f'Error occurred at users().list(**query) : skipped \n {e}')
+            _LOGGER.error(f'Error occurred at users().list(**query) : skipped \n {e}')
 
         return user_list
 
@@ -73,6 +72,6 @@ class CloudSQLConnector(GoogleCloudConnector):
                 request = self.client.backup_runs().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at CloudSQLConnector: backup_runs().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at CloudSQLConnector: backup_runs().list(**query) : skipped \n {e}')
 
         return backup_runs_list

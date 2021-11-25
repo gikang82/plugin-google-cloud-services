@@ -1,19 +1,21 @@
 import time
+import logging
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.load_balancing.data import *
 from spaceone.inventory.model.load_balancing.cloud_service import *
 from spaceone.inventory.connector.load_balancing import LoadBalancingConnector
 from spaceone.inventory.model.load_balancing.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
 
+_LOGGER = logging.getLogger(__name__)
 
 class LoadBalancingManager(GoogleCloudManager):
     connector_name = 'LoadBalancingConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Load Balancing START **")
+        _LOGGER.debug(f'** Load Balancing START **')
         start_time = time.time()
         """
         Args:
@@ -195,7 +197,7 @@ class LoadBalancingManager(GoogleCloudManager):
             self.set_region_code(region)
             collected_cloud_services.append(LoadBalancingResponse({'resource': lb_resource}))
 
-        print(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_backend_from_target_pools(self, loadbalcnacer, instance_group):

@@ -18,13 +18,14 @@ class InstanceGroupConnector(GoogleCloudConnector):
                       'instanceGroup': instance_group,
                       loc_type: loc
                       })
+        _LOGGER.debug(f'query => {query}')
         try:
             request = self.client.instanceGroups().listInstances(**query) if loc_type == 'zone' \
                 else self.client.regionInstanceGroups().listInstances(**query)
             response = request.execute()
             return response.get('items', [])
         except Exception as e:
-            print(e)
+            _LOGGER.error(f'Error at instanceGroups().listInstances() or regionInstanceGroups().listInstances() => {e}')
             return []
 
 
@@ -41,7 +42,7 @@ class InstanceGroupConnector(GoogleCloudConnector):
                                                                     previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at InstanceGroupConnector: instanceTemplates().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at InstanceGroupConnector: instanceTemplates().list(**query) : skipped \n {e}')
 
         return instance_template_list
 
@@ -59,7 +60,7 @@ class InstanceGroupConnector(GoogleCloudConnector):
                                                                            previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at InstanceGroupConnector: instanceGroups().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at InstanceGroupConnector: instanceGroups().aggregatedList(**query) : skipped \n {e}')
         return instance_group_list
 
     def list_instance_group_managers(self, **query):
@@ -76,7 +77,7 @@ class InstanceGroupConnector(GoogleCloudConnector):
                                                                                   previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at InstanceGroupConnector: instanceGroups().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at InstanceGroupConnector: instanceGroups().aggregatedList(**query) : skipped \n {e}')
         return instance_group_manager_list
 
     def list_autoscalers(self, **query):
@@ -93,6 +94,6 @@ class InstanceGroupConnector(GoogleCloudConnector):
                                                                         previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at InstanceGroupConnector: autoscalers().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at InstanceGroupConnector: autoscalers().aggregatedList(**query) : skipped \n {e}')
 
         return autoscaler_list
