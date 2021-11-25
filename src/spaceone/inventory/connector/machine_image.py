@@ -26,7 +26,7 @@ class MachineImageConnector(GoogleCloudConnector):
                 request = self.client.machineImages().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error at machineImages().aggregatedList: {e}')
+                _LOGGER.error(f'Error at machineImages().aggregatedList: {e}')
 
         return machine_image_list
 
@@ -37,7 +37,7 @@ class MachineImageConnector(GoogleCloudConnector):
         try:
             result = self.client.machineTypes().list(**query).execute()
         except Exception as e:
-            print(f'Error at machineTypes().list: {e}')
+            _LOGGER.error(f'Error at machineTypes().list: {e}')
 
         return result.get('items', [])
 
@@ -48,7 +48,7 @@ class MachineImageConnector(GoogleCloudConnector):
         try:
             result = self.client.disks().list(**query).execute()
         except Exception as e:
-            print(f'Error at disks().list: {e}')
+            _LOGGER.error(f'Error at disks().list: {e}')
 
         return result.get('items', [])
 
@@ -75,6 +75,6 @@ class MachineImageConnector(GoogleCloudConnector):
                 k = public_image.get('key')
                 public_images[k] = image
             except Exception as e:
-                print(f'Error at images().list with key {k}: {e}')
+                _LOGGER.error(f'Error at images().list with key {k}: {e}')
 
         return public_images

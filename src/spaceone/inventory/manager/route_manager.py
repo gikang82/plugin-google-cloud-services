@@ -1,19 +1,21 @@
 import time
+import logging
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.route.data import *
 from spaceone.inventory.model.route.cloud_service import *
 from spaceone.inventory.connector.route import RouteConnector
 from spaceone.inventory.model.route.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
 
+_LOGGER = logging.getLogger(__name__)
 
 class RouteManager(GoogleCloudManager):
     connector_name = 'RouteConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Route START **")
+        _LOGGER.debug('** Route START **')
         start_time = time.time()
         """
         Args:
@@ -64,7 +66,7 @@ class RouteManager(GoogleCloudManager):
             self.set_region_code(region)
             collected_cloud_services.append(RouteResponse({'resource': route_resource}))
 
-        print(f'** Route Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Route Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
 

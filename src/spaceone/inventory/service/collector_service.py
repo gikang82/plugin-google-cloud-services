@@ -1,6 +1,7 @@
 import time
 import logging
 import concurrent.futures
+
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.core.service import *
@@ -32,7 +33,8 @@ class CollectorService(BaseService):
             'ExternalIPAddressManager',
             'FirewallManager',
             'RouteManager',
-            'LoadBalancingManager'
+            'LoadBalancingManager',
+            'HealthCheckManager'
         ]
 
     @check_required(['options'])
@@ -78,24 +80,25 @@ class CollectorService(BaseService):
 
         start_time = time.time()
 
-        print("[ EXECUTOR START: Google Cloud Service ]")
+        _LOGGER.debug(f'EXECUTOR START: Google Cloud Service')
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
             future_executors = []
             for execute_manager in self.execute_managers:
-                print(f'\n@@@ {execute_manager} @@@')
 
                 _manager = self.locator.get_manager(execute_manager)
                 future_executors.append(executor.submit(_manager.collect_resources, params))
 
             for future in concurrent.futures.as_completed(future_executors):
                 try:
+                    _LOGGER.debug(f'as_completed : {future.result()}')
                     for result in future.result():
+                        _LOGGER.debug(f'result to yield: {result.to_primitive()}')
                         yield result.to_primitive()
                 except Exception as e:
-                    _LOGGER.error(f'failed to result {e}')
+                    _LOGGER.error(f'failed to yield result => {e}')
 
-        print(f'TOTAL TIME : {time.time() - start_time} Seconds')
+        _LOGGER.debug(f'TOTAL TIME : {time.time() - start_time} Seconds')
 
     def _set_regions_zones(self, secret_data, params):
         result_regions = []
@@ -113,4 +116,4 @@ class CollectorService(BaseService):
 
             params.update({'region': list(set(result_regions)), 'zone': result_zones})
         except Exception as e:
-            print(e)
+            _LOGGER.error(f'failed to _set_regions_zones {e}')

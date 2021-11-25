@@ -27,8 +27,7 @@ class StorageConnector(GoogleCloudConnector):
                 request = self.client.buckets().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at buckets().list(**query) : skipped \n {e}')
-
+                _LOGGER.error(f'Error occurred at buckets().list(**query) : skipped \n {e}')
 
         return bucket_list
 
@@ -39,7 +38,7 @@ class StorageConnector(GoogleCloudConnector):
         except Exception as e:
             # Not Authorized
             result = {'error_flag': 'na'}
-            print(f'Error occurred at buckets().getIamPolicy(**query) : skipped \n {e}')
+            _LOGGER.error(f'Error occurred at buckets().getIamPolicy(**query) : skipped \n {e}')
 
         return result
 
@@ -63,6 +62,6 @@ class StorageConnector(GoogleCloudConnector):
 
             except Exception as e:
                 request = None
-                print(f'Error occurred at objects().list(**query) : skipped \n : {e}')
+                _LOGGER.error(f'Error occurred at objects().list(**query) : skipped \n : {e}')
 
         return objects_list

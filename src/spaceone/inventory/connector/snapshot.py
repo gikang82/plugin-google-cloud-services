@@ -26,7 +26,8 @@ class SnapshotConnector(GoogleCloudConnector):
                 request = self.client.snapshots().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at instanceTemplates().list: {e}')
+                _LOGGER.error(f'Error occurred at instanceTemplates().list: {e}')
+
         return snapshot_list
 
     def list_resource_policies(self, **query):
@@ -55,7 +56,7 @@ class SnapshotConnector(GoogleCloudConnector):
                                                                   previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at ExternalIPAddressConnector: disks().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at ExternalIPAddressConnector: disks().aggregatedList(**query) : skipped \n {e}')
 
         for disk in disks:
             if 'resourcePolicies' in disk:

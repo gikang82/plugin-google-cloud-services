@@ -1,3 +1,6 @@
+import time
+import logging
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.connector.instance_group import InstanceGroupConnector
@@ -5,15 +8,14 @@ from spaceone.inventory.model.instance_group.data import *
 from spaceone.inventory.model.instance_group.cloud_service import *
 from spaceone.inventory.model.instance_group.cloud_service_type import CLOUD_SERVICE_TYPES
 
-import time
-
+_LOGGER = logging.getLogger(__name__)
 
 class InstanceGroupManager(GoogleCloudManager):
     connector_name = 'InstanceGroupConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Instance Group START **")
+        _LOGGER.debug(f'** Instance Group START **')
         start_time = time.time()
         """
         Args:
@@ -37,6 +39,7 @@ class InstanceGroupManager(GoogleCloudManager):
 
         collected_cloud_services = []
 
+        _LOGGER.debug(f'instance_groups => {instance_groups}')
         for instance_group in instance_groups:
 
             instance_group.update({
@@ -83,8 +86,11 @@ class InstanceGroupManager(GoogleCloudManager):
                 instance_group.update({'instance_group_type': 'UNMANAGED'})
                 scheduler.update({'instance_group_type': 'UNMANAGED'})
 
+            _LOGGER.debug(f'instance_group => {instance_group}')
             loc_type, location = self.get_instance_group_loc(instance_group)
+            _LOGGER.debug(f'loc_type, location => {loc_type}, {location}')
             region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
+            _LOGGER.debug(f'region => {region}')
             instances = instance_group_conn.list_instances(instance_group.get('name'), location, loc_type)
 
             display_loc = {'region': location, 'zone': ''} if loc_type == 'region' \
@@ -110,7 +116,7 @@ class InstanceGroupManager(GoogleCloudManager):
             self.set_region_code(region)
             collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
 
-        print(f'** Instance Group Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Instance Group Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_instance_group_loc(self, instance_group):

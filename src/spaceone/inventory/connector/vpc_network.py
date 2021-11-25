@@ -3,7 +3,6 @@ import logging
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.model.vpc_network.data import *
 from spaceone.inventory.error import *
-from pprint import pprint
 
 __all__ = ['VPCNetworkConnector']
 _LOGGER = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ class VPCNetworkConnector(GoogleCloudConnector):
                 request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at instances().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at instances().aggregatedList(**query) : skipped \n {e}')
 
         return instance_list
 
@@ -53,7 +52,7 @@ class VPCNetworkConnector(GoogleCloudConnector):
                                                                       previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at forwardingRules().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at forwardingRules().aggregatedList(**query) : skipped \n {e}')
 
         return forwarding_rule_list
 
@@ -69,7 +68,7 @@ class VPCNetworkConnector(GoogleCloudConnector):
                 request = self.client.networks().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at networks().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at networks().list(**query) : skipped \n {e}')
 
         return network_list
 
@@ -87,7 +86,7 @@ class VPCNetworkConnector(GoogleCloudConnector):
                                                                       previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at addresses().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at addresses().list(**query) : skipped \n {e}')
 
         return address_list
 
@@ -105,7 +104,7 @@ class VPCNetworkConnector(GoogleCloudConnector):
                                                                       previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at subnetworks().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at subnetworks().list(**query) : skipped \n {e}')
 
         return subnetworks_list
 
@@ -122,7 +121,7 @@ class VPCNetworkConnector(GoogleCloudConnector):
                 request = self.client.routes().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at routes().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at routes().list(**query) : skipped \n {e}')
 
         return route_list
 
@@ -138,6 +137,6 @@ class VPCNetworkConnector(GoogleCloudConnector):
                 request = self.client.firewalls().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at firewalls().list(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at firewalls().list(**query) : skipped \n {e}')
 
         return firewall_list

@@ -27,7 +27,7 @@ class ExternalIPAddressConnector(GoogleCloudConnector):
                 request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at ExternalIPAddressConnector: instances().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at ExternalIPAddressConnector: instances().aggregatedList(**query) : skipped \n {e}')
 
         return instance_list
 
@@ -46,7 +46,7 @@ class ExternalIPAddressConnector(GoogleCloudConnector):
                 request = self.client.forwardingRules().aggregatedList_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at ExternalIPAddressConnector: forwardingRules().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at ExternalIPAddressConnector: forwardingRules().aggregatedList(**query) : skipped \n {e}')
 
         return forwarding_rule_list
 
@@ -64,7 +64,7 @@ class ExternalIPAddressConnector(GoogleCloudConnector):
                                                                       previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at ExternalIPAddressConnector: addresses().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at ExternalIPAddressConnector: addresses().aggregatedList(**query) : skipped \n {e}')
 
         return address_list
 

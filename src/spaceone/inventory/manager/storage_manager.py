@@ -1,4 +1,6 @@
 import time
+import logging
+
 from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
@@ -6,15 +8,15 @@ from spaceone.inventory.model.storage.data import *
 from spaceone.inventory.model.storage.cloud_service import *
 from spaceone.inventory.connector.storage import StorageConnector
 from spaceone.inventory.model.storage.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
 
+_LOGGER = logging.getLogger(__name__)
 
 class StorageManager(GoogleCloudManager):
     connector_name = 'StorageConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Storage START **")
+        _LOGGER.debug(f'** Storage START **')
         start_time = time.time()
         """
         Args:
@@ -78,7 +80,7 @@ class StorageManager(GoogleCloudManager):
             self.set_region_code(region.get('region_code'))
             collected_cloud_services.append(StorageResponse({'resource': bucket_resource}))
 
-        print(f'** Storage Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Storage Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_matching_region(self, bucket):

@@ -1,18 +1,21 @@
+import time
+import logging
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.instance_template.data import *
 from spaceone.inventory.model.instance_template.cloud_service import *
 from spaceone.inventory.connector.instance_template import InstanceTemplateConnector
 from spaceone.inventory.model.instance_template.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
-import time
+
+_LOGGER = logging.getLogger(__name__)
 
 class InstanceTemplateManager(GoogleCloudManager):
     connector_name = 'InstanceTemplateConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Instance Template START **")
+        _LOGGER.debug(f'** Instance Template START **')
         start_time = time.time()
         """
         Args:
@@ -77,7 +80,7 @@ class InstanceTemplateManager(GoogleCloudManager):
             self.set_region_code(default_region)
             collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
 
-        print(f'** Instance Template Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Instance Template Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def match_instance_group(self, instance_template, instance_group_managers: list):

@@ -28,7 +28,7 @@ class InstanceTemplateConnector(GoogleCloudConnector):
                                                                          previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at machineTypes().aggregatedList(**query): {e}')
+                _LOGGER.error(f'Error occurred at machineTypes().aggregatedList(**query): {e}')
 
         return machine_type_list
 
@@ -47,7 +47,7 @@ class InstanceTemplateConnector(GoogleCloudConnector):
                                                                                   previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at instanceGroupManagers().aggregatedList: {e}')
+                _LOGGER.error(f'Error occurred at instanceGroupManagers().aggregatedList: {e}')
 
         return disk_list
 
@@ -64,7 +64,7 @@ class InstanceTemplateConnector(GoogleCloudConnector):
                                                                     previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at instanceTemplates().list: {e}')
+                _LOGGER.error(f'Error occurred at instanceTemplates().list: {e}')
 
         return instance_template_list
 
@@ -82,6 +82,6 @@ class InstanceTemplateConnector(GoogleCloudConnector):
                                                                                   previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at instanceGroupManagers().aggregatedList: {e}')
+                _LOGGER.error(f'Error occurred at instanceGroupManagers().aggregatedList: {e}')
 
         return instance_group_manager_list

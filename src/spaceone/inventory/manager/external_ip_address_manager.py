@@ -1,4 +1,6 @@
 import time
+import logging
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.external_ip_address.data import *
@@ -6,15 +8,15 @@ from ipaddress import ip_address, IPv4Address
 from spaceone.inventory.model.external_ip_address.cloud_service import *
 from spaceone.inventory.connector.external_ip_address import ExternalIPAddressConnector
 from spaceone.inventory.model.external_ip_address.cloud_service_type import CLOUD_SERVICE_TYPES
-from pprint import pprint
 
+_LOGGER = logging.getLogger(__name__)
 
 class ExternalIPAddressManager(GoogleCloudManager):
     connector_name = 'ExternalIPAddressConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** External IP Address START **")
+        _LOGGER.debug(f'** External IP Address START **')
         start_time = time.time()
         """
         Args:
@@ -60,7 +62,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
             self.set_region_code(region)
             collected_cloud_services.append(ExternalIpAddressResponse({'resource': external_ip_juso_resource}))
 
-        print(f'** External IP Address Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** External IP Address Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_external_ip_addresses(self, regional_address, instances_over_region, forwarding_rules):

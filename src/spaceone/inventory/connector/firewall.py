@@ -26,7 +26,7 @@ class FirewallConnector(GoogleCloudConnector):
                 request = self.client.firewalls().list_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at FirewallConnector: firewalls().list(**query) : skipped \n {e}')
+                _LOGGER.debug(f'Error occurred at FirewallConnector: firewalls().list(**query) : skipped \n {e}')
 
         return firewalls_list
 
@@ -46,5 +46,5 @@ class FirewallConnector(GoogleCloudConnector):
                 request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
             except Exception as e:
                 request = None
-                print(f'Error occurred at FirewallConnector: instances().aggregatedList(**query) : skipped \n {e}')
+                _LOGGER.error(f'Error occurred at FirewallConnector: instances().aggregatedList(**query) : skipped \n {e}')
         return instance_list

@@ -1,17 +1,21 @@
+import time
+import logging
+
+from spaceone.inventory.connector import HealthCheckConnector
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.connector.cloud_sql import CloudSQLConnector
 from spaceone.inventory.model.health_check.data import *
 from spaceone.inventory.model.health_check.cloud_service import *
 from spaceone.inventory.model.health_check.cloud_service_type import CLOUD_SERVICE_TYPES
-import time
+
+_LOGGER = logging.getLogger(__name__)
 
 class HealthCheckManager(GoogleCloudManager):
     connector_name = 'HealthCheckConnector'
     cloud_service_types = CLOUD_SERVICE_TYPES
 
     def collect_cloud_service(self, params):
-        print("** Cloud SQL START **")
+        _LOGGER.debug(f'** HealthCheck Start **')
         start_time = time.time()
         """
         Args:
@@ -24,39 +28,27 @@ class HealthCheckManager(GoogleCloudManager):
         Response:
             CloudServiceResponse
         """
-
-        cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
-
+        health_check_conn: HealthCheckConnector = self.locator.get_connector(self.connector_name, **params)
         collected_cloud_services = []
-        for instance in cloud_sql_conn.list_instances():
-            instance_name = instance['name']
-            project = instance.get('project', '')
-            # Get Databases
-            databases = cloud_sql_conn.list_databases(instance_name)
-
-            # Get Users
-            users = cloud_sql_conn.list_users(instance_name)
-            stackdriver = self.get_stackdriver(project, instance_name)
-            instance.update({
-                'stackdriver': stackdriver,
-                'display_state': self._get_display_state(instance),
-                'databases': [Database(database, strict=False) for database in databases],
-                'users': [User(user, strict=False) for user in users],
-            })
-
+        for health_check in health_check_conn.list_health_checks():
             # No labels!!
-            instance_data = Instance(instance, strict=False)
-            instance_resource = InstanceResource({
-                'data': instance_data,
-                'region_code': instance['region'],
-                'name': instance_name,
-                'reference': ReferenceModel(instance_data.reference())
-            })
+            _LOGGER.debug(f'health_check => {health_check}')
+            health_check_data = HealthCheck(health_check, strict=False)
+            _LOGGER.debug(f'health_check_data => {health_check_data}')
+            try:
+                health_check_resource = HealthCheckResource({
+                    'data': health_check_data,
+                    'region_code': 'hardcoded',
+                    'name': health_check_data['name'],
+                    'reference': ReferenceModel(health_check_data.reference())
+                })
+            except Exception as e:
+                _LOGGER.error(f'test => {e}')
+            _LOGGER.debug(f'health_check_resource => {health_check_resource}')
+            collected_cloud_services.append(HealthCheckResponse({'resource': health_check_resource}))
 
-            self.set_region_code(instance['region'])
-            collected_cloud_services.append(InstanceResponse({'resource': instance_resource}))
-
-        print(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** HealthCheck Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'collected_cloud_services : {collected_cloud_services}')
         return collected_cloud_services
 
     @staticmethod
@@ -70,15 +62,4 @@ class HealthCheckManager(GoogleCloudManager):
             }]
         }
 
-    @staticmethod
-    def _get_display_state(instance):
-        activation_policy = instance.get('settings', {}).get('activationPolicy', 'UNKNOWN')
 
-        if activation_policy in ['ALWAYS']:
-            return 'RUNNING'
-        elif activation_policy in ['NEVER']:
-            return 'STOPPED'
-        elif activation_policy in ['ON_DEMAND']:
-            return 'ON-DEMAND'
-        else:
-            return 'UNKNOWN'
