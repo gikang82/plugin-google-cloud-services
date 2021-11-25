@@ -54,8 +54,8 @@ class RouteManager(GoogleCloudManager):
             })
 
             # No Labels
-            _name = route_data.get('name', '')
             route_data = Route(route, strict=False)
+            _name = route_data.get('name', '')
             route_resource = RouteResource({
                 'name': _name,
                 'region_code': region,
