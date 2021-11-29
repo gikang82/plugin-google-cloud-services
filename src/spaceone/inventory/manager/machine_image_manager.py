@@ -1,14 +1,17 @@
 import time
 import logging
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.machine_image.data import *
 from spaceone.inventory.model.machine_image.cloud_service import *
 from spaceone.inventory.connector.machine_image import MachineImageConnector
 from spaceone.inventory.model.machine_image.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class MachineImageManager(GoogleCloudManager):
     connector_name = 'MachineImageConnector'
@@ -26,71 +29,96 @@ class MachineImageManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
-        secret_data = params['secret_data']
-        machine_image_conn: MachineImageConnector = self.locator.get_connector(self.connector_name, **params)
-
-        # Get Instance Templates
-        machine_images = machine_image_conn.list_machine_images()
-        machine_types = []
-        disk_types = []
-        public_images = {}
 
         collected_cloud_services = []
 
-        if machine_images:
-            public_images = machine_image_conn.list_public_images()
-            for zone in params.get('zones', []):
-                if not machine_types:
-                    list_machine_types = machine_image_conn.list_machine_types(zone)
-                    machine_types.extend(list_machine_types)
+        try:
+            secret_data = params['secret_data']
+            machine_image_conn: MachineImageConnector = self.locator.get_connector(self.connector_name, **params)
 
-                if not disk_types:
-                    list_disk_types = machine_image_conn.list_disks(zone)
-                    disk_types.extend(list_disk_types)
+            # Get Instance Templates
+            machine_images = machine_image_conn.list_machine_images()
+            machine_types = []
+            disk_types = []
+            public_images = {}
 
-        for machine_image in machine_images:
-            properties = machine_image.get('sourceInstanceProperties', {})
-            tags = properties.get('tags', {})
+            if machine_images:
+                public_images = machine_image_conn.list_public_images()
+                for zone in params.get('zones', []):
+                    if not machine_types:
+                        list_machine_types = machine_image_conn.list_machine_types(zone)
+                        machine_types.extend(list_machine_types)
 
-            boot_image = self.get_boot_image_data(properties, public_images)
-            disks = self.get_disks(properties, boot_image)
+                    if not disk_types:
+                        list_disk_types = machine_image_conn.list_disks(zone)
+                        disk_types.extend(list_disk_types)
 
-            region = self.get_matching_region(machine_image.get('storageLocations'))
+            for machine_image in machine_images:
+                properties = machine_image.get('sourceInstanceProperties', {})
+                tags = properties.get('tags', {})
 
-            machine_image.update({
-                'project': secret_data['project_id'],
-                'deletion_protection': properties.get('deletionProtection', False),
-                'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
-                'network_tags': tags.get('items', []),
-                'disk_display': self._get_disk_type_display(disks, 'disk_type'),
-                'image': self._get_disk_type_display(disks, 'source_image_display'),
-                'disks': disks,
-                'scheduling': self._get_scheduling(properties),
-                'network_interfaces': self.get_network_interface(properties, properties.get('canIpForward', False)),
-                'total_storage_bytes': float(machine_image.get('totalStorageBytes', 0.0)),
-                'total_storage_display': self._convert_size(float(machine_image.get('totalStorageBytes', 0.0))),
-                'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
-                'location': region.get('location')
-            })
+                boot_image = self.get_boot_image_data(properties, public_images)
+                disks = self.get_disks(properties, boot_image)
 
-            svc_account = properties.get('serviceAccounts', [])
-            if len(svc_account) > 0:
-                machine_image.update({'service_account': self._get_service_account(svc_account)})
+                region = self.get_matching_region(machine_image.get('storageLocations'))
 
-            _name = machine_image.get('name', '')
-            # No Labels
-            machine_image_data = MachineImage(machine_image, strict=False)
+                machine_image.update({
+                    'project': secret_data['project_id'],
+                    'deletion_protection': properties.get('deletionProtection', False),
+                    'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
+                    'network_tags': tags.get('items', []),
+                    'disk_display': self._get_disk_type_display(disks, 'disk_type'),
+                    'image': self._get_disk_type_display(disks, 'source_image_display'),
+                    'disks': disks,
+                    'scheduling': self._get_scheduling(properties),
+                    'network_interfaces': self.get_network_interface(properties, properties.get('canIpForward', False)),
+                    'total_storage_bytes': float(machine_image.get('totalStorageBytes', 0.0)),
+                    'total_storage_display': self._convert_size(float(machine_image.get('totalStorageBytes', 0.0))),
+                    'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
+                    'location': region.get('location')
+                })
 
-            machine_image_resource = MachineImageResource({
-                'name': _name,
-                'data': machine_image_data,
-                'reference': ReferenceModel(machine_image_data.reference()),
-                'region_code': region.get('region_code')
-            })
-            self.set_region_code(region.get('region_code'))
-            collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
+                svc_account = properties.get('serviceAccounts', [])
+                if len(svc_account) > 0:
+                    machine_image.update({'service_account': self._get_service_account(svc_account)})
+
+                _name = machine_image.get('name', '')
+                # No Labels
+                machine_image_data = MachineImage(machine_image, strict=False)
+
+                machine_image_resource = MachineImageResource({
+                    'name': _name,
+                    'data': machine_image_data,
+                    'reference': ReferenceModel(machine_image_data.reference()),
+                    'region_code': region.get('region_code')
+                })
+                self.set_region_code(region.get('region_code'))
+                collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'MachineImage'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'MachineImage'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Machine Image Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

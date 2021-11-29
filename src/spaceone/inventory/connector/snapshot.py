@@ -19,14 +19,10 @@ class SnapshotConnector(GoogleCloudConnector):
         query = self.generate_query(**query)
         request = self.client.snapshots().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for snapshot in response.get('items', []):
-                    snapshot_list.append(snapshot)
-                request = self.client.snapshots().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at instanceTemplates().list: {e}')
+            response = request.execute()
+            for snapshot in response.get('items', []):
+                snapshot_list.append(snapshot)
+            request = self.client.snapshots().list_next(previous_request=request, previous_response=response)
 
         return snapshot_list
 
@@ -47,16 +43,12 @@ class SnapshotConnector(GoogleCloudConnector):
         query = self.generate_query(**query)
         request = self.client.disks().aggregatedList(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for name, disks_scoped_list in response['items'].items():
-                    if 'disks' in disks_scoped_list:
-                        disks.extend(disks_scoped_list.get('disks'))
-                request = self.client.disks().aggregatedList_next(previous_request=request,
-                                                                  previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at ExternalIPAddressConnector: disks().aggregatedList(**query) : skipped \n {e}')
+            response = request.execute()
+            for name, disks_scoped_list in response['items'].items():
+                if 'disks' in disks_scoped_list:
+                    disks.extend(disks_scoped_list.get('disks'))
+            request = self.client.disks().aggregatedList_next(previous_request=request,
+                                                              previous_response=response)
 
         for disk in disks:
             if 'resourcePolicies' in disk:

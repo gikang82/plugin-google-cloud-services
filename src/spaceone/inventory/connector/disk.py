@@ -20,17 +20,12 @@ class DiskConnector(GoogleCloudConnector):
         request = self.client.disks().aggregatedList(**query)
 
         while request is not None:
-            try:
-                response = request.execute()
-                for key, _disk in response['items'].items():
-                    if 'disks' in _disk:
-                        disk_list.extend(_disk.get('disks'))
-                request = self.client.disks().aggregatedList_next(previous_request=request,
+            response = request.execute()
+            for key, _disk in response['items'].items():
+                if 'disks' in _disk:
+                    disk_list.extend(_disk.get('disks'))
+            request = self.client.disks().aggregatedList_next(previous_request=request,
                                                                   previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at DiskConnector: disks().aggregatedList(**query) : skipped \n {e}')
-
         return disk_list
 
     def list_resource_policies(self, **query):
@@ -38,18 +33,14 @@ class DiskConnector(GoogleCloudConnector):
         query.update({'project': self.project_id})
         request = self.client.resourcePolicies().aggregatedList(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for key, _disk in response['items'].items():
-                    if 'resourcePolicies' in _disk:
-                        _key = key[key.rfind('/')+1:]
-                        resource_policy_vo.update({
-                            _key: _disk.get('resourcePolicies')
-                        })
-                request = self.client.resourcePolicies().aggregatedList_next(previous_request=request,
-                                                                             previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at DiskConnector: resourcePolicies().aggregatedList(**query) : skipped \n {e}')
+            response = request.execute()
+            for key, _disk in response['items'].items():
+                if 'resourcePolicies' in _disk:
+                    _key = key[key.rfind('/')+1:]
+                    resource_policy_vo.update({
+                        _key: _disk.get('resourcePolicies')
+                    })
+            request = self.client.resourcePolicies().aggregatedList_next(previous_request=request,
+                                                                         previous_response=response)
 
         return resource_policy_vo

@@ -1,15 +1,17 @@
 import time
 import logging
-
+import json
 from datetime import datetime
+
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.snapshot.data import *
 from spaceone.inventory.model.snapshot.cloud_service import *
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.snapshot import SnapshotConnector
 from spaceone.inventory.model.snapshot.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class SnapshotManager(GoogleCloudManager):
     connector_name = 'SnapshotConnector'
@@ -27,50 +29,76 @@ class SnapshotManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
+
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        snapshot_conn: SnapshotConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Get lists that relate with snapshots through Google Cloud API
-        snapshots = snapshot_conn.list_snapshot()
-        all_region_resource_policies = snapshot_conn.list_resource_policies()
-        disk_list_info = snapshot_conn.list_all_disks_for_snapshots()
+        try:
+            secret_data = params['secret_data']
+            snapshot_conn: SnapshotConnector = self.locator.get_connector(self.connector_name, **params)
 
-        for snapshot in snapshots:
-            region = self.get_matching_region(snapshot.get('storageLocations'))
-            snapshot_schedule = []
-            snapshot_schedule_display = []
-            disk_name_key = self._get_disk_name_key(snapshot.get('name'))
+            # Get lists that relate with snapshots through Google Cloud API
+            snapshots = snapshot_conn.list_snapshot()
+            all_region_resource_policies = snapshot_conn.list_resource_policies()
+            disk_list_info = snapshot_conn.list_all_disks_for_snapshots()
 
-            for resource_policy in disk_list_info.get(disk_name_key, []):
-                snapshot_schedule_display.append(self._get_last_target(resource_policy))
-                matched_po = self.get_matched_snapshot_schedule(all_region_resource_policies.get(resource_policy))
-                snapshot_schedule.append(SnapShotSchedule(matched_po, strict=False))
-            labels = self.convert_labels_format(snapshot.get('labels', {}))
-            snapshot.update({
-                'project': secret_data['project_id'],
-                'disk': self.get_disk_info(snapshot),
-                'snapshot_schedule': snapshot_schedule,
-                'snapshot_schedule_display': snapshot_schedule_display,
-                'creation_type': 'Scheduled' if snapshot.get('autoCreated') else 'Manual',
-                'encryption': self._get_encryption_info(snapshot),
-                'labels': labels
-            })
-            _name = snapshot_data.get('name', '')
-            # labels -> tags
-            snapshot_data = Snapshot(snapshot, strict=False)
-            snapshots_resource = SnapshotResource({
-                'name': _name,
-                'region_code': region.get('region_code'),
-                'data': snapshot_data,
-                'tags': labels,
-                'reference': ReferenceModel(snapshot_data.reference())
-            })
+            for snapshot in snapshots:
+                region = self.get_matching_region(snapshot.get('storageLocations'))
+                snapshot_schedule = []
+                snapshot_schedule_display = []
+                disk_name_key = self._get_disk_name_key(snapshot.get('name'))
 
-            self.set_region_code(region.get('region_code'))
-            collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
+                for resource_policy in disk_list_info.get(disk_name_key, []):
+                    snapshot_schedule_display.append(self._get_last_target(resource_policy))
+                    matched_po = self.get_matched_snapshot_schedule(all_region_resource_policies.get(resource_policy))
+                    snapshot_schedule.append(SnapShotSchedule(matched_po, strict=False))
+                labels = self.convert_labels_format(snapshot.get('labels', {}))
+                snapshot.update({
+                    'project': secret_data['project_id'],
+                    'disk': self.get_disk_info(snapshot),
+                    'snapshot_schedule': snapshot_schedule,
+                    'snapshot_schedule_display': snapshot_schedule_display,
+                    'creation_type': 'Scheduled' if snapshot.get('autoCreated') else 'Manual',
+                    'encryption': self._get_encryption_info(snapshot),
+                    'labels': labels
+                })
+                _name = snapshot_data.get('name', '')
+                # labels -> tags
+                snapshot_data = Snapshot(snapshot, strict=False)
+                snapshots_resource = SnapshotResource({
+                    'name': _name,
+                    'region_code': region.get('region_code'),
+                    'data': snapshot_data,
+                    'tags': labels,
+                    'reference': ReferenceModel(snapshot_data.reference())
+                })
+
+                self.set_region_code(region.get('region_code'))
+                collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'Snapshot'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'Snapshot'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** SnapShot Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

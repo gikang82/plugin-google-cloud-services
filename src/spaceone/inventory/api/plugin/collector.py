@@ -8,6 +8,7 @@ from spaceone.inventory.service import CollectorService
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
     pb2 = collector_pb2
     pb2_grpc = collector_pb2_grpc
@@ -37,19 +38,6 @@ class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
 
         # Collector main process
         with collector_svc:
-            try:
-                for resource in collector_svc.list_resources(params):
-                    res = {
-                        'state': (resource['state']),
-                        'message': '',
-                        'resource_type': (resource['resource_type']),
-                        'match_rules': change_struct_type(resource['match_rules']),
-                        'resource': change_struct_type(resource['resource'])
-                    }
-
-                    yield self.locator.get_info('ResourceInfo', res)
-
-            except Exception as e:
-                _LOGGER.debug(traceback.format_exc())
-                _LOGGER.error(f'[ERROR: ResourceInfo]: {e}')
+            for resource in collector_svc.collect(params):
+                yield self.locator.get_info('ResourceInfo', resource)
 

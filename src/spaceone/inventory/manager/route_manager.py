@@ -1,14 +1,16 @@
 import time
 import logging
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.route.data import *
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.route.cloud_service import *
 from spaceone.inventory.connector.route import RouteConnector
 from spaceone.inventory.model.route.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class RouteManager(GoogleCloudManager):
     connector_name = 'RouteConnector'
@@ -26,45 +28,72 @@ class RouteManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
+
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        route_conn: RouteConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Get lists that relate with snapshots through Google Cloud API
-        routes = route_conn.list_routes()
-        compute_vms = route_conn.list_instance()
-        region = 'global'
-        for route in routes:
-            display = {
-                'network_display': self._get_matched_last_target('network', route),
-                'next_hop': self.get_next_hop(route),
-                'instance_tags_on_list': self._get_tags_display(route, 'list'),
-                'instance_tags': self._get_tags_display(route, 'not list'),
+        try:
+            secret_data = params['secret_data']
+            route_conn: RouteConnector = self.locator.get_connector(self.connector_name, **params)
 
-            }
+            # Get lists that relate with snapshots through Google Cloud API
+            routes = route_conn.list_routes()
+            compute_vms = route_conn.list_instance()
+            region = 'global'
 
-            route.update({
-                'display': display,
-                'project': secret_data['project_id'],
-                'applicable_instance': self.get_matched_instace(route,
-                                                                secret_data['project_id'],
-                                                                compute_vms),
-            })
+            for route in routes:
+                display = {
+                    'network_display': self._get_matched_last_target('network', route),
+                    'next_hop': self.get_next_hop(route),
+                    'instance_tags_on_list': self._get_tags_display(route, 'list'),
+                    'instance_tags': self._get_tags_display(route, 'not list'),
 
-            # No Labels
-            _name = route_data.get('name', '')
-            route_data = Route(route, strict=False)
-            route_resource = RouteResource({
-                'name': _name,
-                'region_code': region,
-                'data': route_data,
-                'reference': ReferenceModel(route_data.reference())
-            })
+                }
 
-            self.set_region_code(region)
-            collected_cloud_services.append(RouteResponse({'resource': route_resource}))
+                route.update({
+                    'display': display,
+                    'project': secret_data['project_id'],
+                    'applicable_instance': self.get_matched_instace(route,
+                                                                    secret_data['project_id'],
+                                                                    compute_vms),
+                })
+
+                # No Labels
+                route_data = Route(route, strict=False)
+                _name = route_data.get('name', '')
+                route_resource = RouteResource({
+                    'name': _name,
+                    'region_code': region,
+                    'data': route_data,
+                    'reference': ReferenceModel(route_data.reference())
+                })
+
+                self.set_region_code(region)
+                collected_cloud_services.append(RouteResponse({'resource': route_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'Route'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'Route'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Route Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

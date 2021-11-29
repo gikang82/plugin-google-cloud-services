@@ -1,14 +1,16 @@
 import time
 import logging
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.load_balancing.data import *
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.load_balancing.cloud_service import *
 from spaceone.inventory.connector.load_balancing import LoadBalancingConnector
 from spaceone.inventory.model.load_balancing.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class LoadBalancingManager(GoogleCloudManager):
     connector_name = 'LoadBalancingConnector'
@@ -26,176 +28,201 @@ class LoadBalancingManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
 
-        secret_data = params['secret_data']
-        load_bal_conn: LoadBalancingConnector = self.locator.get_connector(self.connector_name, **params)
+        try:
 
-        project_id = secret_data.get('project_id')
-        load_balancers = []
+            secret_data = params['secret_data']
+            load_bal_conn: LoadBalancingConnector = self.locator.get_connector(self.connector_name, **params)
 
-        instance_groups = load_bal_conn.list_instance_groups()
-        target_pools = load_bal_conn.list_target_pools()
-        url_maps = load_bal_conn.list_url_maps()
-        forwarding_rules = load_bal_conn.list_forwarding_rules()
-        backend_services = load_bal_conn.list_back_end_services()
+            project_id = secret_data.get('project_id')
+            load_balancers = []
 
-        backend_buckets = load_bal_conn.list_back_end_buckets()
-        ssl_certificates = load_bal_conn.list_ssl_certificates()
-        auto_scalers = load_bal_conn.list_auto_scalers()
-        health_checks = load_bal_conn.list_health_checks()
+            instance_groups = load_bal_conn.list_instance_groups()
+            target_pools = load_bal_conn.list_target_pools()
+            url_maps = load_bal_conn.list_url_maps()
+            forwarding_rules = load_bal_conn.list_forwarding_rules()
+            backend_services = load_bal_conn.list_back_end_services()
 
-        legacy_health_checks = []
-        http_health_checks = load_bal_conn.list_http_health_checks()
-        https_health_checks = load_bal_conn.list_https_health_checks()
-        legacy_health_checks.extend(http_health_checks)
-        legacy_health_checks.extend(https_health_checks)
+            backend_buckets = load_bal_conn.list_back_end_buckets()
+            ssl_certificates = load_bal_conn.list_ssl_certificates()
+            auto_scalers = load_bal_conn.list_auto_scalers()
+            health_checks = load_bal_conn.list_health_checks()
 
-        # proxies
-        grpc_proxies = load_bal_conn.list_grpc_proxies()
-        http_proxies = load_bal_conn.list_target_http_proxies()
-        https_proxies = load_bal_conn.list_target_https_proxies()
-        ssl_proxies = load_bal_conn.list_ssl_proxies()
-        tcp_proxies = load_bal_conn.list_tcp_proxies()
+            legacy_health_checks = []
+            http_health_checks = load_bal_conn.list_http_health_checks()
+            https_health_checks = load_bal_conn.list_https_health_checks()
+            legacy_health_checks.extend(http_health_checks)
+            legacy_health_checks.extend(https_health_checks)
 
-        target_proxies, selective_proxies = self.get_all_proxy_list(grpc_proxies,
-                                                                    http_proxies,
-                                                                    https_proxies,
-                                                                    ssl_proxies,
-                                                                    tcp_proxies,
-                                                                    forwarding_rules)
+            # proxies
+            grpc_proxies = load_bal_conn.list_grpc_proxies()
+            http_proxies = load_bal_conn.list_target_http_proxies()
+            https_proxies = load_bal_conn.list_target_https_proxies()
+            ssl_proxies = load_bal_conn.list_ssl_proxies()
+            tcp_proxies = load_bal_conn.list_tcp_proxies()
 
-        lbs_from_proxy = self.get_load_balacer_from_target_proxy(backend_services,
-                                                                 selective_proxies,
-                                                                 project_id)
+            target_proxies, selective_proxies = self.get_all_proxy_list(grpc_proxies,
+                                                                        http_proxies,
+                                                                        https_proxies,
+                                                                        ssl_proxies,
+                                                                        tcp_proxies,
+                                                                        forwarding_rules)
 
-        lbs_from_url_map = self.get_load_balancer_from_url_maps(url_maps, backend_services, backend_buckets, project_id)
-        lbs_from_target_pool = self.get_load_balancer_from_target_pools(target_pools, project_id)
+            lbs_from_proxy = self.get_load_balacer_from_target_proxy(backend_services,
+                                                                     selective_proxies,
+                                                                     project_id)
 
-        load_balancers.extend(lbs_from_proxy)
-        load_balancers.extend(lbs_from_url_map)
-        load_balancers.extend(lbs_from_target_pool)
+            lbs_from_url_map = self.get_load_balancer_from_url_maps(url_maps, backend_services, backend_buckets, project_id)
+            lbs_from_target_pool = self.get_load_balancer_from_target_pools(target_pools, project_id)
 
-        for load_balancer in load_balancers:
-            lb_type = load_balancer.get('lb_type')
-            health_checks_vo = load_balancer.get('heath_check_vos', {})
-            health_self_links = health_checks_vo.get('health_check_self_link_list', [])
-            ##################################
-            # Set Target Proxies
-            ##################################
-            if lb_type != 'target_proxy':
-                matched_target_proxies, matched_certificates = self.get_matched_target_proxies(load_balancer,
-                                                                                               target_proxies,
-                                                                                               ssl_certificates)
-                load_balancer.update({'target_proxies': matched_target_proxies,
-                                      'certificates': matched_certificates})
-            ##################################
-            # Set forwarding Rules to Load Balancer
-            ##################################
-            matched_forwarding_rules = self.get_matched_forwarding_rules(load_balancer, forwarding_rules)
-            load_balancer.update({'forwarding_rules': matched_forwarding_rules})
+            load_balancers.extend(lbs_from_proxy)
+            load_balancers.extend(lbs_from_url_map)
+            load_balancers.extend(lbs_from_target_pool)
 
-            ##################################
-            # Set Health Check to Load Balancer
-            ##################################
-            if len(health_self_links) > 0:
-                filter_check_list = list(set(health_checks_vo.get('health_check_list', [])))
-                filter_check_self_link_list = list(set(health_checks_vo.get('health_check_self_link_list', [])))
-                matched_health_list = self._get_matched_health_checks(filter_check_self_link_list, health_checks)
+            for load_balancer in load_balancers:
+                lb_type = load_balancer.get('lb_type')
+                health_checks_vo = load_balancer.get('heath_check_vos', {})
+                health_self_links = health_checks_vo.get('health_check_self_link_list', [])
+                ##################################
+                # Set Target Proxies
+                ##################################
+                if lb_type != 'target_proxy':
+                    matched_target_proxies, matched_certificates = self.get_matched_target_proxies(load_balancer,
+                                                                                                   target_proxies,
+                                                                                                   ssl_certificates)
+                    load_balancer.update({'target_proxies': matched_target_proxies,
+                                          'certificates': matched_certificates})
+                ##################################
+                # Set forwarding Rules to Load Balancer
+                ##################################
+                matched_forwarding_rules = self.get_matched_forwarding_rules(load_balancer, forwarding_rules)
+                load_balancer.update({'forwarding_rules': matched_forwarding_rules})
 
-                if len(matched_health_list) == len(filter_check_list):
-                    load_balancer['heath_check_vos'].update({
-                        'health_check_list': filter_check_list,
-                        'health_check_self_link_list': filter_check_self_link_list,
-                        'health_checks': matched_health_list
+                ##################################
+                # Set Health Check to Load Balancer
+                ##################################
+                if len(health_self_links) > 0:
+                    filter_check_list = list(set(health_checks_vo.get('health_check_list', [])))
+                    filter_check_self_link_list = list(set(health_checks_vo.get('health_check_self_link_list', [])))
+                    matched_health_list = self._get_matched_health_checks(filter_check_self_link_list, health_checks)
+
+                    if len(matched_health_list) == len(filter_check_list):
+                        load_balancer['heath_check_vos'].update({
+                            'health_check_list': filter_check_list,
+                            'health_check_self_link_list': filter_check_self_link_list,
+                            'health_checks': matched_health_list
+                        })
+                    else:
+                        matched_health_legacy_list = self._get_matched_health_checks(filter_check_self_link_list,
+                                                                                     legacy_health_checks)
+                        matched_health_list.extend(matched_health_legacy_list)
+                        load_balancer['heath_check_vos'].update({
+                            'health_check_list': filter_check_list,
+                            'health_check_self_link_list': filter_check_self_link_list,
+                            'health_checks': matched_health_list
+                        })
+                ############################
+                # Set Front to Load Balancer
+                ############################
+
+                frontends = self.get_front_from_loadbalancer(load_balancer)
+                frontend_display = self._get_frontend_display(frontends)
+                if len(frontends) > 0:
+                    load_balancer.update({'frontends': frontends,
+                                          'frontend_display': frontend_display})
+
+                #############################
+                # Set Backend to Load Balancer
+                #############################
+                backend_vo = {}
+                if lb_type in ['target_pool']:
+                    backend_vo.update({
+                        'type': 'target_pool',
+                        'target_pool_backend': self.get_backend_from_target_pools(load_balancer, instance_groups)
                     })
-                else:
-                    matched_health_legacy_list = self._get_matched_health_checks(filter_check_self_link_list,
-                                                                                 legacy_health_checks)
-                    matched_health_list.extend(matched_health_legacy_list)
-                    load_balancer['heath_check_vos'].update({
-                        'health_check_list': filter_check_list,
-                        'health_check_self_link_list': filter_check_self_link_list,
-                        'health_checks': matched_health_list
+
+                elif lb_type in ['url_map', 'target_proxy']:
+                    key = 'proxy_backend' if lb_type == 'target_proxy' else 'url_map_backend'
+                    backends = self.get_backend_from_url_map_and_proxy(load_balancer, instance_groups, auto_scalers)
+                    backend_vo.update({
+                        'type': 'proxy' if lb_type == 'target_proxy' else 'url_map',
+                        key: backends
                     })
-            ############################
-            # Set Front to Load Balancer
-            ############################
 
-            frontends = self.get_front_from_loadbalancer(load_balancer)
-            frontend_display = self._get_frontend_display(frontends)
-            if len(frontends) > 0:
-                load_balancer.update({'frontends': frontends,
-                                      'frontend_display': frontend_display})
+                load_balancer.update({'backends': backend_vo})
 
-            #############################
-            # Set Backend to Load Balancer
-            #############################
-            backend_vo = {}
-            if lb_type in ['target_pool']:
-                backend_vo.update({
-                    'type': 'target_pool',
-                    'target_pool_backend': self.get_backend_from_target_pools(load_balancer, instance_groups)
+                ########################################
+                # Set Backend Tab to LoadBlancer
+                ########################################
+                backends_tab = self._get_backend_tabs(load_balancer)
+                load_balancer.update({
+                    'backend_tabs': backends_tab
                 })
 
-            elif lb_type in ['url_map', 'target_proxy']:
-                key = 'proxy_backend' if lb_type == 'target_proxy' else 'url_map_backend'
-                backends = self.get_backend_from_url_map_and_proxy(load_balancer, instance_groups, auto_scalers)
-                backend_vo.update({
-                    'type': 'proxy' if lb_type == 'target_proxy' else 'url_map',
-                    key: backends
+                ########################################
+                # Set Backend Display
+                ########################################
+                backend_display = self._get_backend_display(load_balancer)
+                load_balancer.update({
+                    'backends_display': backend_display
                 })
 
-            load_balancer.update({'backends': backend_vo})
+                '''
+                            Get Appropriate Region & Protocols
+    
+                            Protocols
+                            -  1. Frontend's forwarding Maps
+                               2. Backend's end protocol
+    
+                            Region 
+                            - backend-svc's backend
+    
+                '''
+                lead_protocol = self._get_lead_protocol(load_balancer)
+                region = self._get_proper_region(load_balancer)
+                load_balancer.update({
+                    'lead_protocol': lead_protocol,
+                    'region': region
+                })
+                refer_link = self._get_refer_link(load_balancer, project_id)
+                _name = load_balancer.get('name', '')
+                load_balance_data = LoadBalancing(load_balancer, strict=False)
 
-            ########################################
-            # Set Backend Tab to LoadBlancer
-            ########################################
-            backends_tab = self._get_backend_tabs(load_balancer)
-            load_balancer.update({
-                'backend_tabs': backends_tab
-            })
+                lb_resource = LoadBalancingResource({
+                    'name': _name,
+                    'region_code': region,
+                    'data': load_balance_data,
+                    'reference': ReferenceModel(load_balance_data.reference(refer_link))
+                })
 
-            ########################################
-            # Set Backend Display
-            ########################################
-            backend_display = self._get_backend_display(load_balancer)
-            load_balancer.update({
-                'backends_display': backend_display
-            })
+                self.set_region_code(region)
+                collected_cloud_services.append(LoadBalancingResponse({'resource': lb_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
 
-            '''
-                        Get Appropriate Region & Protocols
-
-                        Protocols
-                        -  1. Frontend's forwarding Maps
-                           2. Backend's end protocol
-
-                        Region 
-                        - backend-svc's backend
-
-            '''
-            lead_protocol = self._get_lead_protocol(load_balancer)
-            region = self._get_proper_region(load_balancer)
-            load_balancer.update({
-                'lead_protocol': lead_protocol,
-                'region': region
-            })
-            refer_link = self._get_refer_link(load_balancer, project_id)
-            _name = load_balancer.get('name', '')
-            load_balance_data = LoadBalancing(load_balancer, strict=False)
-
-            lb_resource = LoadBalancingResource({
-                'name': _name,
-                'region_code': region,
-                'data': load_balance_data,
-                'reference': ReferenceModel(load_balance_data.reference(refer_link))
-            })
-
-            self.set_region_code(region)
-            collected_cloud_services.append(LoadBalancingResponse({'resource': lb_resource}))
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'NetworkService',
+                            'cloud_service_type': 'LoadBalancing'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'NetworkService',
+                            'cloud_service_type': 'LoadBalancing'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

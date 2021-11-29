@@ -1,9 +1,10 @@
 import time
 import logging
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.firewall.data import *
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from ipaddress import ip_address, IPv4Address
 from spaceone.inventory.model.firewall.cloud_service import *
 from spaceone.inventory.connector.firewall import FirewallConnector
@@ -28,60 +29,85 @@ class FirewallManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        firewall_conn: FirewallConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Get lists that relate with snapshots through Google Cloud API
-        firewalls = firewall_conn.list_firewall()
-        compute_engine_vms = firewall_conn.list_instance_for_networks()
-        region = 'global'
-        for firewall in firewalls:
-                target_tag = firewall.get('targetTags', [])
-                filter_range = ', '.join(firewall.get('sourceRanges', ''))
-                log_config = firewall.get('log_config', {})
+        try:
+            secret_data = params['secret_data']
+            firewall_conn: FirewallConnector = self.locator.get_connector(self.connector_name, **params)
 
-                protocol_port = []
-                flag = 'allowed' if 'allowed' in firewall else 'denied'
-                for allowed in firewall.get(flag, []):
-                    ip_protocol = allowed.get('IPProtocol', '')
+            # Get lists that relate with snapshots through Google Cloud API
+            firewalls = firewall_conn.list_firewall()
+            compute_engine_vms = firewall_conn.list_instance_for_networks()
+            region = 'global'
+            for firewall in firewalls:
+                    target_tag = firewall.get('targetTags', [])
+                    filter_range = ', '.join(firewall.get('sourceRanges', ''))
+                    log_config = firewall.get('log_config', {})
 
-                    for port in allowed.get('ports', []):
-                        protocol_port.append(f'{ip_protocol}: {port}')
+                    protocol_port = []
+                    flag = 'allowed' if 'allowed' in firewall else 'denied'
+                    for allowed in firewall.get(flag, []):
+                        ip_protocol = allowed.get('IPProtocol', '')
 
-                display = {
-                    'enforcement': 'Disabled' if firewall.get('disabled') else 'Enabled',
-                    'network_display': self._get_matched_last_target('network', firewall),
-                    'direction_display': 'Ingress' if firewall.get('direction') == 'INGRESS' else 'Egress',
-                    'target_display': ['Apply to all'] if not target_tag else target_tag,
-                    'filter': f'IP ranges: {filter_range}',
-                    'protocols_port': protocol_port,
-                    'action': 'Allow' if 'allowed' in firewall else 'Deny',
-                    'logs': 'On' if log_config.get('enable') else 'Off'
-                }
+                        for port in allowed.get('ports', []):
+                            protocol_port.append(f'{ip_protocol}: {port}')
 
-                firewall.update({
-                    'project': secret_data['project_id'],
-                    'applicable_instance': self.get_matched_instace(firewall,
-                                                                    secret_data['project_id'],
-                                                                    compute_engine_vms),
-                    'display': display
-                })
+                    display = {
+                        'enforcement': 'Disabled' if firewall.get('disabled') else 'Enabled',
+                        'network_display': self._get_matched_last_target('network', firewall),
+                        'direction_display': 'Ingress' if firewall.get('direction') == 'INGRESS' else 'Egress',
+                        'target_display': ['Apply to all'] if not target_tag else target_tag,
+                        'filter': f'IP ranges: {filter_range}',
+                        'protocols_port': protocol_port,
+                        'action': 'Allow' if 'allowed' in firewall else 'Deny',
+                        'logs': 'On' if log_config.get('enable') else 'Off'
+                    }
 
-                # No Labels on API
-                _name = firewall.get('data', '')
-                firewall_data = Firewall(firewall, strict=False)
-                firewall_resource = FirewallResource({
-                    'name': _name,
-                    'region_code': region,
-                    'data': firewall_data,
-                    'reference': ReferenceModel(firewall_data.reference())
-                })
+                    firewall.update({
+                        'project': secret_data['project_id'],
+                        'applicable_instance': self.get_matched_instace(firewall,
+                                                                        secret_data['project_id'],
+                                                                        compute_engine_vms),
+                        'display': display
+                    })
 
-                self.set_region_code(region)
-                collected_cloud_services.append(FirewallResponse({'resource': firewall_resource}))
+                    # No Labels on API
+                    _name = firewall.get('data', '')
+                    firewall_data = Firewall(firewall, strict=False)
+                    firewall_resource = FirewallResource({
+                        'name': _name,
+                        'region_code': region,
+                        'data': firewall_data,
+                        'reference': ReferenceModel(firewall_data.reference())
+                    })
+
+                    self.set_region_code(region)
+                    collected_cloud_services.append(FirewallResponse({'resource': firewall_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'Firewall'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'Firewall'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Firewall Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

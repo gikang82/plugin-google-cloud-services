@@ -3,6 +3,7 @@ import logging
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.instance_group import InstanceGroupConnector
 from spaceone.inventory.model.instance_group.data import *
 from spaceone.inventory.model.instance_group.cloud_service import *
@@ -28,93 +29,117 @@ class InstanceGroupManager(GoogleCloudManager):
         Response:
             CloudServiceResponse
         """
-        secret_data = params['secret_data']
-        instance_group_conn: InstanceGroupConnector = self.locator.get_connector(self.connector_name, **params)
-
-        # Get all Resources
-        instance_groups = instance_group_conn.list_instance_groups()
-        instance_group_managers = instance_group_conn.list_instance_group_managers()
-        autoscalers = instance_group_conn.list_autoscalers()
-        instance_templates = instance_group_conn.list_instance_templates()
-
         collected_cloud_services = []
 
-        _LOGGER.debug(f'instance_groups => {instance_groups}')
-        for instance_group in instance_groups:
+        try:
+            secret_data = params['secret_data']
+            instance_group_conn: InstanceGroupConnector = self.locator.get_connector(self.connector_name, **params)
 
-            instance_group.update({
-                'project': secret_data['project_id']
-            })
+            # Get all Resources
+            instance_groups = instance_group_conn.list_instance_groups()
+            instance_group_managers = instance_group_conn.list_instance_group_managers()
+            autoscalers = instance_group_conn.list_autoscalers()
+            instance_templates = instance_group_conn.list_instance_templates()
+            _LOGGER.debug(f'instance_groups => {instance_groups}')
 
-            scheduler = {'type': 'zone'} if 'zone' in instance_group else {'type': 'region'}
-
-            if match_instance_group_manager := \
-                    self.match_instance_group_manager(instance_group_managers, instance_group.get('selfLink')):
-
-                instance_group_type = self.get_instance_group_type(match_instance_group_manager)
-                scheduler.update({'instance_group_type': instance_group_type})
-
-                # Managed
-                match_instance_group_manager.update({
-                    'statefulPolicy': {
-                        'preservedState': {'disks': self._get_stateful_policy(match_instance_group_manager)}}
-                })
+            for instance_group in instance_groups:
 
                 instance_group.update({
-                    'instance_group_type': instance_group_type,
-                    'instance_group_manager': InstanceGroupManagers(match_instance_group_manager, strict=False)
+                    'project': secret_data['project_id']
                 })
 
-                if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
-                    self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
+                scheduler = {'type': 'zone'} if 'zone' in instance_group else {'type': 'region'}
 
-                    instance_group.update({
-                        'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
-                        'autoscaling_display':
-                            self._get_autoscaling_display(match_auto_scaler.get('autoscalingPolicy', {}))
+                if match_instance_group_manager := \
+                        self.match_instance_group_manager(instance_group_managers, instance_group.get('selfLink')):
+
+                    instance_group_type = self.get_instance_group_type(match_instance_group_manager)
+                    scheduler.update({'instance_group_type': instance_group_type})
+
+                    # Managed
+                    match_instance_group_manager.update({
+                        'statefulPolicy': {
+                            'preservedState': {'disks': self._get_stateful_policy(match_instance_group_manager)}}
                     })
 
-                match_instance_template = \
-                    self.match_instance_template(instance_templates,
-                                                 match_instance_group_manager.get('instanceTemplate'))
+                    instance_group.update({
+                        'instance_group_type': instance_group_type,
+                        'instance_group_manager': InstanceGroupManagers(match_instance_group_manager, strict=False)
+                    })
 
-                if match_instance_template:
-                    instance_group.update({'template': InstanceTemplate(match_instance_template, strict=False)})
+                    if match_auto_scaler := self.match_auto_scaler(autoscalers, match_instance_group_manager):
+                        self._get_auto_policy_for_scheduler(scheduler, match_auto_scaler)
 
+                        instance_group.update({
+                            'auto_scaler': AutoScaler(match_auto_scaler, strict=False),
+                            'autoscaling_display':
+                                self._get_autoscaling_display(match_auto_scaler.get('autoscalingPolicy', {}))
+                        })
+
+                    match_instance_template = \
+                        self.match_instance_template(instance_templates,
+                                                     match_instance_group_manager.get('instanceTemplate'))
+
+                    if match_instance_template:
+                        instance_group.update({'template': InstanceTemplate(match_instance_template, strict=False)})
+
+                else:
+                    # Unmanaged
+                    instance_group.update({'instance_group_type': 'UNMANAGED'})
+                    scheduler.update({'instance_group_type': 'UNMANAGED'})
+
+                _LOGGER.debug(f'instance_group => {instance_group}')
+                loc_type, location = self.get_instance_group_loc(instance_group)
+                _LOGGER.debug(f'loc_type, location => {loc_type}, {location}')
+                region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
+                _LOGGER.debug(f'region => {region}')
+                instances = instance_group_conn.list_instances(instance_group.get('name'), location, loc_type)
+
+                display_loc = {'region': location, 'zone': ''} if loc_type == 'region' \
+                    else {'region': location[:-2], 'zone': location}
+
+                instance_group.update({'display_location': display_loc})
+
+                instance_group.update({
+                    'power_scheduler': scheduler,
+                    'instances': self.get_instances(instances),
+                    'instance_counts': len(instances)
+                })
+                # No labels
+                _name = instance_group.get('name', '')
+                instance_group_data = InstanceGroup(instance_group, strict=False)
+                instance_group_resource = InstanceGroupResource({
+                    'name': _name,
+                    'data': instance_group_data,
+                    'region_code': region,
+                    'reference': ReferenceModel(instance_group_data.reference())
+                })
+
+                self.set_region_code(region)
+                collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'InstanceGroup'
+                        }
+                    })
+                ]
             else:
-                # Unmanaged
-                instance_group.update({'instance_group_type': 'UNMANAGED'})
-                scheduler.update({'instance_group_type': 'UNMANAGED'})
-
-            _LOGGER.debug(f'instance_group => {instance_group}')
-            loc_type, location = self.get_instance_group_loc(instance_group)
-            _LOGGER.debug(f'loc_type, location => {loc_type}, {location}')
-            region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
-            _LOGGER.debug(f'region => {region}')
-            instances = instance_group_conn.list_instances(instance_group.get('name'), location, loc_type)
-
-            display_loc = {'region': location, 'zone': ''} if loc_type == 'region' \
-                else {'region': location[:-2], 'zone': location}
-
-            instance_group.update({'display_location': display_loc})
-
-            instance_group.update({
-                'power_scheduler': scheduler,
-                'instances': self.get_instances(instances),
-                'instance_counts': len(instances)
-            })
-            # No labels
-            _name = instance_group.get('name', '')
-            instance_group_data = InstanceGroup(instance_group, strict=False)
-            instance_group_resource = InstanceGroupResource({
-                'name': _name,
-                'data': instance_group_data,
-                'region_code': region,
-                'reference': ReferenceModel(instance_group_data.reference())
-            })
-
-            self.set_region_code(region)
-            collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'InstanceGroup'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Instance Group Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

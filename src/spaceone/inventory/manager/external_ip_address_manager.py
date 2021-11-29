@@ -1,15 +1,17 @@
 import time
 import logging
+import json
+from ipaddress import ip_address, IPv4Address
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.external_ip_address.data import *
-from ipaddress import ip_address, IPv4Address
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.external_ip_address.cloud_service import *
 from spaceone.inventory.connector.external_ip_address import ExternalIPAddressConnector
 from spaceone.inventory.model.external_ip_address.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class ExternalIPAddressManager(GoogleCloudManager):
     connector_name = 'ExternalIPAddressConnector'
@@ -27,40 +29,65 @@ class ExternalIPAddressManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        exp_conn: ExternalIPAddressConnector = self.locator.get_connector(self.connector_name, **params)
-        regional_global_addresses = exp_conn.list_regional_addresses()
-        compute_engine_vm_address = exp_conn.list_instance_for_networks()
-        forwarding_rule_address = exp_conn.list_forwarding_rule()
 
-        # Get lists that relate with snapshots through Google Cloud API
-        all_external_ip_addresses = self.get_external_ip_addresses(regional_global_addresses,
-                                                                   compute_engine_vm_address,
-                                                                   forwarding_rule_address)
+        try:
+            secret_data = params['secret_data']
+            exp_conn: ExternalIPAddressConnector = self.locator.get_connector(self.connector_name, **params)
+            regional_global_addresses = exp_conn.list_regional_addresses()
+            compute_engine_vm_address = exp_conn.list_instance_for_networks()
+            forwarding_rule_address = exp_conn.list_forwarding_rule()
 
-        for external_ip_juso in all_external_ip_addresses:
-            region = external_ip_juso.get('region') if external_ip_juso.get('region') else 'global'
-            external_ip_juso.update({'project': secret_data['project_id'],
-                                     'status_display': external_ip_juso.get('status').replace('_', ' ').title()
-                                     })
-            if external_ip_juso.get('selfLink') is None:
-                external_ip_juso.update({'self_link': self._get_external_self_link_when_its_empty(external_ip_juso)})
+            # Get lists that relate with snapshots through Google Cloud API
+            all_external_ip_addresses = self.get_external_ip_addresses(regional_global_addresses,
+                                                                       compute_engine_vm_address,
+                                                                       forwarding_rule_address)
 
-            # No Labels (exists on console but No option on APIs)
-            _name = external_ip_juso.get('name', '')
-            external_ip_juso_data = ExternalIpAddress(external_ip_juso, strict=False)
-            external_ip_juso_resource = ExternalIpAddressResource({
-                'region_code': region,
-                'name': _name,
-                'data': external_ip_juso_data,
-                'reference': ReferenceModel(external_ip_juso_data.reference())
-            })
+            for external_ip_juso in all_external_ip_addresses:
+                region = external_ip_juso.get('region') if external_ip_juso.get('region') else 'global'
+                external_ip_juso.update({'project': secret_data['project_id'],
+                                         'status_display': external_ip_juso.get('status').replace('_', ' ').title()
+                                         })
+                if external_ip_juso.get('selfLink') is None:
+                    external_ip_juso.update({'self_link': self._get_external_self_link_when_its_empty(external_ip_juso)})
 
-            self.set_region_code(region)
-            collected_cloud_services.append(ExternalIpAddressResponse({'resource': external_ip_juso_resource}))
+                # No Labels (exists on console but No option on APIs)
+                _name = external_ip_juso.get('name', '')
+                external_ip_juso_data = ExternalIpAddress(external_ip_juso, strict=False)
+                external_ip_juso_resource = ExternalIpAddressResource({
+                    'region_code': region,
+                    'name': _name,
+                    'data': external_ip_juso_data,
+                    'reference': ReferenceModel(external_ip_juso_data.reference())
+                })
+
+                self.set_region_code(region)
+                collected_cloud_services.append(ExternalIpAddressResponse({'resource': external_ip_juso_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'ExternalIPAddress'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'ExternalIPAddress'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** External IP Address Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

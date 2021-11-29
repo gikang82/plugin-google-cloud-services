@@ -38,3 +38,16 @@ class CloudServiceResponse(BaseResponse):
     })
     resource_type = StringType(default='inventory.CloudService')
     resource = PolyModelType(CloudServiceResource)
+
+
+class ErrorResource(Model):
+    resource_type = StringType(default='inventory.CloudService')
+    cloud_service_group = StringType(default='ComputeEngine', serialize_when_none=False)
+    cloud_service_type = StringType(default='Instance', serialize_when_none=False)
+    resource_id = StringType(serialize_when_none=False)
+
+
+class ErrorResourceResponse(CloudServiceResponse):
+    state = StringType(default='FAILURE')
+    resource_type = StringType(default='inventory.ErrorResource')
+    resource = ModelType(ErrorResource, default={})

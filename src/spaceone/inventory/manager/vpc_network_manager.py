@@ -1,15 +1,17 @@
 import time
 import logging
+import json
+from ipaddress import ip_address, IPv4Address
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.vpc_network.data import *
-from ipaddress import ip_address, IPv4Address
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.vpc_network.cloud_service import *
 from spaceone.inventory.connector.vpc_network import VPCNetworkConnector
 from spaceone.inventory.model.vpc_network.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class VPCNetworkManager(GoogleCloudManager):
     connector_name = 'VPCNetworkConnector'
@@ -27,62 +29,89 @@ class VPCNetworkManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
+
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        vpc_conn: VPCNetworkConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Get lists that relate with snapshots through Google Cloud API
-        networks = vpc_conn.list_networks()
-        firewalls = vpc_conn.list_firewall()
-        subnets = vpc_conn.list_subnetworks()
-        routes = vpc_conn.list_routes()
-        regional_address = vpc_conn.list_regional_addresses()
+        try:
 
-        for network in networks:
+            secret_data = params['secret_data']
+            vpc_conn: VPCNetworkConnector = self.locator.get_connector(self.connector_name, **params)
 
-            network_identifier = network.get('selfLink')
-            matched_firewall = self._get_matched_firewalls(network_identifier, firewalls)
-            matched_route = self.get_matched_route(network_identifier, routes)
-            matched_subnets = self._get_matched_subnets(network_identifier, subnets)
-            region = self.match_region_info('global')
-            peerings = self.get_peering(network)
+            # Get lists that relate with snapshots through Google Cloud API
+            networks = vpc_conn.list_networks()
+            firewalls = vpc_conn.list_firewall()
+            subnets = vpc_conn.list_subnetworks()
+            routes = vpc_conn.list_routes()
+            regional_address = vpc_conn.list_regional_addresses()
 
-            network.update({
-                'mode': 'Auto' if network.get('autoCreateSubnetworks') else 'Custom',
-                'project': secret_data['project_id'],
-                'global_dynamic_route': self._get_global_dynamic_route(network, 'not_mode'),
-                'dynamic_routing_mode': self._get_global_dynamic_route(network, 'mode'),
-                'subnet_creation_mode': 'Auto' if network.get('autoCreateSubnetworks') else 'Custom',
-                'ip_address_data': self.get_internal_ip_address_in_use(network, regional_address),
-                'peerings': peerings,
-                'route_data': {
-                    'total_number': len(matched_route),
-                    'route': matched_route
-                },
-                'firewall_data': {
-                    'total_number': len(matched_firewall),
-                    'firewall': matched_firewall
-                },
-                'subnetwork_data': {
-                    'total_number': len(matched_subnets),
-                    'subnets': matched_subnets
-                },
-            })
+            for network in networks:
 
-            # No labels
-            _name = network.get('name', '')
-            vpc_data = VPCNetwork(network, strict=False)
-            vpc_resource = VPCNetworkResource({
-                'name': _name,
-                'region_code': region.get('region_code'),
-                'data': vpc_data,
-                'reference': ReferenceModel(vpc_data.reference())
-            })
+                network_identifier = network.get('selfLink')
+                matched_firewall = self._get_matched_firewalls(network_identifier, firewalls)
+                matched_route = self.get_matched_route(network_identifier, routes)
+                matched_subnets = self._get_matched_subnets(network_identifier, subnets)
+                region = self.match_region_info('global')
+                peerings = self.get_peering(network)
 
-            self.set_region_code('global')
-            collected_cloud_services.append(VPCNetworkResponse({'resource': vpc_resource}))
+                network.update({
+                    'mode': 'Auto' if network.get('autoCreateSubnetworks') else 'Custom',
+                    'project': secret_data['project_id'],
+                    'global_dynamic_route': self._get_global_dynamic_route(network, 'not_mode'),
+                    'dynamic_routing_mode': self._get_global_dynamic_route(network, 'mode'),
+                    'subnet_creation_mode': 'Auto' if network.get('autoCreateSubnetworks') else 'Custom',
+                    'ip_address_data': self.get_internal_ip_address_in_use(network, regional_address),
+                    'peerings': peerings,
+                    'route_data': {
+                        'total_number': len(matched_route),
+                        'route': matched_route
+                    },
+                    'firewall_data': {
+                        'total_number': len(matched_firewall),
+                        'firewall': matched_firewall
+                    },
+                    'subnetwork_data': {
+                        'total_number': len(matched_subnets),
+                        'subnets': matched_subnets
+                    },
+                })
+
+                # No labels
+                _name = network.get('name', '')
+                vpc_data = VPCNetwork(network, strict=False)
+                vpc_resource = VPCNetworkResource({
+                    'name': _name,
+                    'region_code': region.get('region_code'),
+                    'data': vpc_data,
+                    'reference': ReferenceModel(vpc_data.reference())
+                })
+
+                self.set_region_code('global')
+                collected_cloud_services.append(VPCNetworkResponse({'resource': vpc_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'VPCNetwork'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'VPCNetwork'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** VPC Network Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

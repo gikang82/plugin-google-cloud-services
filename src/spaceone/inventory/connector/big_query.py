@@ -20,15 +20,10 @@ class BigQueryConnector(GoogleCloudConnector):
         query.update({'projectId': self.project_id, 'all': True})
         request = self.client.datasets().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for dataset in response.get('datasets', []):
-                    dataset_list.append(dataset)
-                request = self.client.datasets().list_next(previous_request=request, previous_response=response)
-
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at BigQueryConnector: datasets().list(**query) : skipped \n {e}')
+            response = request.execute()
+            for dataset in response.get('datasets', []):
+                dataset_list.append(dataset)
+            request = self.client.datasets().list_next(previous_request=request, previous_response=response)
 
         return dataset_list
 
@@ -36,11 +31,7 @@ class BigQueryConnector(GoogleCloudConnector):
         query.update({'projectId': self.project_id,
                       'datasetId': dataset_id})
         response = {}
-
-        try:
-            response = self.client.datasets().get(**query).execute()
-        except Exception as e:
-            _LOGGER.error(f'Error occurred at BigQueryConnector: datasets().get(**query) : skipped \n {e}')
+        response = self.client.datasets().get(**query).execute()
 
         return response
 
@@ -51,14 +42,11 @@ class BigQueryConnector(GoogleCloudConnector):
                       'projection': 'full'})
         request = self.client.jobs().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for job in response.get('jobs', []):
-                    job_list.append(job)
-                request = self.client.jobs().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at jobs().list(**query) : skipped \n {e}')
+            response = request.execute()
+            for job in response.get('jobs', []):
+                job_list.append(job)
+            request = self.client.jobs().list_next(previous_request=request, previous_response=response)
+
         return job_list
 
     def list_projects(self, **query):
@@ -66,14 +54,10 @@ class BigQueryConnector(GoogleCloudConnector):
         request = self.client.projects().list(**query)
 
         while request is not None:
-            try:
-                response = request.execute()
-                for project in response.get('projects', []):
-                    project_list.append(project)
-                request = self.client.projects().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at BigQueryConnector: projects().list(**query) : skipped \n {e}')
+            response = request.execute()
+            for project in response.get('projects', []):
+                project_list.append(project)
+            request = self.client.projects().list_next(previous_request=request, previous_response=response)
 
         return project_list
 
@@ -85,14 +69,10 @@ class BigQueryConnector(GoogleCloudConnector):
 
         request = self.client.tables().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for table in response.get('tables', []):
-                    table_list.append(table)
-                request = self.client.tables().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at BigQueryConnector: tables().list(**query) : skipped \n {e}')
+            response = request.execute()
+            for table in response.get('tables', []):
+                table_list.append(table)
+            request = self.client.tables().list_next(previous_request=request, previous_response=response)
 
         return table_list
 
@@ -101,9 +81,6 @@ class BigQueryConnector(GoogleCloudConnector):
                       'datasetId': dataset_id,
                       'tableId': table_id})
         response = {}
-        try:
-            response = self.client.tables().get(**query).execute()
-        except Exception as e:
-            _LOGGER.error(e)
+        response = self.client.tables().get(**query).execute()
 
         return response

@@ -1,15 +1,17 @@
 import time
 import logging
+import json
 
 from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.model.storage.data import *
 from spaceone.inventory.model.storage.cloud_service import *
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.storage import StorageConnector
 from spaceone.inventory.model.storage.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class StorageManager(GoogleCloudManager):
     connector_name = 'StorageConnector'
@@ -27,58 +29,83 @@ class StorageManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
-        secret_data = params['secret_data']
-        storage_conn: StorageConnector = self.locator.get_connector(self.connector_name, **params)
 
-        # Get lists that relate with snapshots through Google Cloud API
-        buckets = storage_conn.list_buckets()
+        try:
+            secret_data = params['secret_data']
+            storage_conn: StorageConnector = self.locator.get_connector(self.connector_name, **params)
 
-        for bucket in buckets:
-            bucket_name = bucket.get('name')
+            # Get lists that relate with snapshots through Google Cloud API
+            buckets = storage_conn.list_buckets()
 
-            objects = storage_conn.list_objects(bucket_name)
-            obj_count, size = self._get_number_of_obj_and_size(objects)
-            iam_policy = storage_conn.list_iam_policy(bucket_name)
-            st_class = bucket.get('storageClass').lower()
-            region = self.get_matching_region(bucket)
-            labels = self.convert_labels_format(bucket.get('labels', {}))
-            stackdriver = self.get_stackdriver(bucket_name)
-            bucket.update({
-                'project': secret_data['project_id'],
-                'encryption': self._get_encryption(bucket),
-                'requester_pays': self._get_requester_pays(bucket),
-                'retention_policy_display': self._get_retention_policy_display(bucket),
-                'links': self._get_config_link(bucket),
-                'size': size,
-                'stackdriver': stackdriver,
-                'default_event_based_hold': 'Enabled' if bucket.get('defaultEventBasedHold') else 'Disabled',
-                'iam_policy': iam_policy,
-                'iam_policy_binding': self._get_iam_policy_binding(iam_policy),
-                'object_count': obj_count,
-                'object_total_size': size,
-                'lifecycle_rule': self._get_lifecycle_rule(bucket),
-                'location': self.get_location(bucket),
-                'default_storage_class': st_class.capitalize(),
-                'access_control': self._get_access_control(bucket),
-                'public_access': self._get_public_access(bucket, iam_policy),
-                'labels': labels
-            })
-            _name = bucket.get('name', '')
-            bucket_data = Storage(bucket, strict=False)
-            # labels -> tags
-            bucket_resource = StorageResource({
-                'name': _name,
-                'tags': labels,
-                'region_code': region.get('region_code'),
-                'data': bucket_data,
-                'reference': ReferenceModel(bucket_data.reference())
-            })
+            for bucket in buckets:
+                bucket_name = bucket.get('name')
 
-            self.set_region_code(region.get('region_code'))
-            collected_cloud_services.append(StorageResponse({'resource': bucket_resource}))
+                objects = storage_conn.list_objects(bucket_name)
+                obj_count, size = self._get_number_of_obj_and_size(objects)
+                iam_policy = storage_conn.list_iam_policy(bucket_name)
+                st_class = bucket.get('storageClass').lower()
+                region = self.get_matching_region(bucket)
+                labels = self.convert_labels_format(bucket.get('labels', {}))
+                stackdriver = self.get_stackdriver(bucket_name)
+                bucket.update({
+                    'project': secret_data['project_id'],
+                    'encryption': self._get_encryption(bucket),
+                    'requester_pays': self._get_requester_pays(bucket),
+                    'retention_policy_display': self._get_retention_policy_display(bucket),
+                    'links': self._get_config_link(bucket),
+                    'size': size,
+                    'stackdriver': stackdriver,
+                    'default_event_based_hold': 'Enabled' if bucket.get('defaultEventBasedHold') else 'Disabled',
+                    'iam_policy': iam_policy,
+                    'iam_policy_binding': self._get_iam_policy_binding(iam_policy),
+                    'object_count': obj_count,
+                    'object_total_size': size,
+                    'lifecycle_rule': self._get_lifecycle_rule(bucket),
+                    'location': self.get_location(bucket),
+                    'default_storage_class': st_class.capitalize(),
+                    'access_control': self._get_access_control(bucket),
+                    'public_access': self._get_public_access(bucket, iam_policy),
+                    'labels': labels
+                })
+                _name = bucket.get('name', '')
+                bucket_data = Storage(bucket, strict=False)
+                # labels -> tags
+                bucket_resource = StorageResource({
+                    'name': _name,
+                    'tags': labels,
+                    'region_code': region.get('region_code'),
+                    'data': bucket_data,
+                    'reference': ReferenceModel(bucket_data.reference())
+                })
+
+                self.set_region_code(region.get('region_code'))
+                collected_cloud_services.append(StorageResponse({'resource': bucket_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'Storage',
+                            'cloud_service_type': 'Bucket'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'Storage',
+                            'cloud_service_type': 'Bucket'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Storage Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
