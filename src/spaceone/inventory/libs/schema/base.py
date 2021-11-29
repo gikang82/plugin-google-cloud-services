@@ -24,8 +24,9 @@ class BaseMetaData(Model):
 
 class BaseResponse(Model):
     state = StringType(default='SUCCESS', choices=('SUCCESS', 'FAILURE', 'TIMEOUT'))
+    message = StringType(default='')
     resource_type = StringType(required=True)
-    match_rules = DictType(ListType(StringType), default={})
+    match_rules = DictType(ListType(StringType), serialize_when_none=False)
     resource = PolyModelType(Model, default={})
 
 

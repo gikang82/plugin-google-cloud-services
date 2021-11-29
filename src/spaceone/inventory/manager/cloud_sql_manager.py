@@ -1,14 +1,17 @@
 import time
 import logging
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.cloud_sql import CloudSQLConnector
 from spaceone.inventory.model.cloud_sql.data import *
 from spaceone.inventory.model.cloud_sql.cloud_service import *
 from spaceone.inventory.model.cloud_sql.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class CloudSQLManager(GoogleCloudManager):
     connector_name = 'CloudSQLConnector'
@@ -26,39 +29,63 @@ class CloudSQLManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
 
-        cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
-
         collected_cloud_services = []
-        for instance in cloud_sql_conn.list_instances():
-            instance_name = instance['name']
-            project = instance.get('project', '')
-            # Get Databases
-            databases = cloud_sql_conn.list_databases(instance_name)
 
-            # Get Users
-            users = cloud_sql_conn.list_users(instance_name)
-            stackdriver = self.get_stackdriver(project, instance_name)
-            instance.update({
-                'stackdriver': stackdriver,
-                'display_state': self._get_display_state(instance),
-                'databases': [Database(database, strict=False) for database in databases],
-                'users': [User(user, strict=False) for user in users],
-            })
+        try:
+            cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # No labels!!
-            instance_data = Instance(instance, strict=False)
-            instance_resource = InstanceResource({
-                'data': instance_data,
-                'region_code': instance['region'],
-                'name': instance_name,
-                'reference': ReferenceModel(instance_data.reference())
-            })
+            for instance in cloud_sql_conn.list_instances():
+                instance_name = instance['name']
+                project = instance.get('project', '')
+                # Get Databases
+                databases = cloud_sql_conn.list_databases(instance_name)
 
-            self.set_region_code(instance['region'])
-            collected_cloud_services.append(InstanceResponse({'resource': instance_resource}))
+                # Get Users
+                users = cloud_sql_conn.list_users(instance_name)
+                stackdriver = self.get_stackdriver(project, instance_name)
+                instance.update({
+                    'stackdriver': stackdriver,
+                    'display_state': self._get_display_state(instance),
+                    'databases': [Database(database, strict=False) for database in databases],
+                    'users': [User(user, strict=False) for user in users],
+                })
+                # No labels!!
+                instance_data = Instance(instance, strict=False)
+                instance_resource = InstanceResource({
+                    'data': instance_data,
+                    'region_code': instance['region'],
+                    'name': instance_name,
+                    'reference': ReferenceModel(instance_data.reference())
+                })
+
+                self.set_region_code(instance['region'])
+                collected_cloud_services.append(InstanceResponse({'resource': instance_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'CloudSQL',
+                            'cloud_service_type': 'Instance'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'CloudSQL',
+                            'cloud_service_type': 'Instance'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

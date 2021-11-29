@@ -1,14 +1,17 @@
 import time
 import logging
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.instance_template.data import *
 from spaceone.inventory.model.instance_template.cloud_service import *
 from spaceone.inventory.connector.instance_template import InstanceTemplateConnector
 from spaceone.inventory.model.instance_template.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class InstanceTemplateManager(GoogleCloudManager):
     connector_name = 'InstanceTemplateConnector'
@@ -26,59 +29,85 @@ class InstanceTemplateManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
-        secret_data = params['secret_data']
-        instance_template_conn: InstanceTemplateConnector = self.locator.get_connector(self.connector_name, **params)
-
-        # Get Instance Templates
-        instance_templates = instance_template_conn.list_instance_templates()
-        instance_groups = instance_template_conn.list_instance_group_managers()
-        machine_types = instance_template_conn.list_machine_types()
         collected_cloud_services = []
 
-        for inst_template in instance_templates:
-            properties = inst_template.get('properties', {})
-            tags = properties.get('tags', {})
+        try:
+            secret_data = params['secret_data']
+            instance_template_conn: InstanceTemplateConnector = self.locator.get_connector(self.connector_name, **params)
 
-            in_used_by, matched_instance_group = self.match_instance_group(inst_template, instance_groups)
-            disks = self.get_disks(properties)
-            labels = self.convert_labels_format(properties.get('labels', {}))
+            # Get Instance Templates
+            instance_templates = instance_template_conn.list_instance_templates()
+            instance_groups = instance_template_conn.list_instance_group_managers()
+            machine_types = instance_template_conn.list_machine_types()
 
-            inst_template.update({
-                'project': secret_data['project_id'],
-                'in_used_by': in_used_by,
-                'ip_forward': properties.get('canIpForward', False),
-                'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
-                'network_tags': tags.get('items', []),
-                'scheduling': self._get_scheduling(properties),
-                'disk_display': self._get_disk_type_display(disks, 'disk_type'),
-                'image': self._get_disk_type_display(disks, 'source_image_display'),
-                'instance_groups': matched_instance_group,
-                'network_interfaces': self.get_network_interface(properties),
-                'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
-                'labels': labels,
-                'disks': disks
-            })
 
-            svc_account = properties.get('serviceAccounts', [])
-            if len(svc_account) > 0:
-                inst_template.update({'service_account': self._get_service_account(svc_account)})
-            _name = inst_template.get('name', '')
-            instance_template_data = InstanceTemplate(inst_template, strict=False)
-            # labels -> tags
-            default_region = 'global'
+            for inst_template in instance_templates:
+                properties = inst_template.get('properties', {})
+                tags = properties.get('tags', {})
 
-            instance_template_resource = InstanceTemplateResource({
-                'name': _name,
-                'tags': labels,
-                'data': instance_template_data,
-                'reference': ReferenceModel(instance_template_data.reference()),
-                'region_code': default_region
-            })
+                in_used_by, matched_instance_group = self.match_instance_group(inst_template, instance_groups)
+                disks = self.get_disks(properties)
+                labels = self.convert_labels_format(properties.get('labels', {}))
 
-            self.set_region_code(default_region)
-            collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
+                inst_template.update({
+                    'project': secret_data['project_id'],
+                    'in_used_by': in_used_by,
+                    'ip_forward': properties.get('canIpForward', False),
+                    'machine': MachineType(self._get_machine_type(properties, machine_types), strict=False),
+                    'network_tags': tags.get('items', []),
+                    'scheduling': self._get_scheduling(properties),
+                    'disk_display': self._get_disk_type_display(disks, 'disk_type'),
+                    'image': self._get_disk_type_display(disks, 'source_image_display'),
+                    'instance_groups': matched_instance_group,
+                    'network_interfaces': self.get_network_interface(properties),
+                    'fingerprint': self._get_properties_item(properties, 'metadata', 'fingerprint'),
+                    'labels': labels,
+                    'disks': disks
+                })
+
+                svc_account = properties.get('serviceAccounts', [])
+                if len(svc_account) > 0:
+                    inst_template.update({'service_account': self._get_service_account(svc_account)})
+                _name = inst_template.get('name', '')
+                instance_template_data = InstanceTemplate(inst_template, strict=False)
+                # labels -> tags
+                default_region = 'global'
+
+                instance_template_resource = InstanceTemplateResource({
+                    'name': _name,
+                    'tags': labels,
+                    'data': instance_template_data,
+                    'reference': ReferenceModel(instance_template_data.reference()),
+                    'region_code': default_region
+                })
+
+                self.set_region_code(default_region)
+                collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
+        except Exception as e:
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
+
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'InstanceTemplate'
+                        }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'InstanceTemplate'
+                        }
+                    })
+                ]
 
         _LOGGER.debug(f'** Instance Template Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services

@@ -1,8 +1,10 @@
 import logging
 import time
+import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.bigquery.cloud_service import *
 from spaceone.inventory.connector.big_query import BigQueryConnector
 from spaceone.inventory.model.bigquery.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -27,7 +29,7 @@ class BigQueryManager(GoogleCloudManager):
                 - filter
                 - zones
         Response:
-            CloudServiceResponse
+            CloudServiceResponse/ErrorResourceResponse
         """
 
         collected_cloud_services = []
@@ -99,12 +101,31 @@ class BigQueryManager(GoogleCloudManager):
                 self.set_region_code(region)
                 collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
 
-            _LOGGER.debug(f'** Big Query Finished {time.time() - start_time} Seconds **')
-
         except Exception as e:
-            _LOGGER.error(e)
-            pass
+            _LOGGER.error(f'[collect_cloud_service] => {e}')
 
+            if type(e) is dict:
+                return [
+                    ErrorResourceResponse({
+                        'message': json.dumps(e),
+                        'resource': {
+                            'cloud_service_group': 'BigQuery',
+                            'cloud_service_type': 'SQLWorkspace'
+                            }
+                    })
+                ]
+            else:
+                return [
+                    ErrorResourceResponse({
+                        'message': str(e),
+                        'resource': {
+                            'cloud_service_group': 'BigQuery',
+                            'cloud_service_type': 'SQLWorkspace'
+                        }
+                    })
+                ]
+
+        _LOGGER.debug(f'** Big Query Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_region(self, location):
@@ -243,5 +264,4 @@ class BigQueryManager(GoogleCloudManager):
         #                             })
         #
         #                 matched_jobs.append(Job(job, strict=False))
-
         return matched_jobs

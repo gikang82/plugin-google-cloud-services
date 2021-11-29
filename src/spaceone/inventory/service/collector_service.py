@@ -1,10 +1,12 @@
 import time
 import logging
+import json
 import concurrent.futures
 
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.core.service import *
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -88,7 +90,7 @@ class CollectorService(BaseService):
 
                 _manager = self.locator.get_manager(execute_manager)
                 future_executors.append(executor.submit(_manager.collect_resources, params))
-
+        #
             for future in concurrent.futures.as_completed(future_executors):
                 try:
                     _LOGGER.debug(f'as_completed : {future.result()}')
@@ -97,6 +99,19 @@ class CollectorService(BaseService):
                         yield result.to_primitive()
                 except Exception as e:
                     _LOGGER.error(f'failed to yield result => {e}')
+
+                    if type(e) is dict:
+                        error_resource_response = ErrorResourceResponse(
+                            {'message': json.dumps(e), 'resource': {'resource_type': 'inventory.Error'}}
+                        )
+                        _LOGGER.error(f'error response => {error_resource_response.to_primitive()}')
+                    else:
+                        error_resource_response = ErrorResourceResponse(
+                            {'message': str(e), 'resource': {'resource_type': 'inventory.Error'}}
+                        )
+                        _LOGGER.error(f'error response => {error_resource_response.to_primitive()}')
+
+                    yield error_resource_response.to_primitive()
 
         _LOGGER.debug(f'TOTAL TIME : {time.time() - start_time} Seconds')
 
