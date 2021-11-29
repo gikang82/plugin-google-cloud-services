@@ -1,6 +1,7 @@
 import time
 import logging
 import json
+import re
 from datetime import datetime
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
