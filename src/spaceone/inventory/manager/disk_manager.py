@@ -248,4 +248,8 @@ class DiskManager(GoogleCloudManager):
 
     @staticmethod
     def _get_last_target(target):
-        return target[target.rfind('/') + 1:]
+        # target can be Null
+        if target is None:
+            return ""
+        else:
+            return target[target.rfind('/') + 1:]

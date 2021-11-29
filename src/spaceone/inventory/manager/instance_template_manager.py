@@ -129,8 +129,13 @@ class InstanceTemplateManager(GoogleCloudManager):
     def get_disks(self, instance):
         disk_info = []
         for disk in instance.get('disks', []):
+            _LOGGER.debug(f'get_disk => {disk}')
             init_param = disk.get('initializeParams', {})
-            size = self._get_bytes(int(init_param.get('diskSizeGb')))
+            # initializeParams: {diskSizeGb: ""} can be Null
+            if init_param.get('diskSizeGb') is not None:
+                size = self._get_bytes(int(init_param.get('diskSizeGb')))
+            else:
+                size = ""
             disk_info.append(Disk({
                 'device_index': disk.get('index'),
                 'device': disk.get('deviceName'),
