@@ -20,15 +20,11 @@ class RouteConnector(GoogleCloudConnector):
         query.update({'project': self.project_id})
         request = self.client.routes().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for template in response.get('items', []):
-                    route_list.append(template)
-                request = self.client.routes().list_next(previous_request=request,
-                                                         previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error at RouteConnector routes().list: {e}')
+            response = request.execute()
+            for template in response.get('items', []):
+                route_list.append(template)
+            request = self.client.routes().list_next(previous_request=request,
+                                                     previous_response=response)
 
         return route_list
 
@@ -40,15 +36,11 @@ class RouteConnector(GoogleCloudConnector):
 
         request = self.client.instances().aggregatedList(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for name, instances_scoped_list in response['items'].items():
-                    if 'instances' in instances_scoped_list:
-                        instance_list.extend(instances_scoped_list.get('instances'))
-                request = self.client.instances().aggregatedList_next(previous_request=request,
-                                                                      previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error at RouteConnector instances().aggregatedList: {e}')
+            response = request.execute()
+            for name, instances_scoped_list in response['items'].items():
+                if 'instances' in instances_scoped_list:
+                    instance_list.extend(instances_scoped_list.get('instances'))
+            request = self.client.instances().aggregatedList_next(previous_request=request,
+                                                                  previous_response=response)
 
         return instance_list

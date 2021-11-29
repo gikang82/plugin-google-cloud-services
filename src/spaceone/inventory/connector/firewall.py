@@ -19,14 +19,10 @@ class FirewallConnector(GoogleCloudConnector):
         request = self.client.firewalls().list(**query)
 
         while request is not None:
-            try:
-                response = request.execute()
-                for backend_bucket in response.get('items', []):
-                    firewalls_list.append(backend_bucket)
-                request = self.client.firewalls().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.debug(f'Error occurred at FirewallConnector: firewalls().list(**query) : skipped \n {e}')
+            response = request.execute()
+            for backend_bucket in response.get('items', []):
+                firewalls_list.append(backend_bucket)
+            request = self.client.firewalls().list_next(previous_request=request, previous_response=response)
 
         return firewalls_list
 
@@ -38,13 +34,10 @@ class FirewallConnector(GoogleCloudConnector):
 
         request = self.client.instances().aggregatedList(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for name, instances_scoped_list in response['items'].items():
-                    if 'instances' in instances_scoped_list:
-                        instance_list.extend(instances_scoped_list.get('instances'))
-                request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at FirewallConnector: instances().aggregatedList(**query) : skipped \n {e}')
+            response = request.execute()
+            for name, instances_scoped_list in response['items'].items():
+                if 'instances' in instances_scoped_list:
+                    instance_list.extend(instances_scoped_list.get('instances'))
+            request = self.client.instances().aggregatedList_next(previous_request=request, previous_response=response)
+
         return instance_list

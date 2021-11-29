@@ -19,14 +19,10 @@ class MachineImageConnector(GoogleCloudConnector):
         query.update({'project': self.project_id})
         request = self.client.machineImages().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for image in response.get('items', []):
-                    machine_image_list.append(image)
-                request = self.client.machineImages().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error at machineImages().aggregatedList: {e}')
+            response = request.execute()
+            for image in response.get('items', []):
+                machine_image_list.append(image)
+            request = self.client.machineImages().list_next(previous_request=request, previous_response=response)
 
         return machine_image_list
 
@@ -34,10 +30,7 @@ class MachineImageConnector(GoogleCloudConnector):
         query.update({'zone': zone})
         query = self.generate_query(**query)
         result = {'items': []}
-        try:
-            result = self.client.machineTypes().list(**query).execute()
-        except Exception as e:
-            _LOGGER.error(f'Error at machineTypes().list: {e}')
+        result = self.client.machineTypes().list(**query).execute()
 
         return result.get('items', [])
 
@@ -45,10 +38,7 @@ class MachineImageConnector(GoogleCloudConnector):
         query.update({'zone': zone})
         query = self.generate_query(**query)
         result = {'items': []}
-        try:
-            result = self.client.disks().list(**query).execute()
-        except Exception as e:
-            _LOGGER.error(f'Error at disks().list: {e}')
+        result = self.client.disks().list(**query).execute()
 
         return result.get('items', [])
 
@@ -68,13 +58,10 @@ class MachineImageConnector(GoogleCloudConnector):
         query = self.generate_query(**query)
 
         for public_image in public_image_list:
-            try:
-                query.update({'project': public_image.get('value'), 'orderBy': 'creationTimestamp desc'})
-                response = self.client.images().list(**query).execute()
-                image = response.get('items', [])
-                k = public_image.get('key')
-                public_images[k] = image
-            except Exception as e:
-                _LOGGER.error(f'Error at images().list with key {k}: {e}')
+            query.update({'project': public_image.get('value'), 'orderBy': 'creationTimestamp desc'})
+            response = self.client.images().list(**query).execute()
+            image = response.get('items', [])
+            k = public_image.get('key')
+            public_images[k] = image
 
         return public_images

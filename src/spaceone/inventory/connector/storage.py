@@ -20,25 +20,16 @@ class StorageConnector(GoogleCloudConnector):
         query.update({'project': self.project_id, 'projection': 'full', 'alt': 'json'})
         request = self.client.buckets().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                for template in response.get('items', []):
-                    bucket_list.append(template)
-                request = self.client.buckets().list_next(previous_request=request, previous_response=response)
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at buckets().list(**query) : skipped \n {e}')
+            response = request.execute()
+            for template in response.get('items', []):
+                bucket_list.append(template)
+            request = self.client.buckets().list_next(previous_request=request, previous_response=response)
 
         return bucket_list
 
     def list_iam_policy(self, bucket_name, **query):
         query.update({"bucket": bucket_name})
-        try:
-            result = self.client.buckets().getIamPolicy(**query).execute()
-        except Exception as e:
-            # Not Authorized
-            result = {'error_flag': 'na'}
-            _LOGGER.error(f'Error occurred at buckets().getIamPolicy(**query) : skipped \n {e}')
+        result = self.client.buckets().getIamPolicy(**query).execute()
 
         return result
 
@@ -48,20 +39,15 @@ class StorageConnector(GoogleCloudConnector):
         count = 0
         request = self.client.objects().list(**query)
         while request is not None:
-            try:
-                response = request.execute()
-                result = response.get('items', [])
-                count = count + len(result)
-                for template in result:
-                    objects_list.append({'size': template['size']})
-                # Max iteration
-                if count > MAX_OBJECTS:
-                    # TOO MANY objects
-                    return False
-                request = self.client.objects().list_next(previous_request=request, previous_response=response)
-
-            except Exception as e:
-                request = None
-                _LOGGER.error(f'Error occurred at objects().list(**query) : skipped \n : {e}')
+            response = request.execute()
+            result = response.get('items', [])
+            count = count + len(result)
+            for template in result:
+                objects_list.append({'size': template['size']})
+            # Max iteration
+            if count > MAX_OBJECTS:
+                # TOO MANY objects
+                return False
+            request = self.client.objects().list_next(previous_request=request, previous_response=response)
 
         return objects_list

@@ -19,15 +19,12 @@ class CloudSQLConnector(GoogleCloudConnector):
         instance_list = []
         query.update({'project': self.project_id})
         request = self.client.instances().list(**query)
-        try:
-            while request is not None:
-                response = request.execute()
-                for instance in response.get('items', []):
-                    instance_list.append(instance)
-                request = self.client.instances().list_next(previous_request=request, previous_response=response)
-        except Exception as e:
-            _LOGGER.error(f'Error occurred at CloudSQLConnector: instances().list(**query) \n {e}')
-            pass
+        while request is not None:
+            response = request.execute()
+            for instance in response.get('items', []):
+                instance_list.append(instance)
+            request = self.client.instances().list_next(previous_request=request, previous_response=response)
+
         return instance_list
 
     def list_databases(self, instance_name, **query):
