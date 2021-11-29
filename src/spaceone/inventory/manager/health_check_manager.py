@@ -33,7 +33,9 @@ class HealthCheckManager(GoogleCloudManager):
 
         try:
             health_check_conn: HealthCheckConnector = self.locator.get_connector(self.connector_name, **params)
-            for health_check in health_check_conn.list_health_checks():
+            health_checks = health_check_conn.list_health_checks()
+
+            for health_check in health_checks:
                 # No labels!!
                 _LOGGER.debug(f'health_check => {health_check}')
                 health_check_data = HealthCheck(health_check, strict=False)

@@ -41,6 +41,7 @@ class RouteManager(GoogleCloudManager):
             routes = route_conn.list_routes()
             compute_vms = route_conn.list_instance()
             region = 'global'
+
             for route in routes:
                 display = {
                     'network_display': self._get_matched_last_target('network', route),

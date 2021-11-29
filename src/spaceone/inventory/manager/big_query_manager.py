@@ -40,7 +40,9 @@ class BigQueryManager(GoogleCloudManager):
             big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
 
             data_sets = big_query_conn.list_dataset()
+            _LOGGER.debug(f'data_sets => {data_sets}')
             projects = big_query_conn.list_projects()
+            _LOGGER.debug(f'projects => {projects}')
 
             # comment out jobs for temporarily
             # jobs = big_query_conn.list_job()
@@ -100,7 +102,6 @@ class BigQueryManager(GoogleCloudManager):
 
                 self.set_region_code(region)
                 collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
-
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
 

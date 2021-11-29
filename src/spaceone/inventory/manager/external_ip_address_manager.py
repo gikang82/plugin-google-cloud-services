@@ -73,8 +73,8 @@ class ExternalIPAddressManager(GoogleCloudManager):
                     ErrorResourceResponse({
                         'message': json.dumps(e),
                         'resource': {
-                            'cloud_service_group': 'BigQuery',
-                            'cloud_service_type': 'SQLWorkspace'
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'ExternalIPAddress'
                         }
                     })
                 ]
@@ -83,8 +83,8 @@ class ExternalIPAddressManager(GoogleCloudManager):
                     ErrorResourceResponse({
                         'message': str(e),
                         'resource': {
-                            'cloud_service_group': 'BigQuery',
-                            'cloud_service_type': 'SQLWorkspace'
+                            'cloud_service_group': 'VPC',
+                            'cloud_service_type': 'ExternalIPAddress'
                         }
                     })
                 ]

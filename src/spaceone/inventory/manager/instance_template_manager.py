@@ -42,7 +42,6 @@ class InstanceTemplateManager(GoogleCloudManager):
             instance_groups = instance_template_conn.list_instance_group_managers()
             machine_types = instance_template_conn.list_machine_types()
 
-
             for inst_template in instance_templates:
                 properties = inst_template.get('properties', {})
                 tags = properties.get('tags', {})

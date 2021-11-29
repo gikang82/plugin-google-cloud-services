@@ -86,8 +86,8 @@ class DiskManager(GoogleCloudManager):
                     ErrorResourceResponse({
                         'message': json.dumps(e),
                         'resource': {
-                            'cloud_service_group': 'BigQuery',
-                            'cloud_service_type': 'SQLWorkspace'
+                            'cloud_service_group': 'ComputeEngine',
+                            'cloud_service_type': 'Disk'
                         }
                     })
                 ]

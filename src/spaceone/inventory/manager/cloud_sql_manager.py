@@ -36,8 +36,9 @@ class CloudSQLManager(GoogleCloudManager):
 
         try:
             cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
+            instances = cloud_sql_conn.list_instances()
 
-            for instance in cloud_sql_conn.list_instances():
+            for instance in instances:
                 instance_name = instance['name']
                 project = instance.get('project', '')
                 # Get Databases

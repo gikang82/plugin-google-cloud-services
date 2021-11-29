@@ -40,10 +40,8 @@ class InstanceGroupManager(GoogleCloudManager):
             instance_group_managers = instance_group_conn.list_instance_group_managers()
             autoscalers = instance_group_conn.list_autoscalers()
             instance_templates = instance_group_conn.list_instance_templates()
-
-
-
             _LOGGER.debug(f'instance_groups => {instance_groups}')
+
             for instance_group in instance_groups:
 
                 instance_group.update({
