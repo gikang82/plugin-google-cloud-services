@@ -102,7 +102,7 @@ class DiskManager(GoogleCloudManager):
                     })
                 ]
 
-        _LOGGER.error(f'** Disk Finished {time.time() - start_time} Seconds **')
+        _LOGGER.debug(f'** Disk Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services
 
     def get_iops_rate(self, disk_type, disk_size, flag):

@@ -131,24 +131,27 @@ class InstanceTemplateManager(GoogleCloudManager):
         for disk in instance.get('disks', []):
             _LOGGER.debug(f'get_disk => {disk}')
             init_param = disk.get('initializeParams', {})
+            '''
             # initializeParams: {diskSizeGb: ""} can be Null
             if init_param.get('diskSizeGb') is not None:
                 size = self._get_bytes(int(init_param.get('diskSizeGb')))
             else:
                 size = 0
+            '''
             disk_info.append(Disk({
                 'device_index': disk.get('index'),
                 'device': disk.get('deviceName'),
                 'device_type': disk.get('type', ''),
                 'device_mode': disk.get('mode', ''),
-                'size': float(size),
+                'size': self.get_disk_size(init_param),
                 'tags': self.get_tags_info(disk)
             }, strict=False))
         return disk_info
 
     def get_tags_info(self, disk):
         init_param = disk.get('initializeParams', {})
-        disk_size = float(init_param.get('diskSizeGb'))
+        #disk_size = float(init_param.get('diskSizeGb'))
+        disk_size = self.get_disk_size(init_param)
         disk_type = init_param.get('diskType')
         sc_image = init_param.get('sourceImage', '')
         return {
@@ -185,6 +188,14 @@ class InstanceTemplateManager(GoogleCloudManager):
     def get_throughput_rate(self, disk_type, disk_size):
         const = self._get_throughput_constant(disk_type)
         return disk_size * const
+
+    def get_disk_size(self, init_param) -> float:
+        # initializeParams: {diskSizeGb: ""} can be Null
+        if init_param.get('diskSizeGb') is not None:
+            disk_size = self._get_bytes(int(init_param.get('diskSizeGb')))
+        else:
+            disk_size = 0
+        return disk_size
 
     @staticmethod
     def _get_machine_type(instance, machine_types):
