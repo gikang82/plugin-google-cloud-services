@@ -135,7 +135,7 @@ class InstanceTemplateManager(GoogleCloudManager):
             if init_param.get('diskSizeGb') is not None:
                 size = self._get_bytes(int(init_param.get('diskSizeGb')))
             else:
-                size = ""
+                size = 0
             disk_info.append(Disk({
                 'device_index': disk.get('index'),
                 'device': disk.get('deviceName'),
