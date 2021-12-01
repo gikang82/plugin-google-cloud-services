@@ -101,7 +101,7 @@ jobs:
 
   notify_to_slack:
     if: github.repository_owner == 'spaceone-dev'
-    needs: [condition_check, update_local_version_file, docker]
+    needs: [condition_check, docker]
     runs-on: ubuntu-latest
     steps:
       - name: Slack
