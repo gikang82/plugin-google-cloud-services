@@ -1,4 +1,5 @@
-from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, EnumDyField, SizeField
+from spaceone.inventory.libs.schema.metadata.dynamic_field import TextDyField, SearchField, DateTimeDyField, EnumDyField, \
+    SizeField
 from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeResource, CloudServiceTypeResponse, \
     CloudServiceTypeMeta
 
@@ -9,7 +10,7 @@ cst_health_check.group = 'ComputeEngine'
 cst_health_check.service_code = 'compute'
 cst_health_check.labels = ['Networking', 'Compute']
 cst_health_check.tags = {
-    'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Generic.svg',
+    'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
 }
 
 cst_health_check._metadata = CloudServiceTypeMeta.set_meta(
@@ -20,7 +21,8 @@ cst_health_check._metadata = CloudServiceTypeMeta.set_meta(
             'primary': ['TCP'],
             'indigo.500': ['SSL'],
             'coral.600': ['HTTP', 'HTTPS'],
-            'green.500': ['HTTP2']
+            'green.500': ['HTTP2'],
+            'gray.900': ['GRPC']
         }),
         DateTimeDyField.data_source('Creation Time', 'data.creation_time')
     ],
