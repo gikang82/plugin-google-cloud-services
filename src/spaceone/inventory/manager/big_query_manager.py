@@ -40,9 +40,7 @@ class BigQueryManager(GoogleCloudManager):
             big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
 
             data_sets = big_query_conn.list_dataset()
-            _LOGGER.debug(f'data_sets => {data_sets}')
             projects = big_query_conn.list_projects()
-            _LOGGER.debug(f'projects => {projects}')
 
             # comment out jobs for temporarily
             # jobs = big_query_conn.list_job()
@@ -102,7 +100,6 @@ class BigQueryManager(GoogleCloudManager):
                 })
 
                 self.set_region_code(region)
-                _LOGGER.debug(f'step 13')
                 collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
@@ -167,12 +164,10 @@ class BigQueryManager(GoogleCloudManager):
     def _get_table_list_with_schema(big_conn: BigQueryConnector, bq_dt_tables):
         update_bq_dt_tables = []
         table_schemas = []
-        _LOGGER.debug(f'dq_dt_tables => {bq_dt_tables}')
         for bq_dt_table in bq_dt_tables:
             table_ref = bq_dt_table.get('tableReference')
             table_single = big_conn.get_tables(table_ref.get('datasetId'), table_ref.get('tableId'))
 
-            _LOGGER.debug(f'bq_dt_table => {bq_dt_table}')
             if table_single is not None:
                 creationTime = table_single.get('creationTime')
                 if creationTime:
@@ -193,12 +188,9 @@ class BigQueryManager(GoogleCloudManager):
                     update_bq_dt_tables.append(table_single)
 
                     for single_schema in fields:
-                        _LOGGER.debug(f'single_schema => {single_schema}')
                         single_schema.update({'table_id': table_ref.get('tableId')})
                         table_schemas.append(single_schema)
 
-            _LOGGER.debug(f'final update_bq_dt_tables => {update_bq_dt_tables}')
-            _LOGGER.debug(f'final table_schemas => {table_schemas}')
         return update_bq_dt_tables, table_schemas
 
     def _get_matching_jobs(self, dataset, tables, jobs):
