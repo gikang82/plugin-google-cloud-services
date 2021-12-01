@@ -34,6 +34,7 @@ class TableReference(Model):
     dataset_id = StringType(deserialize_from='datasetId', serialize_when_none=False)
     table_id = StringType(deserialize_from='tableId', serialize_when_none=False)
 
+
 class Clustering(Model):
     fields = ListType(StringType(), serialize_when_none=False)
 
@@ -89,7 +90,6 @@ class StatisticQuery(Model):
     statement_type = StringType(deserialize_from='statementType', serialize_when_none=False)
 
 
-
 class JobStatistics(Model):
     query = ModelType(StatisticQuery)
     creation_time = DateTimeType(deserialize_from='creationTime', serialize_when_none=False)
@@ -103,7 +103,6 @@ class JobStatistics(Model):
     reservation_id = StringType(deserialize_from='reservation_id', serialize_when_none=False)
     num_child_jobs = StringType(deserialize_from='numChildJobs', serialize_when_none=False)
     parent_job_id = StringType(deserialize_from='parentJobId', serialize_when_none=False)
-
 
 
 class JobConfigurationQuery(Model):
@@ -156,7 +155,8 @@ class Table(Model):
     friendly_name = StringType(serialize_when_none=False)
     type = StringType(serialize_when_none=False)
     range_partitioning = ModelType(RangePartitioning, deserialize_from='rangePartitioning', serialize_when_none=False)
-    labels = ListType(ModelType(Labels), default=[])
+    Labels = ModelType(Labels, deserialize_from='Labels', serialize_when_none=False)
+    #labels = ListType(ModelType(Labels), default=[])
     view = ModelType(View, serialize_when_none=False)
     num_rows = StringType(deserialize_from='numRows', serialize_when_none=False)
     schema = ListType(ModelType(TableSchema), default=[])
