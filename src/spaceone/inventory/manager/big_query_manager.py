@@ -40,9 +40,7 @@ class BigQueryManager(GoogleCloudManager):
             big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
 
             data_sets = big_query_conn.list_dataset()
-            _LOGGER.debug(f'data_sets => {data_sets}')
             projects = big_query_conn.list_projects()
-            _LOGGER.debug(f'projects => {projects}')
 
             # comment out jobs for temporarily
             # jobs = big_query_conn.list_job()
@@ -58,12 +56,13 @@ class BigQueryManager(GoogleCloudManager):
                 update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
                 matched_projects = self._get_matching_project(dataset_project_id, projects)
                 matched_jobs = self._get_matching_jobs(data_set, update_bq_dt_tables, jobs)
-
                 creation_time = bq_dataset.get('creationTime')
+
                 if creation_time:
                     bq_dataset.update({'creationTime': datetime.fromtimestamp(int(creation_time) / 1000)})
 
                 last_modified_time = bq_dataset.get('lastModifiedTime')
+
                 if last_modified_time:
                     bq_dataset.update({'lastModifiedTime': datetime.fromtimestamp(int(last_modified_time) / 1000)})
 
@@ -79,6 +78,7 @@ class BigQueryManager(GoogleCloudManager):
                     bq_dataset.update({'default_table_expiration_ms_display': self.get_ms_display(exp_table_ms)})
 
                 labels = self.convert_labels_format(bq_dataset.get('labels', {}))
+
                 bq_dataset.update({
                     'name': data_set_id,
                     'project': project_id,
@@ -90,7 +90,6 @@ class BigQueryManager(GoogleCloudManager):
                     'matching_projects': matched_projects,
                     'labels': labels
                 })
-
                 big_query_data = BigQueryWorkSpace(bq_dataset, strict=False)
                 big_query_work_space_resource = SQLWorkSpaceResource({
                     'tags': labels,
@@ -165,7 +164,6 @@ class BigQueryManager(GoogleCloudManager):
     def _get_table_list_with_schema(big_conn: BigQueryConnector, bq_dt_tables):
         update_bq_dt_tables = []
         table_schemas = []
-
         for bq_dt_table in bq_dt_tables:
             table_ref = bq_dt_table.get('tableReference')
             table_single = big_conn.get_tables(table_ref.get('datasetId'), table_ref.get('tableId'))
