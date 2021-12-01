@@ -35,8 +35,7 @@ class CollectorService(BaseService):
             'ExternalIPAddressManager',
             'FirewallManager',
             'RouteManager',
-            'LoadBalancingManager',
-            'HealthCheckManager'
+            'LoadBalancingManager'
         ]
 
     @check_required(['options'])
