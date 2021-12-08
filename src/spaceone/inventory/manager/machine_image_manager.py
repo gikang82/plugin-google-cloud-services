@@ -33,6 +33,7 @@ class MachineImageManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -56,6 +57,7 @@ class MachineImageManager(GoogleCloudManager):
                         disk_types.extend(list_disk_types)
 
             for machine_image in machine_images:
+                machine_image_id = machine_image.get('id')
                 properties = machine_image.get('sourceInstanceProperties', {})
                 tags = properties.get('tags', {})
 
@@ -98,30 +100,11 @@ class MachineImageManager(GoogleCloudManager):
                 collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'MachineImage'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'MachineImage'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'MachineImage', machine_image_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Machine Image Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_disks(self, instance, boot_image):
         disk_info = []

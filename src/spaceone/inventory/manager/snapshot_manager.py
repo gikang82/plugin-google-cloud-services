@@ -34,6 +34,7 @@ class SnapshotManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -45,6 +46,7 @@ class SnapshotManager(GoogleCloudManager):
             disk_list_info = snapshot_conn.list_all_disks_for_snapshots()
 
             for snapshot in snapshots:
+                snapshot_id = snapshot.get('id')
                 region = self.get_matching_region(snapshot.get('storageLocations'))
                 snapshot_schedule = []
                 snapshot_schedule_display = []
@@ -79,30 +81,11 @@ class SnapshotManager(GoogleCloudManager):
                 collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'Snapshot'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'Snapshot'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Snapshot', snapshot_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** SnapShot Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_matching_region(self, svc_location):
         region_code = svc_location[0] if len(svc_location) > 0 else 'global'

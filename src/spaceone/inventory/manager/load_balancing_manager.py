@@ -31,6 +31,7 @@ class LoadBalancingManager(GoogleCloudManager):
             CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
+        error_responses = []
 
         try:
 
@@ -83,6 +84,7 @@ class LoadBalancingManager(GoogleCloudManager):
             load_balancers.extend(lbs_from_target_pool)
 
             for load_balancer in load_balancers:
+                lb_id = load_balancer.get('id')
                 lb_type = load_balancer.get('lb_type')
                 health_checks_vo = load_balancer.get('heath_check_vos', {})
                 health_self_links = health_checks_vo.get('health_check_self_link_list', [])
@@ -155,7 +157,7 @@ class LoadBalancingManager(GoogleCloudManager):
                 load_balancer.update({'backends': backend_vo})
 
                 ########################################
-                # Set Backend Tab to LoadBlancer
+                # Set Backend Tab to LoadBalancer
                 ########################################
                 backends_tab = self._get_backend_tabs(load_balancer)
                 load_balancer.update({
@@ -202,30 +204,11 @@ class LoadBalancingManager(GoogleCloudManager):
                 collected_cloud_services.append(LoadBalancingResponse({'resource': lb_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'NetworkService',
-                            'cloud_service_type': 'LoadBalancing'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'NetworkService',
-                            'cloud_service_type': 'LoadBalancing'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'NetworkService', 'LoadBalancing', lb_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_backend_from_target_pools(self, loadbalcnacer, instance_group):
         for pool in loadbalcnacer.get('target_pools', []):

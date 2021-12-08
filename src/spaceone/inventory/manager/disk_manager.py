@@ -33,6 +33,7 @@ class DiskManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -41,6 +42,7 @@ class DiskManager(GoogleCloudManager):
             resource_policies = disk_conn.list_resource_policies()
 
             for disk in disks:
+                disk_id = disk.get('id')
                 disk_type = self._get_last_target(disk.get('type'))
                 disk_size = float(disk.get('sizeGb'))
                 zone = self._get_last_target(disk.get('zone'))
@@ -50,6 +52,7 @@ class DiskManager(GoogleCloudManager):
                 labels = self.convert_labels_format(disk.get('labels', {}))
                 disk.update({
                     'project': secret_data['project_id'],
+                    'id': disk_id,
                     'zone': zone,
                     'region': region,
                     'in_used_by': self._get_in_used_by(disk.get('users', [])),
@@ -77,33 +80,13 @@ class DiskManager(GoogleCloudManager):
 
                 self.set_region_code(disk['region'])
                 collected_cloud_services.append(DiskResponse({'resource': disk_resource}))
-                _LOGGER.debug(f'collected_cloud_services => {collected_cloud_services[0].to_primitive()}')
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'Disk'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'Disk'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Disk', disk_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Disk Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_iops_rate(self, disk_type, disk_size, flag):
         const = self._get_iops_constant(disk_type, flag)

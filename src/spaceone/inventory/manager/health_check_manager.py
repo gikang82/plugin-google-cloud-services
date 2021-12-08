@@ -30,6 +30,7 @@ class HealthCheckManager(GoogleCloudManager):
             CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
+        error_responses = []
 
         try:
             health_check_conn: HealthCheckConnector = self.locator.get_connector(self.connector_name, **params)
@@ -37,9 +38,8 @@ class HealthCheckManager(GoogleCloudManager):
 
             for health_check in health_checks:
                 # No labels!!
-                _LOGGER.debug(f'health_check => {health_check}')
+                health_check_id = health_check.get('id')
                 health_check_data = HealthCheck(health_check, strict=False)
-                _LOGGER.debug(f'health_check_data => {health_check_data}')
                 try:
                     health_check_resource = HealthCheckResource({
                         'data': health_check_data,
@@ -49,35 +49,14 @@ class HealthCheckManager(GoogleCloudManager):
                     })
                 except Exception as e:
                     _LOGGER.error(f'test => {e}')
-                _LOGGER.debug(f'health_check_resource => {health_check_resource}')
                 collected_cloud_services.append(HealthCheckResponse({'resource': health_check_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
+            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'HealthCheck', health_check_id)
+            error_responses = error_responses.append(error_response)
 
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'HealthCheck'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'HealthCheck'
-                        }
-                    })
-                ]
-
-        _LOGGER.debug(f'collected_cloud_services : {collected_cloud_services}')
         _LOGGER.debug(f'** HealthCheck Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     @staticmethod
     def get_stackdriver(project, name):
