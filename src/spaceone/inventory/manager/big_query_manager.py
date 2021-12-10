@@ -50,6 +50,7 @@ class BigQueryManager(GoogleCloudManager):
             update_bq_dt_tables = []
             table_schemas = []
             matched_jobs = []
+            data_set_id = ""
 
             for data_set in data_sets:
                 data_refer = data_set.get('datasetReference', {})

@@ -31,6 +31,7 @@ class HealthCheckManager(GoogleCloudManager):
         """
         collected_cloud_services = []
         error_responses = []
+        health_check_id = ""
 
         try:
             health_check_conn: HealthCheckConnector = self.locator.get_connector(self.connector_name, **params)

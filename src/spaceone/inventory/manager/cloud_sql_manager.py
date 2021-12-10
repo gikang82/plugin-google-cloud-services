@@ -34,6 +34,7 @@ class CloudSQLManager(GoogleCloudManager):
 
         collected_cloud_services = []
         error_responses = []
+        instance_name = ""
 
         try:
             cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
@@ -68,8 +69,8 @@ class CloudSQLManager(GoogleCloudManager):
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
             # Database Instance name is key(= instance_id)
-            error_response = self.generate_resource_error_response(e, 'CloudSQL', 'Instance', 'instance_name')
-            error_responses = error_response.append(error_response)
+            error_response = self.generate_resource_error_response(e, 'CloudSQL', 'Instance', instance_name)
+            error_response.append(error_response)
 
         _LOGGER.debug(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

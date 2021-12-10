@@ -1,11 +1,9 @@
 import time
 import logging
-import json
 from ipaddress import ip_address, IPv4Address
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.external_ip_address.cloud_service import *
 from spaceone.inventory.connector.external_ip_address import ExternalIPAddressConnector
 from spaceone.inventory.model.external_ip_address.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -33,6 +31,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
         """
         collected_cloud_services = []
         error_responses = []
+        external_ip_addr_id = ""
 
         try:
             secret_data = params['secret_data']
@@ -70,7 +69,7 @@ class ExternalIPAddressManager(GoogleCloudManager):
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
             error_response = self.generate_resource_error_response(e, 'VPC', 'ExternalIPAddress', external_ip_addr_id)
-            error_responses = error_responses.append(error_response)
+            error_responses.append(error_response)
 
         _LOGGER.debug(f'** External IP Address Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

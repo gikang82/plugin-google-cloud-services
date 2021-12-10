@@ -32,6 +32,7 @@ class LoadBalancingManager(GoogleCloudManager):
         """
         collected_cloud_services = []
         error_responses = []
+        lb_id = ""
 
         try:
 
@@ -205,7 +206,7 @@ class LoadBalancingManager(GoogleCloudManager):
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
             error_response = self.generate_resource_error_response(e, 'NetworkService', 'LoadBalancing', lb_id)
-            error_responses = error_responses.append(error_response)
+            error_responses.append(error_response)
 
         _LOGGER.debug(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

@@ -34,6 +34,7 @@ class DiskManager(GoogleCloudManager):
 
         collected_cloud_services = []
         error_responses = []
+        disk_id = ""
 
         try:
             secret_data = params['secret_data']
@@ -83,7 +84,7 @@ class DiskManager(GoogleCloudManager):
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
             error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Disk', disk_id)
-            error_responses = error_responses.append(error_response)
+            error_responses.append(error_response)
 
         _LOGGER.debug(f'** Disk Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

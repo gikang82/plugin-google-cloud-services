@@ -34,6 +34,7 @@ class VPCNetworkManager(GoogleCloudManager):
 
         collected_cloud_services = []
         error_responses = []
+        network_id = ""
 
         try:
 
@@ -93,7 +94,7 @@ class VPCNetworkManager(GoogleCloudManager):
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
             error_response = self.generate_resource_error_response(e, 'VPC', 'VPCNetwork', network_id)
-            error_responses = error_responses.append(error_response)
+            error_responses.append(error_response)
 
         _LOGGER.debug(f'** VPC Network Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

@@ -136,7 +136,6 @@ class GoogleCloudManager(BaseManager):
                     'cloud_service_type': cloud_service_type,
                     'resource_id': resource_id
                 }})
-
         return error_resource_response
 
     @staticmethod
