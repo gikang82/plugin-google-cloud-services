@@ -1,10 +1,8 @@
 import time
 import logging
-import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.load_balancing.cloud_service import *
 from spaceone.inventory.connector.load_balancing import LoadBalancingConnector
 from spaceone.inventory.model.load_balancing.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -32,58 +30,58 @@ class LoadBalancingManager(GoogleCloudManager):
         """
         collected_cloud_services = []
         error_responses = []
+        lb_id = ""
 
-        try:
+        secret_data = params['secret_data']
+        load_bal_conn: LoadBalancingConnector = self.locator.get_connector(self.connector_name, **params)
 
-            secret_data = params['secret_data']
-            load_bal_conn: LoadBalancingConnector = self.locator.get_connector(self.connector_name, **params)
+        project_id = secret_data.get('project_id')
+        load_balancers = []
 
-            project_id = secret_data.get('project_id')
-            load_balancers = []
+        instance_groups = load_bal_conn.list_instance_groups()
+        target_pools = load_bal_conn.list_target_pools()
+        url_maps = load_bal_conn.list_url_maps()
+        forwarding_rules = load_bal_conn.list_forwarding_rules()
+        backend_services = load_bal_conn.list_back_end_services()
 
-            instance_groups = load_bal_conn.list_instance_groups()
-            target_pools = load_bal_conn.list_target_pools()
-            url_maps = load_bal_conn.list_url_maps()
-            forwarding_rules = load_bal_conn.list_forwarding_rules()
-            backend_services = load_bal_conn.list_back_end_services()
+        backend_buckets = load_bal_conn.list_back_end_buckets()
+        ssl_certificates = load_bal_conn.list_ssl_certificates()
+        auto_scalers = load_bal_conn.list_auto_scalers()
+        health_checks = load_bal_conn.list_health_checks()
 
-            backend_buckets = load_bal_conn.list_back_end_buckets()
-            ssl_certificates = load_bal_conn.list_ssl_certificates()
-            auto_scalers = load_bal_conn.list_auto_scalers()
-            health_checks = load_bal_conn.list_health_checks()
+        legacy_health_checks = []
+        http_health_checks = load_bal_conn.list_http_health_checks()
+        https_health_checks = load_bal_conn.list_https_health_checks()
+        legacy_health_checks.extend(http_health_checks)
+        legacy_health_checks.extend(https_health_checks)
 
-            legacy_health_checks = []
-            http_health_checks = load_bal_conn.list_http_health_checks()
-            https_health_checks = load_bal_conn.list_https_health_checks()
-            legacy_health_checks.extend(http_health_checks)
-            legacy_health_checks.extend(https_health_checks)
+        # proxies
+        grpc_proxies = load_bal_conn.list_grpc_proxies()
+        http_proxies = load_bal_conn.list_target_http_proxies()
+        https_proxies = load_bal_conn.list_target_https_proxies()
+        ssl_proxies = load_bal_conn.list_ssl_proxies()
+        tcp_proxies = load_bal_conn.list_tcp_proxies()
 
-            # proxies
-            grpc_proxies = load_bal_conn.list_grpc_proxies()
-            http_proxies = load_bal_conn.list_target_http_proxies()
-            https_proxies = load_bal_conn.list_target_https_proxies()
-            ssl_proxies = load_bal_conn.list_ssl_proxies()
-            tcp_proxies = load_bal_conn.list_tcp_proxies()
+        target_proxies, selective_proxies = self.get_all_proxy_list(grpc_proxies,
+                                                                    http_proxies,
+                                                                    https_proxies,
+                                                                    ssl_proxies,
+                                                                    tcp_proxies,
+                                                                    forwarding_rules)
 
-            target_proxies, selective_proxies = self.get_all_proxy_list(grpc_proxies,
-                                                                        http_proxies,
-                                                                        https_proxies,
-                                                                        ssl_proxies,
-                                                                        tcp_proxies,
-                                                                        forwarding_rules)
+        lbs_from_proxy = self.get_load_balacer_from_target_proxy(backend_services,
+                                                                 selective_proxies,
+                                                                 project_id)
 
-            lbs_from_proxy = self.get_load_balacer_from_target_proxy(backend_services,
-                                                                     selective_proxies,
-                                                                     project_id)
+        lbs_from_url_map = self.get_load_balancer_from_url_maps(url_maps, backend_services, backend_buckets, project_id)
+        lbs_from_target_pool = self.get_load_balancer_from_target_pools(target_pools, project_id)
 
-            lbs_from_url_map = self.get_load_balancer_from_url_maps(url_maps, backend_services, backend_buckets, project_id)
-            lbs_from_target_pool = self.get_load_balancer_from_target_pools(target_pools, project_id)
+        load_balancers.extend(lbs_from_proxy)
+        load_balancers.extend(lbs_from_url_map)
+        load_balancers.extend(lbs_from_target_pool)
 
-            load_balancers.extend(lbs_from_proxy)
-            load_balancers.extend(lbs_from_url_map)
-            load_balancers.extend(lbs_from_target_pool)
-
-            for load_balancer in load_balancers:
+        for load_balancer in load_balancers:
+            try:
                 lb_id = load_balancer.get('id')
                 lb_type = load_balancer.get('lb_type')
                 health_checks_vo = load_balancer.get('heath_check_vos', {})
@@ -202,10 +200,10 @@ class LoadBalancingManager(GoogleCloudManager):
 
                 self.set_region_code(region)
                 collected_cloud_services.append(LoadBalancingResponse({'resource': lb_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'NetworkService', 'LoadBalancing', lb_id)
-            error_responses = error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'NetworkService', 'LoadBalancing', lb_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Load Balancing Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

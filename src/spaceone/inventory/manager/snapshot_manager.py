@@ -35,17 +35,18 @@ class SnapshotManager(GoogleCloudManager):
 
         collected_cloud_services = []
         error_responses = []
+        snapshot_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            snapshot_conn: SnapshotConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        snapshot_conn: SnapshotConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # Get lists that relate with snapshots through Google Cloud API
-            snapshots = snapshot_conn.list_snapshot()
-            all_region_resource_policies = snapshot_conn.list_resource_policies()
-            disk_list_info = snapshot_conn.list_all_disks_for_snapshots()
+        # Get lists that relate with snapshots through Google Cloud API
+        snapshots = snapshot_conn.list_snapshot()
+        all_region_resource_policies = snapshot_conn.list_resource_policies()
+        disk_list_info = snapshot_conn.list_all_disks_for_snapshots()
 
-            for snapshot in snapshots:
+        for snapshot in snapshots:
+            try:
                 snapshot_id = snapshot.get('id')
                 region = self.get_matching_region(snapshot.get('storageLocations'))
                 snapshot_schedule = []
@@ -79,10 +80,10 @@ class SnapshotManager(GoogleCloudManager):
 
                 self.set_region_code(region.get('region_code'))
                 collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Snapshot', snapshot_id)
-            error_responses = error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Snapshot', snapshot_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** SnapShot Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

@@ -1,12 +1,10 @@
 import time
 import logging
-import json
 
 from datetime import datetime, timedelta
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
 from spaceone.inventory.model.storage.cloud_service import *
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.storage import StorageConnector
 from spaceone.inventory.model.storage.cloud_service_type import CLOUD_SERVICE_TYPES
 
@@ -33,15 +31,16 @@ class StorageManager(GoogleCloudManager):
         """
         collected_cloud_services = []
         error_responses = []
+        bucket_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            storage_conn: StorageConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        storage_conn: StorageConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # Get lists that relate with snapshots through Google Cloud API
-            buckets = storage_conn.list_buckets()
+        # Get lists that relate with snapshots through Google Cloud API
+        buckets = storage_conn.list_buckets()
 
-            for bucket in buckets:
+        for bucket in buckets:
+            try:
                 bucket_name = bucket.get('name')
                 bucket_id = bucket.get('id')
 
@@ -85,10 +84,10 @@ class StorageManager(GoogleCloudManager):
 
                 self.set_region_code(region.get('region_code'))
                 collected_cloud_services.append(StorageResponse({'resource': bucket_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'Storage', 'Bucket', bucket_id)
-            error_responses = error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'Storage', 'Bucket', bucket_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Storage Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

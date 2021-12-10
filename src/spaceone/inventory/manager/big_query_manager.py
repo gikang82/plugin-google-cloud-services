@@ -1,10 +1,8 @@
 import logging
 import time
-import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.bigquery.cloud_service import *
 from spaceone.inventory.connector.big_query import BigQueryConnector
 from spaceone.inventory.model.bigquery.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -34,29 +32,30 @@ class BigQueryManager(GoogleCloudManager):
 
         collected_cloud_services = []
         error_responses = []
+        data_set_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            project_id = secret_data['project_id']
-            big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        project_id = secret_data['project_id']
+        big_query_conn: BigQueryConnector = self.locator.get_connector(self.connector_name, **params)
 
-            data_sets = big_query_conn.list_dataset()
-            projects = big_query_conn.list_projects()
+        data_sets = big_query_conn.list_dataset()
+        projects = big_query_conn.list_projects()
 
-            # comment out jobs for temporarily
-            # jobs = big_query_conn.list_job()
+        # comment out jobs for temporarily
+        # jobs = big_query_conn.list_job()
 
-            jobs = []
-            update_bq_dt_tables = []
-            table_schemas = []
-            matched_jobs = []
+        jobs = []
+        update_bq_dt_tables = []
+        table_schemas = []
+        matched_jobs = []
 
-            for data_set in data_sets:
+        for data_set in data_sets:
+            try:
                 data_refer = data_set.get('datasetReference', {})
                 data_set_id = data_refer.get('datasetId')
                 dataset_project_id = data_refer.get('projectId')
                 bq_dataset = big_query_conn.get_dataset(data_set_id)
-                # skip if dataset id is unvisible
+                # skip if dataset id is invisible
                 if self.get_visible_on_console(data_set_id):
                     bq_dt_tables = big_query_conn.list_tables(data_set_id)
                     update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
@@ -106,13 +105,12 @@ class BigQueryManager(GoogleCloudManager):
                     'region_code': region,
                     'reference': ReferenceModel(big_query_data.reference())
                 })
-
                 self.set_region_code(region)
                 collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'BigQuery', 'SQLWorkspace', data_set_id)
-            error_responses = error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'BigQuery', 'SQLWorkspace', data_set_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Big Query Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

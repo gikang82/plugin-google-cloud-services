@@ -33,17 +33,18 @@ class RouteManager(GoogleCloudManager):
 
         collected_cloud_services = []
         error_responses = []
+        route_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            route_conn: RouteConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        route_conn: RouteConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # Get lists that relate with snapshots through Google Cloud API
-            routes = route_conn.list_routes()
-            compute_vms = route_conn.list_instance()
-            region = 'global'
+        # Get lists that relate with snapshots through Google Cloud API
+        routes = route_conn.list_routes()
+        compute_vms = route_conn.list_instance()
+        region = 'global'
 
-            for route in routes:
+        for route in routes:
+            try:
                 display = {
                     'network_display': self._get_matched_last_target('network', route),
                     'next_hop': self.get_next_hop(route),
@@ -74,10 +75,10 @@ class RouteManager(GoogleCloudManager):
 
                 self.set_region_code(region)
                 collected_cloud_services.append(RouteResponse({'resource': route_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'VPC', 'Route', route_id)
-            error_responses = error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'VPC', 'Route', route_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Route Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

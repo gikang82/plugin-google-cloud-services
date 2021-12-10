@@ -89,13 +89,13 @@ class CollectorService(BaseService):
 
                 _manager = self.locator.get_manager(execute_manager)
                 future_executors.append(executor.submit(_manager.collect_resources, params))
-        #
+
             for future in concurrent.futures.as_completed(future_executors):
                 try:
                     for result in future.result():
                         yield result.to_primitive()
                 except Exception as e:
-                    _LOGGER.error(f'failed to yield result => {e}')
+                    _LOGGER.error(f'[collect] failed to yield result => {e}')
 
                     if type(e) is dict:
                         error_resource_response = ErrorResourceResponse(

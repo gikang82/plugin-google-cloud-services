@@ -74,7 +74,7 @@ class GoogleCloudManager(BaseManager):
             total_resources.extend(self.collect_region())
 
         except Exception as e:
-            error_resource_response = self.generate_error_response(e, self.cloud_service_types[0].resource.group, self.cloud_service[0].resource.name)
+            error_resource_response = self.generate_error_response(e, self.cloud_service_types[0].resource.group, self.cloud_service_types[0].resource.name)
             total_resources.append(error_resource_response)
             _LOGGER.error(f'[collect_resources] {e}')
 
@@ -136,7 +136,6 @@ class GoogleCloudManager(BaseManager):
                     'cloud_service_type': cloud_service_type,
                     'resource_id': resource_id
                 }})
-
         return error_resource_response
 
     @staticmethod
