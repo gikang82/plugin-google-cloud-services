@@ -3,13 +3,13 @@ import logging
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.instance_group import InstanceGroupConnector
 from spaceone.inventory.model.instance_group.data import *
 from spaceone.inventory.model.instance_group.cloud_service import *
 from spaceone.inventory.model.instance_group.cloud_service_type import CLOUD_SERVICE_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class InstanceGroupManager(GoogleCloudManager):
     connector_name = 'InstanceGroupConnector'
@@ -33,17 +33,17 @@ class InstanceGroupManager(GoogleCloudManager):
         error_responses = []
         instance_group_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            instance_group_conn: InstanceGroupConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        instance_group_conn: InstanceGroupConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # Get all Resources
-            instance_groups = instance_group_conn.list_instance_groups()
-            instance_group_managers = instance_group_conn.list_instance_group_managers()
-            autoscalers = instance_group_conn.list_autoscalers()
-            instance_templates = instance_group_conn.list_instance_templates()
+        # Get all Resources
+        instance_groups = instance_group_conn.list_instance_groups()
+        instance_group_managers = instance_group_conn.list_instance_group_managers()
+        autoscalers = instance_group_conn.list_autoscalers()
+        instance_templates = instance_group_conn.list_instance_templates()
 
-            for instance_group in instance_groups:
+        for instance_group in instance_groups:
+            try:
                 instance_group_id = instance_group.get('id')
 
                 instance_group.update({
@@ -116,11 +116,10 @@ class InstanceGroupManager(GoogleCloudManager):
 
                 self.set_region_code(region)
                 collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceGroup', instance_group_id)
-            error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceGroup', instance_group_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Instance Group Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

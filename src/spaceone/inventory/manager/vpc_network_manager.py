@@ -1,11 +1,9 @@
 import time
 import logging
-import json
 from ipaddress import ip_address, IPv4Address
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.vpc_network.cloud_service import *
 from spaceone.inventory.connector.vpc_network import VPCNetworkConnector
 from spaceone.inventory.model.vpc_network.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -36,19 +34,18 @@ class VPCNetworkManager(GoogleCloudManager):
         error_responses = []
         network_id = ""
 
-        try:
+        secret_data = params['secret_data']
+        vpc_conn: VPCNetworkConnector = self.locator.get_connector(self.connector_name, **params)
 
-            secret_data = params['secret_data']
-            vpc_conn: VPCNetworkConnector = self.locator.get_connector(self.connector_name, **params)
+        # Get lists that relate with snapshots through Google Cloud API
+        networks = vpc_conn.list_networks()
+        firewalls = vpc_conn.list_firewall()
+        subnets = vpc_conn.list_subnetworks()
+        routes = vpc_conn.list_routes()
+        regional_address = vpc_conn.list_regional_addresses()
 
-            # Get lists that relate with snapshots through Google Cloud API
-            networks = vpc_conn.list_networks()
-            firewalls = vpc_conn.list_firewall()
-            subnets = vpc_conn.list_subnetworks()
-            routes = vpc_conn.list_routes()
-            regional_address = vpc_conn.list_regional_addresses()
-
-            for network in networks:
+        for network in networks:
+            try:
                 network_id = network.get('id')
                 network_identifier = network.get('selfLink')
                 matched_firewall = self._get_matched_firewalls(network_identifier, firewalls)
@@ -91,10 +88,10 @@ class VPCNetworkManager(GoogleCloudManager):
 
                 self.set_region_code('global')
                 collected_cloud_services.append(VPCNetworkResponse({'resource': vpc_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'VPC', 'VPCNetwork', network_id)
-            error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'VPC', 'VPCNetwork', network_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** VPC Network Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

@@ -1,10 +1,8 @@
 import logging
 import time
-import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.disk.cloud_service import *
 from spaceone.inventory.connector.disk import DiskConnector
 from spaceone.inventory.model.disk.cloud_service_type import CLOUD_SERVICE_TYPES
@@ -36,13 +34,13 @@ class DiskManager(GoogleCloudManager):
         error_responses = []
         disk_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            disk_conn: DiskConnector = self.locator.get_connector(self.connector_name, **params)
-            disks = disk_conn.list_disks()
-            resource_policies = disk_conn.list_resource_policies()
+        secret_data = params['secret_data']
+        disk_conn: DiskConnector = self.locator.get_connector(self.connector_name, **params)
+        disks = disk_conn.list_disks()
+        resource_policies = disk_conn.list_resource_policies()
 
-            for disk in disks:
+        for disk in disks:
+            try:
                 disk_id = disk.get('id')
                 disk_type = self._get_last_target(disk.get('type'))
                 disk_size = float(disk.get('sizeGb'))
@@ -81,10 +79,10 @@ class DiskManager(GoogleCloudManager):
 
                 self.set_region_code(disk['region'])
                 collected_cloud_services.append(DiskResponse({'resource': disk_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Disk', disk_id)
-            error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Disk', disk_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Disk Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

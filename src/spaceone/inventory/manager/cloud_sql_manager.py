@@ -1,10 +1,8 @@
 import time
 import logging
-import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.connector.cloud_sql import CloudSQLConnector
 from spaceone.inventory.model.cloud_sql.data import *
 from spaceone.inventory.model.cloud_sql.cloud_service import *
@@ -36,11 +34,11 @@ class CloudSQLManager(GoogleCloudManager):
         error_responses = []
         instance_name = ""
 
-        try:
-            cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
-            instances = cloud_sql_conn.list_instances()
+        cloud_sql_conn: CloudSQLConnector = self.locator.get_connector(self.connector_name, **params)
+        instances = cloud_sql_conn.list_instances()
 
-            for instance in instances:
+        for instance in instances:
+            try:
                 instance_name = instance['name']
                 project = instance.get('project', '')
                 # Get Databases
@@ -66,11 +64,11 @@ class CloudSQLManager(GoogleCloudManager):
 
                 self.set_region_code(instance['region'])
                 collected_cloud_services.append(InstanceResponse({'resource': instance_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            # Database Instance name is key(= instance_id)
-            error_response = self.generate_resource_error_response(e, 'CloudSQL', 'Instance', instance_name)
-            error_response.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                # Database Instance name is key(= instance_id)
+                error_response = self.generate_resource_error_response(e, 'CloudSQL', 'Instance', instance_name)
+                error_response.append(error_response)
 
         _LOGGER.debug(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

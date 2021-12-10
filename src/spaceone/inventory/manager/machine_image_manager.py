@@ -1,10 +1,8 @@
 import time
 import logging
-import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.machine_image.data import *
 from spaceone.inventory.model.machine_image.cloud_service import *
 from spaceone.inventory.connector.machine_image import MachineImageConnector
@@ -36,28 +34,28 @@ class MachineImageManager(GoogleCloudManager):
         error_responses = []
         machine_image_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            machine_image_conn: MachineImageConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        machine_image_conn: MachineImageConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # Get Instance Templates
-            machine_images = machine_image_conn.list_machine_images()
-            machine_types = []
-            disk_types = []
-            public_images = {}
+        # Get Instance Templates
+        machine_images = machine_image_conn.list_machine_images()
+        machine_types = []
+        disk_types = []
+        public_images = {}
 
-            if machine_images:
-                public_images = machine_image_conn.list_public_images()
-                for zone in params.get('zones', []):
-                    if not machine_types:
-                        list_machine_types = machine_image_conn.list_machine_types(zone)
-                        machine_types.extend(list_machine_types)
+        if machine_images:
+            public_images = machine_image_conn.list_public_images()
+            for zone in params.get('zones', []):
+                if not machine_types:
+                    list_machine_types = machine_image_conn.list_machine_types(zone)
+                    machine_types.extend(list_machine_types)
 
-                    if not disk_types:
-                        list_disk_types = machine_image_conn.list_disks(zone)
-                        disk_types.extend(list_disk_types)
+                if not disk_types:
+                    list_disk_types = machine_image_conn.list_disks(zone)
+                    disk_types.extend(list_disk_types)
 
-            for machine_image in machine_images:
+        for machine_image in machine_images:
+            try:
                 machine_image_id = machine_image.get('id')
                 properties = machine_image.get('sourceInstanceProperties', {})
                 tags = properties.get('tags', {})
@@ -99,10 +97,10 @@ class MachineImageManager(GoogleCloudManager):
                 })
                 self.set_region_code(region.get('region_code'))
                 collected_cloud_services.append(MachineImageResponse({'resource': machine_image_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'MachineImage', machine_image_id)
-            error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'MachineImage', machine_image_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Machine Image Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

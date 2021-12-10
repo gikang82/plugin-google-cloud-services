@@ -1,10 +1,8 @@
 import time
 import logging
-import json
 
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.inventory.libs.schema.base import ReferenceModel
-from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
 from spaceone.inventory.model.instance_template.data import *
 from spaceone.inventory.model.instance_template.cloud_service import *
 from spaceone.inventory.connector.instance_template import InstanceTemplateConnector
@@ -35,16 +33,16 @@ class InstanceTemplateManager(GoogleCloudManager):
         error_responses = []
         inst_template_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            instance_template_conn: InstanceTemplateConnector = self.locator.get_connector(self.connector_name, **params)
+        secret_data = params['secret_data']
+        instance_template_conn: InstanceTemplateConnector = self.locator.get_connector(self.connector_name, **params)
 
-            # Get Instance Templates
-            instance_templates = instance_template_conn.list_instance_templates()
-            instance_groups = instance_template_conn.list_instance_group_managers()
-            machine_types = instance_template_conn.list_machine_types()
+        # Get Instance Templates
+        instance_templates = instance_template_conn.list_instance_templates()
+        instance_groups = instance_template_conn.list_instance_group_managers()
+        machine_types = instance_template_conn.list_machine_types()
 
-            for inst_template in instance_templates:
+        for inst_template in instance_templates:
+            try:
                 inst_template_id = inst_template.get('id')
                 properties = inst_template.get('properties', {})
                 tags = properties.get('tags', {})
@@ -87,10 +85,10 @@ class InstanceTemplateManager(GoogleCloudManager):
 
                 self.set_region_code(default_region)
                 collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceTemplate', inst_template_id)
-            error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceTemplate', inst_template_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Instance Template Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses

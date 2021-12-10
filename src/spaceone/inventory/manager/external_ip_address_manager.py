@@ -33,19 +33,19 @@ class ExternalIPAddressManager(GoogleCloudManager):
         error_responses = []
         external_ip_addr_id = ""
 
-        try:
-            secret_data = params['secret_data']
-            exp_conn: ExternalIPAddressConnector = self.locator.get_connector(self.connector_name, **params)
-            regional_global_addresses = exp_conn.list_regional_addresses()
-            compute_engine_vm_address = exp_conn.list_instance_for_networks()
-            forwarding_rule_address = exp_conn.list_forwarding_rule()
+        secret_data = params['secret_data']
+        exp_conn: ExternalIPAddressConnector = self.locator.get_connector(self.connector_name, **params)
+        regional_global_addresses = exp_conn.list_regional_addresses()
+        compute_engine_vm_address = exp_conn.list_instance_for_networks()
+        forwarding_rule_address = exp_conn.list_forwarding_rule()
 
-            # Get lists that relate with snapshots through Google Cloud API
-            all_external_ip_addresses = self.get_external_ip_addresses(regional_global_addresses,
-                                                                       compute_engine_vm_address,
-                                                                       forwarding_rule_address)
+        # Get lists that relate with snapshots through Google Cloud API
+        all_external_ip_addresses = self.get_external_ip_addresses(regional_global_addresses,
+                                                                   compute_engine_vm_address,
+                                                                   forwarding_rule_address)
 
-            for external_ip_juso in all_external_ip_addresses:
+        for external_ip_juso in all_external_ip_addresses:
+            try:
                 region = external_ip_juso.get('region') if external_ip_juso.get('region') else 'global'
                 external_ip_juso.update({'project': secret_data['project_id'],
                                          'status_display': external_ip_juso.get('status').replace('_', ' ').title()
@@ -66,10 +66,10 @@ class ExternalIPAddressManager(GoogleCloudManager):
 
                 self.set_region_code(region)
                 collected_cloud_services.append(ExternalIpAddressResponse({'resource': external_ip_juso_resource}))
-        except Exception as e:
-            _LOGGER.error(f'[collect_cloud_service] => {e}')
-            error_response = self.generate_resource_error_response(e, 'VPC', 'ExternalIPAddress', external_ip_addr_id)
-            error_responses.append(error_response)
+            except Exception as e:
+                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                error_response = self.generate_resource_error_response(e, 'VPC', 'ExternalIPAddress', external_ip_addr_id)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** External IP Address Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses
