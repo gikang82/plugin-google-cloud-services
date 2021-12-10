@@ -5,8 +5,8 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
 cst_route = CloudServiceTypeResource()
 cst_route.name = 'Route'
 cst_route.provider = 'google_cloud'
-cst_route.group = 'VPC'
-cst_route.service_code = 'vpc'
+cst_route.group = 'Networking'
+cst_route.service_code = 'Networking'
 cst_route.labels = ['Networking']
 cst_route.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Route.svg',

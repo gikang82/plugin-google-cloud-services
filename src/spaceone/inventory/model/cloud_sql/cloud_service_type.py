@@ -7,10 +7,10 @@ cst_instance = CloudServiceTypeResource()
 cst_instance.name = 'Instance'
 cst_instance.provider = 'google_cloud'
 cst_instance.group = 'CloudSQL'
+cst_instance.service_code = 'Cloud SQL'
 cst_instance.labels = ['Database']
 cst_instance.is_primary = True
 cst_instance.is_major = True
-cst_instance.service_code = 'cloudsql'
 cst_instance.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Cloud_SQL.svg',
 }

@@ -6,12 +6,13 @@ cst_instance_group = CloudServiceTypeResource()
 cst_instance_group.name = 'InstanceGroup'
 cst_instance_group.provider = 'google_cloud'
 cst_instance_group.group = 'ComputeEngine'
-cst_instance_group.service_code = 'compute'
+cst_instance_group.service_code = 'Compute Engine'
+cst_instance_group.is_major = True
 cst_instance_group.labels = ['Compute']
 cst_instance_group.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
 }
-# , options={'is_optional': True}
+
 cst_instance_group._metadata = CloudServiceTypeMeta.set_meta(
     fields=[
         TextDyField.data_source('Instance Group ID', 'data.id', options={'is_optional': True}),
