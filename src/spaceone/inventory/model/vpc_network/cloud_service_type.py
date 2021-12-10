@@ -5,8 +5,8 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
 cst_network = CloudServiceTypeResource()
 cst_network.name = 'VPCNetwork'
 cst_network.provider = 'google_cloud'
-cst_network.group = 'VPC'
-cst_network.service_code = 'vpc'
+cst_network.group = 'Networking'
+cst_network.service_code = 'Networking'
 cst_network.is_primary = True
 cst_network.labels = ['Networking']
 cst_network.tags = {

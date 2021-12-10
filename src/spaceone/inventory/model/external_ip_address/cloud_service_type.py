@@ -5,8 +5,8 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
 cst_external_ip = CloudServiceTypeResource()
 cst_external_ip.name = 'ExternalIPAddress'
 cst_external_ip.provider = 'google_cloud'
-cst_external_ip.group = 'VPC'
-cst_external_ip.service_code = 'vpc'
+cst_external_ip.group = 'Networking'
+cst_external_ip.service_code = 'Networking'
 cst_external_ip.labels = ['Networking']
 cst_external_ip.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/External_IP_Address.svg',

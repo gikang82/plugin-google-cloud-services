@@ -5,8 +5,8 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
 cst_firewall = CloudServiceTypeResource()
 cst_firewall.name = 'Firewall'
 cst_firewall.provider = 'google_cloud'
-cst_firewall.group = 'VPC'
-cst_firewall.service_code = 'vpc'
+cst_firewall.group = 'Networking'
+cst_firewall.service_code = 'Networking'
 cst_firewall.labels = ['Networking']
 cst_firewall.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Firewall_Rule.svg',
