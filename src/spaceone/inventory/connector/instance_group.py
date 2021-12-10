@@ -18,7 +18,6 @@ class InstanceGroupConnector(GoogleCloudConnector):
                       'instanceGroup': instance_group,
                       loc_type: loc
                       })
-        _LOGGER.debug(f'query => {query}')
 
         request = self.client.instanceGroups().listInstances(**query) if loc_type == 'zone' \
             else self.client.regionInstanceGroups().listInstances(**query)

@@ -1,7 +1,14 @@
 import math
+import json
+import logging
+
 from spaceone.core.manager import BaseManager
 from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.schema.region import RegionResource, RegionResponse
+from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
+
+
+_LOGGER = logging.getLogger(__name__)
 
 REGION_INFO = {
     "asia-east1": {"name": "Taiwan (Changhua County)", "tags": {"latitude": "24.051196", "longitude": "120.516430"}},
@@ -52,18 +59,26 @@ class GoogleCloudManager(BaseManager):
         raise NotImplemented
 
     def collect_resources(self, params) -> list:
-        resources = []
+        total_resources = []
 
-        # Collect Cloud Service Type
-        resources.extend(self.collect_cloud_service_type())
+        try:
+            # Collect Cloud Service Type
+            total_resources.extend(self.collect_cloud_service_type())
 
-        # Collect Cloud Service
-        resources.extend(self.collect_cloud_service(params))
+            # Collect Cloud Service
+            resources, error_resources = self.collect_cloud_service(params)
+            total_resources.extend(resources)
+            total_resources.extend(error_resources)
 
-        # Collect Region
-        resources.extend(self.collect_region())
+            # Collect Region
+            total_resources.extend(self.collect_region())
 
-        return resources
+        except Exception as e:
+            error_resource_response = self.generate_error_response(e, self.cloud_service_types[0].resource.group, self.cloud_service[0].resource.name)
+            total_resources.append(error_resource_response)
+            _LOGGER.error(f'[collect_resources] {e}')
+
+        return total_resources
 
     def collect_region(self):
         results = []
@@ -83,6 +98,46 @@ class GoogleCloudManager(BaseManager):
     def generate_region_from_zone_self_link(self, zone_self_link):
         _split = zone_self_link.split('/')
         return self.generate_region_from_zone(_split[-1])
+
+    @staticmethod
+    def generate_error_response(e, cloud_service_group, cloud_service_type):
+        if type(e) is dict:
+            error_resource_response = ErrorResourceResponse({
+                'message': json.dumps(e),
+                'resource': {
+                    'cloud_service_group': cloud_service_group,
+                    'cloud_service_type': cloud_service_type
+                }})
+        else:
+            error_resource_response = ErrorResourceResponse({
+                'message': str(e),
+                'resource': {
+                    'cloud_service_group': cloud_service_group,
+                    'cloud_service_type': cloud_service_type
+                }})
+
+        return error_resource_response
+
+    @staticmethod
+    def generate_resource_error_response(e, cloud_service_group, cloud_service_type, resource_id):
+        if type(e) is dict:
+            error_resource_response = ErrorResourceResponse({
+                'message': json.dumps(e),
+                'resource': {
+                    'cloud_service_group': cloud_service_group,
+                    'cloud_service_type': cloud_service_type,
+                    'resource_id': resource_id
+                }})
+        else:
+            error_resource_response = ErrorResourceResponse({
+                'message': str(e),
+                'resource': {
+                    'cloud_service_group': cloud_service_group,
+                    'cloud_service_type': cloud_service_type,
+                    'resource_id': resource_id
+                }})
+
+        return error_resource_response
 
     @staticmethod
     def generate_region_from_zone(zone):

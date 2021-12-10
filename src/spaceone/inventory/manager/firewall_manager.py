@@ -32,6 +32,7 @@ class FirewallManager(GoogleCloudManager):
             CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -42,6 +43,7 @@ class FirewallManager(GoogleCloudManager):
             compute_engine_vms = firewall_conn.list_instance_for_networks()
             region = 'global'
             for firewall in firewalls:
+                    firewall_id = firewall.get('id')
                     target_tag = firewall.get('targetTags', [])
                     filter_range = ', '.join(firewall.get('sourceRanges', ''))
                     log_config = firewall.get('log_config', {})
@@ -87,30 +89,11 @@ class FirewallManager(GoogleCloudManager):
                     collected_cloud_services.append(FirewallResponse({'resource': firewall_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'VPC',
-                            'cloud_service_type': 'Firewall'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'VPC',
-                            'cloud_service_type': 'Firewall'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'VPC', 'Firewall', firewall_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Firewall Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
 
     @staticmethod

@@ -42,6 +42,7 @@ class CloudServiceResponse(BaseResponse):
 
 class ErrorResource(Model):
     resource_type = StringType(default='inventory.CloudService')
+    provider = StringType(default="google_cloud")
     cloud_service_group = StringType(default='ComputeEngine', serialize_when_none=False)
     cloud_service_type = StringType(default='Instance', serialize_when_none=False)
     resource_id = StringType(serialize_when_none=False)

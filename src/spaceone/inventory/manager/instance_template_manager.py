@@ -32,6 +32,7 @@ class InstanceTemplateManager(GoogleCloudManager):
             CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -43,6 +44,7 @@ class InstanceTemplateManager(GoogleCloudManager):
             machine_types = instance_template_conn.list_machine_types()
 
             for inst_template in instance_templates:
+                inst_template_id = inst_template.get('id')
                 properties = inst_template.get('properties', {})
                 tags = properties.get('tags', {})
 
@@ -86,30 +88,11 @@ class InstanceTemplateManager(GoogleCloudManager):
                 collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'InstanceTemplate'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'InstanceTemplate'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceTemplate', inst_template_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Instance Template Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def match_instance_group(self, instance_template, instance_group_managers: list):
         in_used_by = []
@@ -129,7 +112,6 @@ class InstanceTemplateManager(GoogleCloudManager):
     def get_disks(self, instance):
         disk_info = []
         for disk in instance.get('disks', []):
-            _LOGGER.debug(f'get_disk => {disk}')
             init_param = disk.get('initializeParams', {})
             '''
             # initializeParams: {diskSizeGb: ""} can be Null

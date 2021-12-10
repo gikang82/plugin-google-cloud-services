@@ -32,6 +32,7 @@ class StorageManager(GoogleCloudManager):
             CloudServiceResponse/ErrorResourceResponse
         """
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -42,6 +43,7 @@ class StorageManager(GoogleCloudManager):
 
             for bucket in buckets:
                 bucket_name = bucket.get('name')
+                bucket_id = bucket.get('id')
 
                 objects = storage_conn.list_objects(bucket_name)
                 obj_count, size = self._get_number_of_obj_and_size(objects)
@@ -85,30 +87,11 @@ class StorageManager(GoogleCloudManager):
                 collected_cloud_services.append(StorageResponse({'resource': bucket_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'Storage',
-                            'cloud_service_type': 'Bucket'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'Storage',
-                            'cloud_service_type': 'Bucket'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'Storage', 'Bucket', bucket_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Storage Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_matching_region(self, bucket):
         location_type_ref = ['multi-region', 'dual-region']

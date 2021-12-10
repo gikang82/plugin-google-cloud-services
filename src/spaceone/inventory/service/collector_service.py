@@ -92,9 +92,7 @@ class CollectorService(BaseService):
         #
             for future in concurrent.futures.as_completed(future_executors):
                 try:
-                    _LOGGER.debug(f'as_completed : {future.result()}')
                     for result in future.result():
-                        _LOGGER.debug(f'result to yield: {result.to_primitive()}')
                         yield result.to_primitive()
                 except Exception as e:
                     _LOGGER.error(f'failed to yield result => {e}')

@@ -31,8 +31,6 @@ class Collector(BaseAPI, collector_pb2_grpc.CollectorServicer):
 
     def collect(self, request, context):
         params, metadata = self.parse_request(request, context)
-        _LOGGER.debug(f'Start collecting process param => {params}')
-        _LOGGER.debug(f'Metadata => {metadata}')
 
         collector_svc: CollectorService = self.locator.get_service('CollectorService', metadata)
 

@@ -33,6 +33,7 @@ class BigQueryManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -46,16 +47,23 @@ class BigQueryManager(GoogleCloudManager):
             # jobs = big_query_conn.list_job()
 
             jobs = []
+            update_bq_dt_tables = []
+            table_schemas = []
+            matched_jobs = []
 
             for data_set in data_sets:
                 data_refer = data_set.get('datasetReference', {})
                 data_set_id = data_refer.get('datasetId')
                 dataset_project_id = data_refer.get('projectId')
                 bq_dataset = big_query_conn.get_dataset(data_set_id)
-                bq_dt_tables = big_query_conn.list_tables(data_set_id)
-                update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
+                # skip if dataset id is unvisible
+                if self.get_visible_on_console(data_set_id):
+                    bq_dt_tables = big_query_conn.list_tables(data_set_id)
+                    update_bq_dt_tables, table_schemas = self._get_table_list_with_schema(big_query_conn, bq_dt_tables)
+                    matched_jobs = self._get_matching_jobs(data_set, update_bq_dt_tables, jobs)
+
                 matched_projects = self._get_matching_project(dataset_project_id, projects)
-                matched_jobs = self._get_matching_jobs(data_set, update_bq_dt_tables, jobs)
+
                 creation_time = bq_dataset.get('creationTime')
 
                 if creation_time:
@@ -103,30 +111,11 @@ class BigQueryManager(GoogleCloudManager):
                 collected_cloud_services.append(SQLWorkSpaceResponse({'resource': big_query_work_space_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'BigQuery',
-                            'cloud_service_type': 'SQLWorkspace'
-                            }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'BigQuery',
-                            'cloud_service_type': 'SQLWorkspace'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'BigQuery', 'SQLWorkspace', data_set_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Big Query Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_region(self, location):
         matched_info = self.match_region_info(location)

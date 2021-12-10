@@ -32,6 +32,7 @@ class RouteManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -60,8 +61,10 @@ class RouteManager(GoogleCloudManager):
                 })
 
                 # No Labels
+
                 route_data = Route(route, strict=False)
                 _name = route_data.get('name', '')
+                route_id = route.get('id')
                 route_resource = RouteResource({
                     'name': _name,
                     'region_code': region,
@@ -73,31 +76,11 @@ class RouteManager(GoogleCloudManager):
                 collected_cloud_services.append(RouteResponse({'resource': route_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'VPC',
-                            'cloud_service_type': 'Route'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'VPC',
-                            'cloud_service_type': 'Route'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'VPC', 'Route', route_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Route Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
-
+        return collected_cloud_services, error_responses
 
     def get_matched_instace(self, route, project_id, instances_over_region):
         all_compute_vms = []

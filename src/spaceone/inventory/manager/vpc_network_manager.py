@@ -33,6 +33,7 @@ class VPCNetworkManager(GoogleCloudManager):
         """
 
         collected_cloud_services = []
+        error_responses = []
 
         try:
 
@@ -47,7 +48,7 @@ class VPCNetworkManager(GoogleCloudManager):
             regional_address = vpc_conn.list_regional_addresses()
 
             for network in networks:
-
+                network_id = network.get('id')
                 network_identifier = network.get('selfLink')
                 matched_firewall = self._get_matched_firewalls(network_identifier, firewalls)
                 matched_route = self.get_matched_route(network_identifier, routes)
@@ -91,30 +92,11 @@ class VPCNetworkManager(GoogleCloudManager):
                 collected_cloud_services.append(VPCNetworkResponse({'resource': vpc_resource}))
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
-
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'VPC',
-                            'cloud_service_type': 'VPCNetwork'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'VPC',
-                            'cloud_service_type': 'VPCNetwork'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'VPC', 'VPCNetwork', network_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** VPC Network Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_internal_ip_address_in_use(self, network, regional_address):
         all_Internal_addresses = []

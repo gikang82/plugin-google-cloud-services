@@ -30,6 +30,7 @@ class InstanceGroupManager(GoogleCloudManager):
             CloudServiceResponse
         """
         collected_cloud_services = []
+        error_responses = []
 
         try:
             secret_data = params['secret_data']
@@ -40,9 +41,9 @@ class InstanceGroupManager(GoogleCloudManager):
             instance_group_managers = instance_group_conn.list_instance_group_managers()
             autoscalers = instance_group_conn.list_autoscalers()
             instance_templates = instance_group_conn.list_instance_templates()
-            _LOGGER.debug(f'instance_groups => {instance_groups}')
 
             for instance_group in instance_groups:
+                instance_group_id = instance_group.get('id')
 
                 instance_group.update({
                     'project': secret_data['project_id']
@@ -88,11 +89,8 @@ class InstanceGroupManager(GoogleCloudManager):
                     instance_group.update({'instance_group_type': 'UNMANAGED'})
                     scheduler.update({'instance_group_type': 'UNMANAGED'})
 
-                _LOGGER.debug(f'instance_group => {instance_group}')
                 loc_type, location = self.get_instance_group_loc(instance_group)
-                _LOGGER.debug(f'loc_type, location => {loc_type}, {location}')
                 region = self.generate_region_from_zone(location) if loc_type == 'zone' else location
-                _LOGGER.debug(f'region => {region}')
                 instances = instance_group_conn.list_instances(instance_group.get('name'), location, loc_type)
 
                 display_loc = {'region': location, 'zone': ''} if loc_type == 'region' \
@@ -120,29 +118,11 @@ class InstanceGroupManager(GoogleCloudManager):
         except Exception as e:
             _LOGGER.error(f'[collect_cloud_service] => {e}')
 
-            if type(e) is dict:
-                return [
-                    ErrorResourceResponse({
-                        'message': json.dumps(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'InstanceGroup'
-                        }
-                    })
-                ]
-            else:
-                return [
-                    ErrorResourceResponse({
-                        'message': str(e),
-                        'resource': {
-                            'cloud_service_group': 'ComputeEngine',
-                            'cloud_service_type': 'InstanceGroup'
-                        }
-                    })
-                ]
+            error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceGroup', instance_group_id)
+            error_responses = error_responses.append(error_response)
 
         _LOGGER.debug(f'** Instance Group Finished {time.time() - start_time} Seconds **')
-        return collected_cloud_services
+        return collected_cloud_services, error_responses
 
     def get_instance_group_loc(self, instance_group):
         inst_type = 'zone' if 'zone' in instance_group else 'region'
