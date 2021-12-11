@@ -264,7 +264,7 @@ load_balancing_meta = CloudServiceMeta.set_layouts([load_balancing_details,
 
 
 class LoadBalancingResource(CloudServiceResource):
-    cloud_service_group = StringType(default='NetworkService')
+    cloud_service_group = StringType(default='Networking')
 
 
 class LoadBalancingResource(LoadBalancingResource):
