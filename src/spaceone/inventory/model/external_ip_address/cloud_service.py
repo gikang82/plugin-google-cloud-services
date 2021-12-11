@@ -37,7 +37,7 @@ instance_template_meta = CloudServiceMeta.set_layouts([external_ip_address_detai
 
 
 class VPCResource(CloudServiceResource):
-    cloud_service_group = StringType(default='VPC')
+    cloud_service_group = StringType(default='Networking')
 
 
 class ExternalIpAddressResource(VPCResource):
