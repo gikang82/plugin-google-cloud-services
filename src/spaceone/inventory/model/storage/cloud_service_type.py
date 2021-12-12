@@ -5,7 +5,7 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
 cst_bucket = CloudServiceTypeResource()
 cst_bucket.name = 'Bucket'
 cst_bucket.provider = 'google_cloud'
-cst_bucket.group = 'Storage'
+cst_bucket.group = 'CloudStorage'
 cst_bucket.service_code = 'CloudStorage'
 cst_bucket.is_primary = True
 cst_bucket.is_major = True
