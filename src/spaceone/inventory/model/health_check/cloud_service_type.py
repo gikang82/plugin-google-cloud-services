@@ -7,7 +7,7 @@ cst_health_check = CloudServiceTypeResource()
 cst_health_check.name = 'HealthCheck'
 cst_health_check.provider = 'google_cloud'
 cst_health_check.group = 'ComputeEngine'
-cst_health_check.service_code = 'Compute Engine'
+cst_health_check.service_code = 'ComputeEngine'
 cst_health_check.labels = ['Networking', 'Compute']
 cst_health_check.tags = {
     'spaceone:icon': 'https://spaceone-custom-assets.s3.ap-northeast-2.amazonaws.com/console-assets/icons/cloud-services/google_cloud/Compute_Engine.svg',
