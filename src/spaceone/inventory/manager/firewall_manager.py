@@ -144,7 +144,10 @@ class FirewallManager(GoogleCloudManager):
 
     @staticmethod
     def _valid_ip_address(ip):
-        return "IPv4" if type(ip_address(ip)) is IPv4Address else "IPv6"
+        try:
+            return "IPv4" if type(ip_address(ip)) is IPv4Address else "IPv6"
+        except ValueError:
+            return "Invalid"
 
     @staticmethod
     def _get_service_accounts(service_accounts):
