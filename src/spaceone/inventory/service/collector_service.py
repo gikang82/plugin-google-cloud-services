@@ -7,21 +7,17 @@ from spaceone.inventory.libs.connector import GoogleCloudConnector
 from spaceone.inventory.libs.manager import GoogleCloudManager
 from spaceone.core.service import *
 from spaceone.inventory.libs.schema.cloud_service import ErrorResourceResponse
-
+from spaceone.inventory.conf.cloud_service_conf import *
 
 _LOGGER = logging.getLogger(__name__)
-MAX_WORKER = 20
-SUPPORTED_RESOURCE_TYPE = ['inventory.CloudService', 'inventory.CloudServiceType', 'inventory.Region']
-SUPPORTED_FEATURES = ['garbage_collection']
-SUPPORTED_SCHEDULES = ['hours']
-FILTER_FORMAT = []
-
 
 @authentication_handler
 class CollectorService(BaseService):
     def __init__(self, metadata):
         super().__init__(metadata)
         # set google cloud service manager
+        self.execute_managers = []
+        '''
         self.execute_managers = [
             'BigQueryManager',
             'CloudSQLManager',
@@ -37,6 +33,7 @@ class CollectorService(BaseService):
             'RouteManager',
             'LoadBalancingManager'
         ]
+        '''
 
     @check_required(['options'])
     def init(self, params):
@@ -82,7 +79,16 @@ class CollectorService(BaseService):
         start_time = time.time()
 
         _LOGGER.debug(f'EXECUTOR START: Google Cloud Service')
+        # Get target manager to collect
+        try:
+            self.execute_managers = self._get_target_execute_manager(params.get('options', {}))
+            _LOGGER.debug(f'[collect] execute_managers => {self.execute_managers}')
+        except Exception as e:
+            _LOGGER.error(f'[collect] failed to get target execute_managers => {e}')
+            error_resource_response = self.generate_error_response(e, '', 'inventory.Error')
+            yield error_resource_response.to_primitive()
 
+        # Execute manager
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKER) as executor:
             future_executors = []
             for execute_manager in self.execute_managers:
@@ -96,21 +102,46 @@ class CollectorService(BaseService):
                         yield result.to_primitive()
                 except Exception as e:
                     _LOGGER.error(f'[collect] failed to yield result => {e}')
-
-                    if type(e) is dict:
-                        error_resource_response = ErrorResourceResponse(
-                            {'message': json.dumps(e), 'resource': {'resource_type': 'inventory.Error'}}
-                        )
-                        _LOGGER.error(f'error response => {error_resource_response.to_primitive()}')
-                    else:
-                        error_resource_response = ErrorResourceResponse(
-                            {'message': str(e), 'resource': {'resource_type': 'inventory.Error'}}
-                        )
-                        _LOGGER.error(f'error response => {error_resource_response.to_primitive()}')
-
+                    error_resource_response = self.generate_error_response(e, '', 'inventory.Error')
                     yield error_resource_response.to_primitive()
 
         _LOGGER.debug(f'TOTAL TIME : {time.time() - start_time} Seconds')
+
+    def _get_target_execute_manager(self, options):
+        if 'cloud_service_types' in options:
+            execute_managers = self._match_execute_manager(options['cloud_service_types'])
+        else:
+            execute_managers = list(CLOUD_SERVICE_GROUP_MAP.values())
+
+        return execute_managers
+
+    @staticmethod
+    def _match_execute_manager(cloud_service_types):
+        target_cloud_service_types = []
+        for cloud_service_type in cloud_service_types:
+            if cloud_service_type in CLOUD_SERVICE_GROUP_MAP:
+                target_cloud_service_types.append(CLOUD_SERVICE_GROUP_MAP[cloud_service_type])
+
+        return target_cloud_service_types
+
+    @staticmethod
+    def generate_error_response(e, cloud_service_group, cloud_service_type):
+        if type(e) is dict:
+            error_resource_response = ErrorResourceResponse({
+                'message': json.dumps(e),
+                'resource': {
+                    'cloud_service_group': cloud_service_group,
+                    'cloud_service_type': cloud_service_type
+                }})
+        else:
+            error_resource_response = ErrorResourceResponse({
+                'message': str(e),
+                'resource': {
+                    'cloud_service_group': cloud_service_group,
+                    'cloud_service_type': cloud_service_type
+                }})
+
+        return error_resource_response
 
 # Not used function
     def _set_regions_zones(self, secret_data, params):
