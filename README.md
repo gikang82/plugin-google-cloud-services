@@ -215,3 +215,57 @@ Please, set authentication privilege for followings:
         - bigquery.jobs.list
         - resourcemanager.projects.get
 
+---
+## Options
+
+### Cloud Service Type : Specify what to collect
+
+If cloud_service_types is added to the list elements in options, only the specified cloud service type is collected.
+By default, if cloud_service_types is not specified in options, all services are collected.
+
+The cloud_service_types items that can be specified are as follows.
+
+<pre>
+<code>
+{
+    "cloud_service_types": [
+    'SQLWorkspace',
+    'CloudSQL',
+    'Disk',
+    'ExternalIPAddress',
+    'Firewall',
+    'InstanceGroup',
+    'InstanceTemplate',
+    'LoadBalancing',
+    'MachineImage',
+    'Route',
+    'Snapshot',
+    'Bucket',
+    'VPCNetwork''
+    ]
+}
+</code>
+</pre>
+
+How to update plugin information using spacectl is as follows.
+First, create a yaml file to set options.
+
+<pre>
+<code>
+> cat update_collector.yaml
+---
+collector_id: collector-xxxxxxx
+options:
+  cloud_service_types:
+    - CloudSQL
+    - VPCNetwork
+</code>
+</pre>
+
+Update plugin through spacectl command with the created yaml file.
+
+<pre><code>
+> spacectl exec update_plugin inventory.Collector -f update_collector.yaml
+</code></pre>
+
+

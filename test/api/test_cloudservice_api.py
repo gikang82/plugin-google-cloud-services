@@ -43,6 +43,7 @@ class TestCollector(TestCase):
 
     def test_collect(self):
         secret_data = _get_credentials()
+        #options = {'cloud_service_types': []}
         options = {}
         filter = {}
         resource_stream = self.inventory.Collector.collect({'options': options, 'secret_data': secret_data,
