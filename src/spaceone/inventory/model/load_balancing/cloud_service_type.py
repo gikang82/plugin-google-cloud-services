@@ -4,7 +4,7 @@ from spaceone.inventory.libs.schema.cloud_service_type import CloudServiceTypeRe
     CloudServiceTypeMeta
 
 cst_load_balancing = CloudServiceTypeResource()
-cst_load_balancing.name = 'LoadBalancer'
+cst_load_balancing.name = 'LoadBalancing'
 cst_load_balancing.provider = 'google_cloud'
 cst_load_balancing.group = 'Networking'
 cst_load_balancing.service_code = 'Networking'
