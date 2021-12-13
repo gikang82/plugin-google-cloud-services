@@ -1,12 +1,12 @@
 import logging
 
 from spaceone.inventory.libs.connector import GoogleCloudConnector
-from spaceone.inventory.error import *
 
 __all__ = ['StorageConnector']
 _LOGGER = logging.getLogger(__name__)
 
 MAX_OBJECTS = 100000
+
 
 class StorageConnector(GoogleCloudConnector):
     google_client_service = 'storage'

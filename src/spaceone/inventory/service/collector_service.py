@@ -112,6 +112,7 @@ class CollectorService(BaseService):
 
         _LOGGER.debug(f'TOTAL TIME : {time.time() - start_time} Seconds')
 
+# Not used function
     def _set_regions_zones(self, secret_data, params):
         result_regions = []
         result_zones = []

@@ -1,8 +1,6 @@
 import logging
 
 from spaceone.inventory.libs.connector import GoogleCloudConnector
-from spaceone.inventory.model.vpc_network.data import *
-from spaceone.inventory.error import *
 
 __all__ = ['RouteConnector']
 _LOGGER = logging.getLogger(__name__)

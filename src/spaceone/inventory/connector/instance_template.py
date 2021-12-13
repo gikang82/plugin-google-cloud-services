@@ -1,7 +1,6 @@
 import logging
 
 from spaceone.inventory.libs.connector import GoogleCloudConnector
-from spaceone.inventory.error import *
 
 __all__ = ['InstanceTemplateConnector']
 _LOGGER = logging.getLogger(__name__)
