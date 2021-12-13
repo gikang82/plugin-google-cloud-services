@@ -28,17 +28,18 @@ Please, set authentication privilege for followings:
         * [Machine Images](#machine-images)
         * [Disk](#disk)
         * [Snapshot](#snapshot)
-    * [VPC](#vpc)
+    * [Networking](#networking)
         * [VPC Network](#vpc-network)
         * [Route](#route)
         * [External IP Address](#external-ip-address)
         * [Firewall](#firewall)
-    * [Network Service](#network-service)
-        * [Load Balancing](#load-balancing)
+        * [LoadBalancing](#loadbalancing)
     * [Cloud SQL](#cloud-sql)
         * [Instance](#instance)
     * [Storage](#storage)
         * [Buckets](#Bucket)
+    * [BigQuery](#bigquery)
+        * [SQLWorkspace](#SQLWorkspace)
     
 
 ---
@@ -120,7 +121,7 @@ Please, set authentication privilege for followings:
         - compute.disks.list
      
 
-#### [VPC](https://cloud.google.com/compute/docs/apis)
+#### [Networking](https://cloud.google.com/compute/docs/apis)
 
 - #### VPC Network
     - Scopes 
@@ -165,9 +166,7 @@ Please, set authentication privilege for followings:
         - compute.instances.list
         - compute.firewalls.list
 
-
-#### [Network Service](https://cloud.google.com/compute/docs/apis)
-- #### Load Balancing
+- #### LoadBalancing
     - Scopes 
         - https://www.googleapis.com/auth/compute
         - https://www.googleapis.com/auth/cloud-platform
@@ -205,9 +204,14 @@ Please, set authentication privilege for followings:
     - IAM
         - storage.buckets.get
         - storage.objects.list
-        - storage.objects.getIamPolicy2,6
+        - storage.objects.getIamPolicy
             
-
-
-
+#### [BigQuery](https://cloud.google.com/bigquery/docs/reference)
+- #### SQLWorkspace
+    - IAM
+        - bigquery.datasets.get
+        - bigquery.tables.get
+        - bigquery.tables.list
+        - bigquery.jobs.list
+        - resourcemanager.projects.get
 
