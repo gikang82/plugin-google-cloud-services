@@ -82,7 +82,7 @@ instance_template_meta = CloudServiceMeta.set_layouts([bucket_configuration_meta
 
 
 class StorageGroupResource(CloudServiceResource):
-    cloud_service_group = StringType(default='Storage')
+    cloud_service_group = StringType(default='CloudStorage')
 
 
 class StorageResource(StorageGroupResource):
