@@ -45,6 +45,7 @@ class StorageManager(GoogleCloudManager):
                 bucket_id = bucket.get('id')
 
                 objects = storage_conn.list_objects(bucket_name)
+                _LOGGER.debug(f'[collect_cloud_service] objects => {objects}')
                 obj_count, size = self._get_number_of_obj_and_size(objects)
                 iam_policy = storage_conn.list_iam_policy(bucket_name)
                 st_class = bucket.get('storageClass').lower()
