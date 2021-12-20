@@ -68,7 +68,7 @@ class CloudSQLManager(GoogleCloudManager):
                 _LOGGER.error(f'[collect_cloud_service] => {e}')
                 # Database Instance name is key(= instance_id)
                 error_response = self.generate_resource_error_response(e, 'CloudSQL', 'Instance', instance_name)
-                error_response.append(error_response)
+                error_responses.append(error_response)
 
         _LOGGER.debug(f'** Cloud SQL Finished {time.time() - start_time} Seconds **')
         return collected_cloud_services, error_responses
