@@ -65,7 +65,7 @@ class CloudSQLManager(GoogleCloudManager):
                 self.set_region_code(instance['region'])
                 collected_cloud_services.append(InstanceResponse({'resource': instance_resource}))
             except Exception as e:
-                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                _LOGGER.error(f'[collect_cloud_service] => {e}', exc_info=True)
                 # Database Instance name is key(= instance_id)
                 error_response = self.generate_resource_error_response(e, 'CloudSQL', 'Instance', instance_name)
                 error_responses.append(error_response)
