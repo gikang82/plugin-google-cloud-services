@@ -81,7 +81,7 @@ class SnapshotManager(GoogleCloudManager):
                 self.set_region_code(region.get('region_code'))
                 collected_cloud_services.append(SnapshotResponse({'resource': snapshots_resource}))
             except Exception as e:
-                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                _LOGGER.error(f'[collect_cloud_service] => {e}', exc_info=True)
                 error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Snapshot', snapshot_id)
                 error_responses.append(error_response)
 

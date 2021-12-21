@@ -86,7 +86,7 @@ class InstanceTemplateManager(GoogleCloudManager):
                 self.set_region_code(default_region)
                 collected_cloud_services.append(InstanceTemplateResponse({'resource': instance_template_resource}))
             except Exception as e:
-                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                _LOGGER.error(f'[collect_cloud_service] => {e}', exc_info=True)
                 error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceTemplate', inst_template_id)
                 error_responses.append(error_response)
 

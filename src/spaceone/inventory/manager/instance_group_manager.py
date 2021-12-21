@@ -117,7 +117,7 @@ class InstanceGroupManager(GoogleCloudManager):
                 self.set_region_code(region)
                 collected_cloud_services.append(InstanceGroupResponse({'resource': instance_group_resource}))
             except Exception as e:
-                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                _LOGGER.error(f'[collect_cloud_service] => {e}', exc_info=True)
                 error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'InstanceGroup', instance_group_id)
                 error_responses.append(error_response)
 

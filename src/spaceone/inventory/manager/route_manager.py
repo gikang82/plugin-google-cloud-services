@@ -76,7 +76,7 @@ class RouteManager(GoogleCloudManager):
                 self.set_region_code(region)
                 collected_cloud_services.append(RouteResponse({'resource': route_resource}))
             except Exception as e:
-                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                _LOGGER.error(f'[collect_cloud_service] => {e}', exc_info=True)
                 error_response = self.generate_resource_error_response(e, 'VPC', 'Route', route_id)
                 error_responses.append(error_response)
 

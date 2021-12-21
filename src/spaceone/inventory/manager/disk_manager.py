@@ -80,7 +80,7 @@ class DiskManager(GoogleCloudManager):
                 self.set_region_code(disk['region'])
                 collected_cloud_services.append(DiskResponse({'resource': disk_resource}))
             except Exception as e:
-                _LOGGER.error(f'[collect_cloud_service] => {e}')
+                _LOGGER.error(f'[collect_cloud_service] => {e}', exc_info=True)
                 error_response = self.generate_resource_error_response(e, 'ComputeEngine', 'Disk', disk_id)
                 error_responses.append(error_response)
 

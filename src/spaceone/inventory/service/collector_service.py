@@ -84,7 +84,7 @@ class CollectorService(BaseService):
             self.execute_managers = self._get_target_execute_manager(params.get('options', {}))
             _LOGGER.debug(f'[collect] execute_managers => {self.execute_managers}')
         except Exception as e:
-            _LOGGER.error(f'[collect] failed to get target execute_managers => {e}')
+            _LOGGER.error(f'[collect] failed to get target execute_managers => {e}', exc_info=True)
             error_resource_response = self.generate_error_response(e, '', 'inventory.Error')
             yield error_resource_response.to_primitive()
 
@@ -101,7 +101,7 @@ class CollectorService(BaseService):
                     for result in future.result():
                         yield result.to_primitive()
                 except Exception as e:
-                    _LOGGER.error(f'[collect] failed to yield result => {e}')
+                    _LOGGER.error(f'[collect] failed to yield result => {e}', exc_info=True)
                     error_resource_response = self.generate_error_response(e, '', 'inventory.Error')
                     yield error_resource_response.to_primitive()
 
@@ -160,4 +160,4 @@ class CollectorService(BaseService):
 
             params.update({'region': list(set(result_regions)), 'zone': result_zones})
         except Exception as e:
-            _LOGGER.error(f'failed to _set_regions_zones {e}')
+            _LOGGER.error(f'failed to _set_regions_zones {e}', exc_info=True)
