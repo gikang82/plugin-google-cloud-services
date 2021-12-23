@@ -112,7 +112,6 @@ class CollectorService(BaseService):
             execute_managers = self._match_execute_manager(options['cloud_service_types'])
         else:
             execute_managers = list(CLOUD_SERVICE_GROUP_MAP.values())
-
         return execute_managers
 
     @staticmethod

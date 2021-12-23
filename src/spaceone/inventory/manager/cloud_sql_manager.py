@@ -39,13 +39,18 @@ class CloudSQLManager(GoogleCloudManager):
 
         for instance in instances:
             try:
+                _LOGGER.debug(f'[collect_cloud_service] instance => {instance}')
                 instance_name = instance['name']
                 project = instance.get('project', '')
-                # Get Databases
-                databases = cloud_sql_conn.list_databases(instance_name)
+                # Get Databases & Users, If SQL instance is not available skip, Database/User check.
+                # Otherwise, It occurs error while list databases, list users.
+                if self._check_sql_instance_is_available(instance):
+                    databases = cloud_sql_conn.list_databases(instance_name)
+                    users = cloud_sql_conn.list_users(instance_name)
+                else:
+                    databases = []
+                    users = []
 
-                # Get Users
-                users = cloud_sql_conn.list_users(instance_name)
                 stackdriver = self.get_stackdriver(project, instance_name)
                 instance.update({
                     'stackdriver': stackdriver,
@@ -83,7 +88,7 @@ class CloudSQLManager(GoogleCloudManager):
                 'value': f'{project}:{name}' if project != '' else f'{name}'
             }]
         }
-
+# SQL Instance power status
     @staticmethod
     def _get_display_state(instance):
         activation_policy = instance.get('settings', {}).get('activationPolicy', 'UNKNOWN')
@@ -96,3 +101,15 @@ class CloudSQLManager(GoogleCloudManager):
             return 'ON-DEMAND'
         else:
             return 'UNKNOWN'
+
+# Check SQL Instance status
+    def _check_sql_instance_is_available(self, instance):
+        power_state = self._get_display_state(instance)
+        create_state = instance.get('state', '')
+
+        if create_state == 'RUNNABLE' and power_state == 'RUNNING':
+            return True
+        else:
+            instance_name = instance.get('name', '')
+            _LOGGER.debug(f'[_check_sql_instance_is_available] instance {instance_name} is not available')
+            return False
