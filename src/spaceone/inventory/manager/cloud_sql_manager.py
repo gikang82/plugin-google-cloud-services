@@ -107,7 +107,7 @@ class CloudSQLManager(GoogleCloudManager):
         power_state = self._get_display_state(instance)
         create_state = instance.get('state', '')
 
-        if create_state == 'RUNNABLE' and power_state == 'ALWAYS':
+        if create_state == 'RUNNABLE' and power_state == 'RUNNING':
             return True
         else:
             instance_name = instance.get('name', '')
