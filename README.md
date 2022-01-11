@@ -8,7 +8,7 @@ get cloud service data from Google Cloud platform.
 
 
 Find us also at [Dockerhub](https://hub.docker.com/repository/docker/spaceone/google-cloud-services)
-> Latest stable version : 1.1.8
+
 
 Please contact us if you need any further information. (<support@spaceone.dev>)
 
@@ -66,6 +66,12 @@ Please, set authentication privilege for followings:
         - compute.backendServices.list
         - compute.targetPools.list
         - compute.forwardingRules.list
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
     
 - ##### Instance Template
     - Scopes
@@ -77,6 +83,12 @@ Please, set authentication privilege for followings:
         - compute.machineTypes.list
         - compute.disks.list
         - compute.instanceTemplates.list
+      
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
         
 - ##### Instance Group
     - Scopes
@@ -89,6 +101,12 @@ Please, set authentication privilege for followings:
         - compute.instances.list
         - compute.autoscalers.list
         - compute.instanceTemplates.list
+  
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
      
 - #### Machine Images
     - Scopes
@@ -100,7 +118,13 @@ Please, set authentication privilege for followings:
         - compute.machineTypes.list
         - compute.disks.list
         - compute.images.list
-    
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
+        
 - #### Disk
     - Scopes
         - https://www.googleapis.com/auth/compute
@@ -109,7 +133,13 @@ Please, set authentication privilege for followings:
     - IAM
         - compute.disks.list
         - compute.resourcePolicies.list
-  
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
+        
 - #### Snapshot
     - Scopes
         - https://www.googleapis.com/auth/compute
@@ -119,6 +149,12 @@ Please, set authentication privilege for followings:
         - compute.snapshots.list
         - compute.resourcePolicies.list
         - compute.disks.list
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
      
 
 #### [Networking](https://cloud.google.com/compute/docs/apis)
@@ -138,6 +174,12 @@ Please, set authentication privilege for followings:
         - compute.firewalls.list
         - compute.routes.list
         
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
+        
 - #### Route
     - Scopes 
         - https://www.googleapis.com/auth/compute
@@ -146,6 +188,12 @@ Please, set authentication privilege for followings:
     - IAM
         - compute.routes.list
         - compute.instances.list
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
         
 - #### External IP Address
     - Scopes 
@@ -157,6 +205,12 @@ Please, set authentication privilege for followings:
         - compute.forwardingRules.list
         - compute.addresses.list
 
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
+
 - #### Firewall
     - Scopes 
         - https://www.googleapis.com/auth/compute
@@ -165,6 +219,12 @@ Please, set authentication privilege for followings:
     - IAM
         - compute.instances.list
         - compute.firewalls.list
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
 
 - #### LoadBalancing
     - Scopes 
@@ -185,6 +245,12 @@ Please, set authentication privilege for followings:
         - compute.httpHealthChecks.list
         - compute.httpsHealthChecks.list
         - compute.autoscalers.list
+
+    - Service Endpoint
+        - https://compute.googleapis.com/compute/v1/projects/{project}/aggregated/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/global/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/zone/{zone}/{resource_name}
+        - https://compute.googleapis.com/compute/v1/projects/{project}/regions/{region}/{resource_name}
         
 
 #### [Cloud SQL](https://cloud.google.com/sql/docs/mysql/apis)
@@ -199,12 +265,22 @@ Please, set authentication privilege for followings:
         - sqladmin.users.list
         - sqladmin.backup_runs.list
 
+    - Service Endpoint
+        - https://sqladmin.googleapis.com/v1/projects/{project}/{resources}
+        - https://sqladmin.googleapis.com/v1/projects/{project}/instances/{instance}/{resources}
+
+
+
 #### [Storage](https://cloud.google.com/storage/docs/apis)
 - #### Bucket
     - IAM
         - storage.buckets.get
         - storage.objects.list
         - storage.objects.getIamPolicy
+
+    - Service Endpoint
+        - https://storage.googleapis.com/storage/v1/b/{resource}
+
             
 #### [BigQuery](https://cloud.google.com/bigquery/docs/reference)
 - #### SQLWorkspace
@@ -214,6 +290,9 @@ Please, set authentication privilege for followings:
         - bigquery.tables.list
         - bigquery.jobs.list
         - resourcemanager.projects.get
+
+    - Service Endpoint
+        - https://bigquery.googleapis.com/bigquery/v2/projects/{projectId}/{resource}
 
 ---
 ## Options
